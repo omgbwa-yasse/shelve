@@ -160,7 +160,7 @@ class DollyController extends Controller
     public function apiCreate(Request $request)
     {
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:70|unique:dollies,name',
             'description' => 'nullable|string',
         ]);
 

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\User;
+use App\Models\Role;
+use App\Models\TaskComment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -23,7 +25,11 @@ class TaskController extends Controller
         }
 
         if ($request->filled('assigned_to')) {
-            $query->where('assigned_to', $request->assigned_to);
+            if ($request->assigned_to === 'me') {
+                $query->where('assigned_to', Auth::id());
+            } else {
+                $query->where('assigned_to', $request->assigned_to);
+            }
         }
 
         if ($request->filled('search')) {
@@ -39,7 +45,8 @@ class TaskController extends Controller
     public function create()
     {
         $users = User::orderBy('name')->get();
-        return view('tasks.create', compact('users'));
+        $roles = Role::with('users')->orderBy('name')->get();
+        return view('tasks.create', compact('users', 'roles'));
     }
 
     public function store(Request $request)
@@ -49,34 +56,38 @@ class TaskController extends Controller
         }
 
         $validated = $request->validate([
-            'title' => 'required|string|max:190',
+            'title'       => 'required|string|max:190',
             'description' => 'nullable|string',
-            'status' => 'required|in:pending,in_progress,completed,cancelled',
-            'priority' => 'required|in:low,normal,high,urgent',
+            'status'      => 'nullable|in:pending,in_progress,completed,cancelled',
+            'priority'    => 'required|in:low,normal,high,urgent',
             'assigned_to' => 'nullable|exists:users,id',
-            'due_date' => 'nullable|date',
+            'due_date'    => 'nullable|date',
         ]);
+
+        // Default status to pending when creating
+        $validated['status'] = $validated['status'] ?? 'pending';
 
         $task = Task::create([
             ...$validated,
             'organisation_id' => Auth::user()->current_organisation_id,
-            'created_by' => Auth::id(),
+            'created_by'      => Auth::id(),
         ]);
 
         return redirect()->route('tasks.show', $task)
-            ->with('success', 'Task created successfully.');
+            ->with('success', __('Tâche créée avec succès.'));
     }
 
     public function show(Task $task)
     {
-        $task->load(['assignedUser', 'creator', 'comments.user', 'attachments', 'watchers.user']);
+        $task->load(['assignedUser', 'creator', 'comments.user', 'attachments', 'watchers.user', 'history']);
         return view('tasks.show', compact('task'));
     }
 
     public function edit(Task $task)
     {
         $users = User::orderBy('name')->get();
-        return view('tasks.edit', compact('task', 'users'));
+        $roles = Role::with('users')->orderBy('name')->get();
+        return view('tasks.edit', compact('task', 'users', 'roles'));
     }
 
     public function update(Request $request, Task $task)
@@ -86,12 +97,12 @@ class TaskController extends Controller
         }
 
         $validated = $request->validate([
-            'title' => 'required|string|max:190',
+            'title'       => 'required|string|max:190',
             'description' => 'nullable|string',
-            'status' => 'required|in:pending,in_progress,completed,cancelled',
-            'priority' => 'required|in:low,normal,high,urgent',
+            'status'      => 'required|in:pending,in_progress,completed,cancelled',
+            'priority'    => 'required|in:low,normal,high,urgent',
             'assigned_to' => 'nullable|exists:users,id',
-            'due_date' => 'nullable|date',
+            'due_date'    => 'nullable|date',
         ]);
 
         $task->update([
@@ -100,23 +111,34 @@ class TaskController extends Controller
         ]);
 
         return redirect()->route('tasks.show', $task)
-            ->with('success', 'Task updated successfully.');
+            ->with('success', __('Tâche mise à jour avec succès.'));
     }
 
-    public function complete(Task $task)
+    public function complete(Request $request, Task $task)
     {
         if (!Auth::check()) {
             abort(401, 'Authentication required');
         }
 
-        // Vérifier si l'utilisateur est l'assigné ou le créateur ou un admin (optionnel selon vos règles)
-        
         $task->update([
-            'status' => 'completed',
-            'updated_by' => Auth::id(),
+            'status'       => 'completed',
+            'completed_at' => now(),
+            'completed_by' => Auth::id(),
+            'updated_by'   => Auth::id(),
         ]);
 
-        return redirect()->back()->with('success', 'Tâche marquée comme terminée.');
+        // Save completion note as a TaskComment if provided
+        $note = $request->input('completion_note');
+        if ($note && trim($note) !== '') {
+            TaskComment::create([
+                'task_id' => $task->id,
+                'comment' => '✅ ' . __('Note de clôture') . ' : ' . trim($note),
+                'user_id' => Auth::id(),
+            ]);
+        }
+
+        return redirect()->back()
+            ->with('success', __('Tâche marquée comme terminée.'));
     }
 
     public function destroy(Task $task)
@@ -124,6 +146,6 @@ class TaskController extends Controller
         $task->delete();
 
         return redirect()->route('tasks.index')
-            ->with('success', 'Task deleted successfully.');
+            ->with('success', __('Tâche supprimée.'));
     }
 }

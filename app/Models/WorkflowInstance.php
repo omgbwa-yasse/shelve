@@ -115,9 +115,16 @@ class WorkflowInstance extends Model
         ]);
     }
 
-    public function pause(): void
+    public function pause(?string $note = null): void
     {
-        $this->update(['status' => 'paused']);
+        $currentState = $this->current_state;
+        if ($note) {
+            $currentState['pause_reason'] = $note;
+        }
+        $this->update([
+            'status' => 'paused',
+            'current_state' => $currentState
+        ]);
     }
 
     public function resume(): void

@@ -246,9 +246,9 @@ class WorkflowEngine
     /**
      * Pause a workflow instance
      */
-    public function pauseWorkflow(WorkflowInstance $instance): void
+    public function pauseWorkflow(WorkflowInstance $instance, ?string $note = null): void
     {
-        $instance->pause();
+        $instance->pause($note);
     }
 
     /**

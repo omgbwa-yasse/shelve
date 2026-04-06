@@ -101,12 +101,13 @@ class WorkflowInstanceController extends Controller
     /**
      * Pause a workflow instance
      */
-    public function pause(WorkflowInstance $instance)
+    public function pause(Request $request, WorkflowInstance $instance)
     {
         $this->authorize('update', $instance);
 
         try {
-            $this->workflowEngine->pauseWorkflow($instance);
+            $note = $request->input('pause_note');
+            $this->workflowEngine->pauseWorkflow($instance, $note);
 
             return redirect()->route('workflows.instances.show', $instance)
                 ->with('success', 'Workflow paused successfully.');

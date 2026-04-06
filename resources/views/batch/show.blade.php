@@ -153,59 +153,78 @@
 
 {{-- Transfer to Box Modal --}}
 <div class="modal fade" id="transferToBoxModal" tabindex="-1" aria-labelledby="transferToBoxModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="transferToBoxModalLabel">Transférer vers une ou plusieurs boîte(s)</h5>
+                <h5 class="modal-title" id="transferToBoxModalLabel">
+                    <i class="bi bi-box-seam me-2"></i>Transférer vers des boîtes
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <ul class="nav nav-tabs" id="boxTab">
+                <div class="alert alert-info py-2 mb-3">
+                    <small>
+                        <i class="bi bi-info-circle me-1"></i>
+                        Sélectionnez les boîtes de destination, ou créez-en une nouvelle.
+                    </small>
+                </div>
+                
+                <ul class="nav nav-tabs mb-3" id="boxTab">
                     <li class="nav-item">
-                        <button class="nav-link active" id="select-box-tab" data-bs-toggle="tab" data-bs-target="#select-box" type="button" role="tab" aria-controls="select-box" aria-selected="true">Sélectionner</button>
+                        <button class="nav-link active" id="select-box-tab" data-bs-toggle="tab" data-bs-target="#select-box" type="button" role="tab" aria-controls="select-box" aria-selected="true">
+                            <i class="bi bi-search me-1"></i>Sélectionner
+                        </button>
                     </li>
                     <li class="nav-item">
-                        <button class="nav-link" id="create-box-tab" data-bs-toggle="tab" data-bs-target="#create-box" type="button" role="tab" aria-controls="create-box" aria-selected="false">Créer</button>
+                        <button class="nav-link" id="create-box-tab" data-bs-toggle="tab" data-bs-target="#create-box" type="button" role="tab" aria-controls="create-box" aria-selected="false">
+                            <i class="bi bi-plus-circle me-1"></i>Créer
+                        </button>
                     </li>
                 </ul>
+                
                 <div class="tab-content" id="boxTabContent">
                     <div class="tab-pane fade show active" id="select-box" role="tabpanel" aria-labelledby="select-box-tab">
-                        <div class="my-3">
-                            <input type="text" id="box-search" class="form-control" placeholder="Rechercher une boîte...">
+                        <div class="mb-3">
+                            <input type="text" id="box-search" class="form-control" placeholder="🔍 Rechercher une boîte...">
                         </div>
-                        <div id="box-list-container" style="max-height: 300px; overflow-y: auto;">
-                            <div class="text-center">
-                                    <div class="spinner-border" aria-hidden="true">
-                                    <span class="visually-hidden">Loading...</span>
+                        <div id="box-list-container" style="max-height: 350px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 0.5rem;">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Chargement...</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="tab-pane fade" id="create-box" role="tabpanel" aria-labelledby="create-box-tab">
-                        <form id="createBoxForm" class="mt-3">
+                        <form id="createBoxForm" class="pt-2">
                             <div class="mb-3">
-                                <label for="new_box_code" class="form-label">Code</label>
-                                <input type="text" class="form-control" id="new_box_code" required>
+                                <label for="new_box_code" class="form-label">Code <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="new_box_code" placeholder="Ex: BOX-001" required>
                             </div>
                             <div class="mb-3">
-                                <label for="new_box_name" class="form-label">Nom</label>
-                                <input type="text" class="form-control" id="new_box_name" required>
+                                <label for="new_box_name" class="form-label">Nom <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="new_box_name" placeholder="Ex: Boîte archives 2024" required>
                             </div>
                             <div class="mb-3">
-                                <label for="new_box_property_id" class="form-label">Propriété</label>
+                                <label for="new_box_property_id" class="form-label">Propriété <span class="text-danger">*</span></label>
                                 <select class="form-select" id="new_box_property_id" required>
                                     <option value="">Chargement...</option>
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-primary">Créer et sélectionner</button>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-plus-circle me-1"></i>Créer et sélectionner
+                            </button>
                         </form>
                     </div>
                 </div>
+                
                 <div id="transferBoxError" class="alert alert-danger d-none mt-3" role="alert"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                <button type="button" class="btn btn-primary" id="saveTransferToBoxButton">Transférer</button>
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="saveTransferToBoxButton">
+                    <i class="bi bi-check-circle me-1"></i>Transférer
+                </button>
             </div>
         </div>
     </div>
@@ -213,53 +232,69 @@
 
 {{-- Transfer to Dolly Modal --}}
 <div class="modal fade" id="transferToDollyModal" tabindex="-1" aria-labelledby="transferToDollyModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="transferToDollyModalLabel">Transférer vers un ou plusieurs chariot(s)</h5>
+                <h5 class="modal-title" id="transferToDollyModalLabel">
+                    <i class="bi bi-cart4 me-2"></i>Transférer vers des chariots
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <ul class="nav nav-tabs" id="dollyTab">
+                <div class="alert alert-info py-2 mb-3">
+                    <small>
+                        <i class="bi bi-info-circle me-1"></i>
+                        Sélectionnez les chariots de destination, ou créez-en un nouveau.
+                    </small>
+                </div>
+                
+                <ul class="nav nav-tabs mb-3" id="dollyTab">
                     <li class="nav-item">
-                        <button class="nav-link active" id="select-dolly-tab" data-bs-toggle="tab" data-bs-target="#select-dolly" type="button" role="tab" aria-controls="select-dolly" aria-selected="true">Sélectionner</button>
+                        <button class="nav-link active" id="select-dolly-tab" data-bs-toggle="tab" data-bs-target="#select-dolly" type="button" role="tab" aria-controls="select-dolly" aria-selected="true">
+                            <i class="bi bi-search me-1"></i>Sélectionner
+                        </button>
                     </li>
                     <li class="nav-item">
-                        <button class="nav-link" id="create-dolly-tab" data-bs-toggle="tab" data-bs-target="#create-dolly" type="button" role="tab" aria-controls="create-dolly" aria-selected="false">Créer</button>
+                        <button class="nav-link" id="create-dolly-tab" data-bs-toggle="tab" data-bs-target="#create-dolly" type="button" role="tab" aria-controls="create-dolly" aria-selected="false">
+                            <i class="bi bi-plus-circle me-1"></i>Créer
+                        </button>
                     </li>
                 </ul>
+                
                 <div class="tab-content" id="dollyTabContent">
                     <div class="tab-pane fade show active" id="select-dolly" role="tabpanel" aria-labelledby="select-dolly-tab">
-                        <div class="my-3">
-                            <input type="text" id="dolly-search" class="form-control" placeholder="Rechercher un chariot...">
+                        <div class="mb-3">
+                            <input type="text" id="dolly-search" class="form-control" placeholder="🔍 Rechercher un chariot...">
                         </div>
-                        <div id="dolly-list-container" style="max-height: 300px; overflow-y: auto;">
-                            <div class="text-center">
-                                    <div class="spinner-border" aria-hidden="true">
-                                    <span class="visually-hidden">Loading...</span>
+                        <div id="dolly-list-container" style="max-height: 350px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 0.5rem;">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Chargement...</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="tab-pane fade" id="create-dolly" role="tabpanel" aria-labelledby="create-dolly-tab">
-                        <form id="createDollyForm" class="mt-3">
+                        <form id="createDollyForm" class="pt-2">
                             <div class="mb-3">
-                                <label for="new_dolly_code" class="form-label">Code</label>
-                                <input type="text" class="form-control" id="new_dolly_code" required>
+                                <label for="new_dolly_name" class="form-label">Nom du chariot <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="new_dolly_name" placeholder="Ex: chrio" required>
+                                <div class="form-text">Le nom doit être unique et ne peut contenir que 70 caractères maximum</div>
                             </div>
-                            <div class="mb-3">
-                                <label for="new_dolly_name" class="form-label">Nom</label>
-                                <input type="text" class="form-control" id="new_dolly_name" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Créer et sélectionner</button>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-plus-circle me-1"></i>Créer et sélectionner
+                            </button>
                         </form>
                     </div>
                 </div>
+                
                 <div id="transferDollyError" class="alert alert-danger d-none mt-3" role="alert"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                <button type="button" class="btn btn-primary" id="saveTransferToDollyButton">Transférer</button>
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="saveTransferToDollyButton">
+                    <i class="bi bi-check-circle me-1"></i>Transférer
+                </button>
             </div>
         </div>
     </div>
@@ -608,48 +643,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('box-search').addEventListener('keyup', function() {
             loadSelectableList("{{ route('mail-container.list') }}?q=" + this.value, '#box-list-container', 'boxes');
-            });
-            document.getElementById('createBoxForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const code = document.getElementById('new_box_code').value;
-                const name = document.getElementById('new_box_name').value;
-                const property_id = document.getElementById('new_box_property_id').value;
-                fetch("{{ route('mail-container.store') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': getCsrfToken(),
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ code: code, name: name, property_id: property_id })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.id) {
-                        // Après création, recharger la liste et sélectionner la nouvelle boîte
-                        loadSelectableList("{{ route('mail-container.list') }}", '#box-list-container', 'boxes');
-                        const tab = new bootstrap.Tab(document.getElementById('select-box-tab'));
-                        tab.show();
-                        // Attendre que la liste soit rechargée puis cocher la nouvelle boîte
-                        setTimeout(() => {
-                            const newBoxCheckbox = document.getElementById(`boxes-${data.id}`);
-                            if (newBoxCheckbox) {
-                                newBoxCheckbox.checked = true;
-                            }
-                        }, 500); // délai pour laisser le temps au DOM de se mettre à jour
-                    } else {
-                        // Handle error
-                        const errorDiv = document.getElementById('transferBoxError');
-                        errorDiv.textContent = data.message || 'Erreur lors de la création.';
-                        errorDiv.classList.remove('d-none');
-                    }
-                });
-            });
+        });
 
         document.getElementById('createBoxForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const code = document.getElementById('new_box_code').value;
-            const name = document.getElementById('new_box_name').value;
+            const errorDiv = document.getElementById('transferBoxError');
+            errorDiv.textContent = '';
+            errorDiv.classList.add('d-none');
+
+            const code = document.getElementById('new_box_code').value.trim();
+            const name = document.getElementById('new_box_name').value.trim();
+            const property_id = document.getElementById('new_box_property_id').value;
+
+            if (!code || !name || !property_id) {
+                errorDiv.textContent = 'Tous les champs sont requis.';
+                errorDiv.classList.remove('d-none');
+                return;
+            }
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Création...';
+
             fetch("{{ route('mail-container.store') }}", {
                 method: 'POST',
                 headers: {
@@ -657,21 +673,52 @@ document.addEventListener('DOMContentLoaded', function () {
                     'X-CSRF-TOKEN': getCsrfToken(),
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ code: code, name: name })
+                body: JSON.stringify({ 
+                    code: code, 
+                    name: name, 
+                    property_id: property_id 
+                })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; }).catch(() => {
+                        throw { message: 'Erreur lors de la création de la boîte.' };
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.id) {
-                    // Creation successful, reload the list and switch back to the select tab
+                    // Après création, recharger la liste et sélectionner la nouvelle boîte
                     loadSelectableList("{{ route('mail-container.list') }}", '#box-list-container', 'boxes');
                     const tab = new bootstrap.Tab(document.getElementById('select-box-tab'));
                     tab.show();
+                    
+                    // Attendre que la liste soit rechargée puis cocher la nouvelle boîte
+                    setTimeout(() => {
+                        const newBoxCheckbox = document.getElementById(`boxes-${data.id}`);
+                        if (newBoxCheckbox) {
+                            newBoxCheckbox.checked = true;
+                        }
+                    }, 500);
                 } else {
-                    // Handle error
-                    const errorDiv = document.getElementById('transferBoxError');
                     errorDiv.textContent = data.message || 'Erreur lors de la création.';
                     errorDiv.classList.remove('d-none');
                 }
+            })
+            .catch(err => {
+                if (err.errors && err.errors.code) {
+                    errorDiv.textContent = err.errors.code[0];
+                } else if (err.message) {
+                    errorDiv.textContent = err.message;
+                } else {
+                    errorDiv.textContent = 'Erreur lors de la création de la boîte.';
+                }
+                errorDiv.classList.remove('d-none');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
             });
         });
     }
@@ -689,42 +736,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('dolly-search').addEventListener('keyup', function() {
             loadSelectableList("{{ route('dollies.list') }}?q=" + encodeURIComponent(this.value), '#dolly-list-container', 'dollies');
-            });
-            document.getElementById('createDollyForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const code = document.getElementById('new_dolly_code').value;
-                const name = document.getElementById('new_dolly_name').value;
-                fetch("{{ route('dollies.store') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': getCsrfToken(),
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ code: code, name: name })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.id) {
-                        // Creation successful, reload the list and switch back to the select tab
-                        loadSelectableList("{{ route('dollies.list') }}", '#dolly-list-container', 'dollies');
-                        const tab = new bootstrap.Tab(document.getElementById('select-dolly-tab'));
-                        tab.show();
-                        document.getElementById('createDollyForm').reset();
-                    } else {
-                        // Handle error
-                        const errorDiv = document.getElementById('transferDollyError');
-                        errorDiv.textContent = data.message || 'Erreur lors de la création.';
-                        errorDiv.classList.remove('d-none');
-                    }
-                });
         });
 
         document.getElementById('createDollyForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const code = document.getElementById('new_dolly_code').value;
-            const name = document.getElementById('new_dolly_name').value;
-            // Utiliser une URL de route connue
+            const errorDiv = document.getElementById('transferDollyError');
+            errorDiv.textContent = '';
+            errorDiv.classList.add('d-none');
+
+            const name = document.getElementById('new_dolly_name').value.trim();
+            
+            if (!name) {
+                errorDiv.textContent = 'Le nom est requis.';
+                errorDiv.classList.remove('d-none');
+                return;
+            }
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Création...';
+
             fetch("{{ route('dollies.store') }}", {
                 method: 'POST',
                 headers: {
@@ -732,22 +764,52 @@ document.addEventListener('DOMContentLoaded', function () {
                     'X-CSRF-TOKEN': getCsrfToken(),
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ code: code, name: name })
+                body: JSON.stringify({ 
+                    name: name,
+                    description: 'Créé depuis le parapheur'
+                })
             })
-            .then(response => response.json())
-        .then(data => {
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; }).catch(() => {
+                        throw { message: 'Erreur lors de la création du chariot.' };
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
                 if (data.id) {
                     // Creation successful, reload the list and switch back to the select tab
-            loadSelectableList("{{ route('dollies.list') }}", '#dolly-list-container', 'dollies');
+                    loadSelectableList("{{ route('dollies.list') }}", '#dolly-list-container', 'dollies');
                     const tab = new bootstrap.Tab(document.getElementById('select-dolly-tab'));
                     tab.show();
                     document.getElementById('createDollyForm').reset();
+                    
+                    // Auto-select the newly created dolly
+                    setTimeout(() => {
+                        const newDollyCheckbox = document.getElementById(`dollies-${data.id}`);
+                        if (newDollyCheckbox) {
+                            newDollyCheckbox.checked = true;
+                        }
+                    }, 500);
                 } else {
-                    // Handle error
-                    const errorDiv = document.getElementById('transferDollyError');
                     errorDiv.textContent = data.message || 'Erreur lors de la création.';
                     errorDiv.classList.remove('d-none');
                 }
+            })
+            .catch(err => {
+                if (err.errors && err.errors.name) {
+                    errorDiv.textContent = err.errors.name[0];
+                } else if (err.message) {
+                    errorDiv.textContent = err.message;
+                } else {
+                    errorDiv.textContent = 'Erreur lors de la création du chariot.';
+                }
+                errorDiv.classList.remove('d-none');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
             });
         });
     }

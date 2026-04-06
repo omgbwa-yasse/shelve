@@ -139,6 +139,26 @@ class WorkplaceMemberController extends Controller
         return back()->with('success', 'Permissions mises à jour avec succès');
     }
 
+    public function searchUsers(Request $request, Workplace $workplace)
+    {
+        $q = $request->get('q', '');
+        if (strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $existingUserIds = $workplace->members()->pluck('user_id');
+
+        $users = User::where(function ($query) use ($q) {
+                $query->where('name', 'like', "%{$q}%")
+                      ->orWhere('email', 'like', "%{$q}%");
+            })
+            ->whereNotIn('id', $existingUserIds)
+            ->limit(10)
+            ->get(['id', 'name', 'email']);
+
+        return response()->json($users);
+    }
+
     public function updateNotifications(Request $request, Workplace $workplace, WorkplaceMember $member)
     {
         if ($member->user_id !== Auth::id()) {

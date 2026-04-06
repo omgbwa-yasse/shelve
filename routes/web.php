@@ -1163,6 +1163,7 @@ Route::prefix('workplaces')->name('workplaces.')->middleware('auth')->group(func
     Route::prefix('{workplace}/members')->name('members.')->group(function () {
         Route::get('/', [\App\Http\Controllers\WorkplaceMemberController::class, 'index'])->name('index');
         Route::post('/', [\App\Http\Controllers\WorkplaceMemberController::class, 'store'])->name('store');
+        Route::get('/search-users', [\App\Http\Controllers\WorkplaceMemberController::class, 'searchUsers'])->name('searchUsers');
         Route::put('/{member}', [\App\Http\Controllers\WorkplaceMemberController::class, 'update'])->name('update');
         Route::delete('/{member}', [\App\Http\Controllers\WorkplaceMemberController::class, 'destroy'])->name('destroy');
         Route::put('/{member}/permissions', [\App\Http\Controllers\WorkplaceMemberController::class, 'updatePermissions'])->name('permissions');

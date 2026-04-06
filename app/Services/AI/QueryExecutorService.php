@@ -341,12 +341,12 @@ class QueryExecutorService
 
                 // Filtres spécifiques aux RECORDS
                 case 'author':
-                    if ($table === 'records') {
+                    if ($table === 'records' || $table === 'record_physicals') {
                         $query->whereExists(function ($q) use ($value) {
                             $q->select(DB::raw(1))
-                              ->from('record_author')
-                              ->whereColumn('record_author.record_id', 'records.id')
-                              ->join('authors', 'record_author.author_id', '=', 'authors.id')
+                              ->from('record_physical_author')
+                              ->whereColumn('record_physical_author.record_id', 'records.id')
+                              ->join('authors', 'record_physical_author.author_id', '=', 'authors.id')
                               ->where('authors.name', 'LIKE', "%{$value}%");
                         });
                     }

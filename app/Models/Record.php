@@ -144,7 +144,7 @@ class Record extends Model
 
     public function authors()
     {
-        return $this->belongsToMany(Author::class, 'record_author');
+        return $this->belongsToMany(Author::class, 'record_physical_author', 'record_id', 'author_id');
     }
 
     public function attachments()

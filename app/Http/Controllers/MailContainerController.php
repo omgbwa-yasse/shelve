@@ -34,19 +34,24 @@ class MailContainerController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'code' => 'required|unique:mail_containers', // Added unique validation
+        $validated = $request->validate([
+            'code' => 'required|unique:mail_containers',
             'name' => 'required',
-            'property_id' => 'required|exists:container_properties,id', // Changed type_id to property_id and container_types to container_properties
+            'property_id' => 'required|exists:container_properties,id',
         ]);
 
-        MailContainer::create([
-            'code' => $request->code,
-            'name' => $request->name,
-            'property_id' => $request->property_id, // Changed type_id to property_id
-            'created_by' => Auth::id(), // Corrected field name
+        $mailContainer = MailContainer::create([
+            'code' => $validated['code'],
+            'name' => $validated['name'],
+            'property_id' => $validated['property_id'],
+            'created_by' => Auth::id(),
             'creator_organisation_id' => Auth::user()->current_organisation_id,
         ]);
+
+        // Return JSON for AJAX requests
+        if ($request->expectsJson() || $request->header('Accept') === 'application/json') {
+            return response()->json($mailContainer);
+        }
 
         return redirect()->route('mail-container.index')
                         ->with('success','Mail Container created successfully.');

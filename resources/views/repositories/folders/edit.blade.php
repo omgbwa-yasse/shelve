@@ -1,274 +1,106 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3">Modifier le dossier: {{ $folder->name }}</h1>
-        <div>
-            <a href="{{ route('folders.show', $folder) }}" class="btn btn-secondary">
-                <i class="bi bi-eye"></i> Voir le dossier
+<div class="container-fluid px-4 py-3">
+
+    {{-- Header --}}
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{{ route('folders.show', $folder) }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div class="d-flex align-items-center gap-2">
+            <div style="width:38px;height:38px;background:#fff3cd;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                <i class="bi bi-folder-fill text-warning" style="font-size:1.3rem;"></i>
+            </div>
+            <div>
+                <h5 class="mb-0 fw-semibold">Modifier le dossier</h5>
+                <div class="text-muted text-truncate" style="font-size:.75rem;max-width:300px;">{{ $folder->name }}</div>
+            </div>
+        </div>
+        <div class="ms-auto d-flex gap-2">
+            <a href="{{ route('folders.show', $folder) }}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-eye me-1"></i>Voir
             </a>
-            <a href="{{ route('folders.index') }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Retour à la liste
-            </a>
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-body">
-            <form action="{{ route('folders.update', $folder) }}" method="POST">
-                @csrf
-                @method('PUT')
+    @if($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show py-2 mb-3" style="font-size:.83rem;">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <strong>Veuillez corriger les erreurs :</strong>
+        <ul class="mb-0 mt-1 ps-3">
+            @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+        </ul>
+        <button type="button" class="btn-close py-2" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Nom <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                   id="name" name="name" value="{{ old('name', $folder->name) }}" required>
-                            @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
 
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="type_id" class="form-label">Type <span class="text-danger">*</span></label>
-                            <select class="form-select @error('type_id') is-invalid @enderror"
-                                    id="type_id" name="type_id" required onchange="loadMetadata(this.value)">
-                                <option value="">-- Sélectionner un type --</option>
-                                @foreach($types as $type)
-                                    <option value="{{ $type->id }}"
-                                        {{ old('type_id', $folder->type_id) == $type->id ? 'selected' : '' }}>
-                                        {{ $type->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('type_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+            {{-- Formulaire principal --}}
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body p-4">
+                    <form action="{{ route('folders.update', $folder) }}" method="POST">
+                        @csrf @method('PUT')
+                        @include('repositories.folders._form', ['isEdit' => true])
+
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <a href="{{ route('folders.show', $folder) }}" class="btn btn-outline-secondary btn-sm">Annuler</a>
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="bi bi-check2 me-1"></i>Enregistrer les modifications
+                            </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
+            </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="parent_id" class="form-label">Dossier parent</label>
-                            <select class="form-select @error('parent_id') is-invalid @enderror"
-                                    id="parent_id" name="parent_id">
-                                <option value="">-- Racine (pas de parent) --</option>
-                                @foreach($parentFolders as $potentialParent)
-                                    @if($potentialParent->id !== $folder->id)
-                                        <option value="{{ $potentialParent->id }}"
-                                            {{ old('parent_id', $folder->parent_id) == $potentialParent->id ? 'selected' : '' }}>
-                                            {{ $potentialParent->name }} ({{ $potentialParent->type->name }})
-                                        </option>
-                                    @endif
-                                @endforeach
-                            </select>
-                            <small class="form-text text-muted">
-                                Attention: le changement de parent peut créer une boucle. Vérifiez la hiérarchie.
-                            </small>
-                            @error('parent_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="organisation_id" class="form-label">Organisation <span class="text-danger">*</span></label>
-                            <select class="form-select @error('organisation_id') is-invalid @enderror"
-                                    id="organisation_id" name="organisation_id" required>
-                                <option value="">-- Sélectionner une organisation --</option>
-                                @foreach($organisations as $organisation)
-                                    <option value="{{ $organisation->id }}"
-                                        {{ old('organisation_id', $folder->organisation_id) == $organisation->id ? 'selected' : '' }}>
-                                        {{ $organisation->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('organisation_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
+            {{-- Infos système --}}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header py-2" style="background:#fafbfc;border-bottom:1px solid #eef0f3;">
+                    <span class="fw-semibold small"><i class="bi bi-info-circle me-2 text-muted"></i>Informations système</span>
                 </div>
-
-                <div class="mb-3">
-                    <label for="description" class="form-label">Description</label>
-                    <textarea class="form-control @error('description') is-invalid @enderror"
-                              id="description" name="description" rows="4">{{ old('description', $folder->description) }}</textarea>
-                    @error('description')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0" style="font-size:.78rem;">
+                        <tbody>
+                            <tr><td class="text-muted ps-3 py-2 border-0" style="width:140px;">Code</td><td class="py-2 border-0"><code style="font-size:.73rem;">{{ $folder->code }}</code></td></tr>
+                            <tr><td class="text-muted ps-3 py-2">Créé par</td><td class="py-2">{{ $folder->creator->name ?? '—' }}</td></tr>
+                            <tr><td class="text-muted ps-3 py-2">Créé le</td><td class="py-2">{{ $folder->created_at?->format('d/m/Y H:i') }}</td></tr>
+                            <tr><td class="text-muted ps-3 py-2">Modifié le</td><td class="py-2">{{ $folder->updated_at?->format('d/m/Y H:i') }}</td></tr>
+                            <tr>
+                                <td class="text-muted ps-3 py-2">Contenu</td>
+                                <td class="py-2">
+                                    <span class="badge bg-primary me-1">{{ $folder->documents_count }} doc</span>
+                                    <span class="badge bg-info me-1">{{ $folder->children_count ?? $folder->subfolders_count ?? 0 }} sous-dossiers</span>
+                                    <span class="badge bg-light text-dark border">{{ number_format(($folder->total_size ?? 0) / 1024 / 1024, 2) }} MB</span>
+                                </td>
+                            </tr>
+                            @if($folder->requires_approval && $folder->approved_by)
+                            <tr><td class="text-muted ps-3 py-2">Approbation</td><td class="py-2 text-success"><i class="bi bi-check2-circle me-1"></i>Approuvé par {{ $folder->approver->name ?? '—' }} le {{ $folder->approved_at?->format('d/m/Y') }}</td></tr>
+                            @endif
+                        </tbody>
+                    </table>
                 </div>
+            </div>
 
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="access_level" class="form-label">Niveau d'accès <span class="text-danger">*</span></label>
-                            <select class="form-select @error('access_level') is-invalid @enderror"
-                                    id="access_level" name="access_level" required>
-                                <option value="public" {{ old('access_level', $folder->access_level) == 'public' ? 'selected' : '' }}>Public</option>
-                                <option value="internal" {{ old('access_level', $folder->access_level) == 'internal' ? 'selected' : '' }}>Interne</option>
-                                <option value="confidential" {{ old('access_level', $folder->access_level) == 'confidential' ? 'selected' : '' }}>Confidentiel</option>
-                                <option value="secret" {{ old('access_level', $folder->access_level) == 'secret' ? 'selected' : '' }}>Secret</option>
-                            </select>
-                            @error('access_level')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="status" class="form-label">Statut <span class="text-danger">*</span></label>
-                            <select class="form-select @error('status') is-invalid @enderror"
-                                    id="status" name="status" required>
-                                <option value="active" {{ old('status', $folder->status) == 'active' ? 'selected' : '' }}>Actif</option>
-                                <option value="closed" {{ old('status', $folder->status) == 'closed' ? 'selected' : '' }}>Fermé</option>
-                                <option value="archived" {{ old('status', $folder->status) == 'archived' ? 'selected' : '' }}>Archivé</option>
-                            </select>
-                            @error('status')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="assigned_to" class="form-label">Assigné à</label>
-                            <select class="form-select @error('assigned_to') is-invalid @enderror"
-                                    id="assigned_to" name="assigned_to">
-                                <option value="">-- Non assigné --</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->id }}"
-                                        {{ old('assigned_to', $folder->assigned_to) == $user->id ? 'selected' : '' }}>
-                                        {{ $user->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('assigned_to')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="start_date" class="form-label">Date de début</label>
-                            <input type="date" class="form-control @error('start_date') is-invalid @enderror"
-                                   id="start_date" name="start_date"
-                                   value="{{ old('start_date', $folder->start_date?->format('Y-m-d')) }}">
-                            @error('start_date')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="end_date" class="form-label">Date de fin</label>
-                            <input type="date" class="form-control @error('end_date') is-invalid @enderror"
-                                   id="end_date" name="end_date"
-                                   value="{{ old('end_date', $folder->end_date?->format('Y-m-d')) }}">
-                            @error('end_date')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input" id="requires_approval"
-                           name="requires_approval" value="1"
-                           {{ old('requires_approval', $folder->requires_approval) ? 'checked' : '' }}>
-                    <label class="form-check-label" for="requires_approval">
-                        Nécessite une approbation
-                    </label>
-                </div>
-
-                {{-- Conteneur pour les métadonnées dynamiques --}}
-                <div id="metadata-container" class="mb-4" style="display:none;">
-                    <h5 class="border-top pt-3 mt-3">Métadonnées personnalisées</h5>
-                    <div id="metadata-fields" class="row"></div>
-                </div>
-
-                @if($folder->requires_approval && $folder->approved_by)
-                    <div class="alert alert-info">
-                        <strong>Approuvé par:</strong> {{ $folder->approver->name ?? 'Inconnu' }}<br>
-                        <strong>Date:</strong> {{ $folder->approved_at?->format('d/m/Y H:i') }}<br>
-                        @if($folder->approval_notes)
-                            <strong>Notes:</strong> {{ $folder->approval_notes }}
-                        @endif
-                    </div>
-                @endif
-
-                <div class="d-flex justify-content-end gap-2">
-                    <a href="{{ route('folders.show', $folder) }}" class="btn btn-secondary">Annuler</a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save"></i> Mettre à jour
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 
-    <div class="card mt-3">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Informations système</h5>
-        </div>
-        <div class="card-body">
-            <dl class="row mb-0">
-                <dt class="col-sm-3">Code</dt>
-                <dd class="col-sm-9"><code>{{ $folder->code }}</code></dd>
-
-                <dt class="col-sm-3">Créé par</dt>
-                <dd class="col-sm-9">{{ $folder->creator->name ?? 'Inconnu' }}</dd>
-
-                <dt class="col-sm-3">Créé le</dt>
-                <dd class="col-sm-9">{{ $folder->created_at?->format('d/m/Y H:i') }}</dd>
-
-                <dt class="col-sm-3">Modifié le</dt>
-                <dd class="col-sm-9">{{ $folder->updated_at?->format('d/m/Y H:i') }}</dd>
-
-                <dt class="col-sm-3">Statistiques</dt>
-                <dd class="col-sm-9">
-                    {{ $folder->documents_count }} document(s),
-                    {{ $folder->subfolders_count }} sous-dossier(s),
-                    {{ number_format($folder->total_size / 1024 / 1024, 2) }} MB
-                </dd>
-            </dl>
-        </div>
-    </div>
 </div>
+@endsection
 
 @push('scripts')
 <script>
 function loadMetadata(typeId) {
     const container = document.getElementById('metadata-container');
     const fieldsDiv = document.getElementById('metadata-fields');
-
-    if (!typeId) {
-        container.style.display = 'none';
-        fieldsDiv.innerHTML = '';
-        return;
-    }
-
+    if (!typeId) { container.style.display = 'none'; fieldsDiv.innerHTML = ''; return; }
     fetch(`/api/v1/metadata/folder-types/${typeId}`, {
-        headers: {
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-        }
+        headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' }
     })
-    .then(response => response.json())
+    .then(r => r.json())
     .then(data => {
-        if (data.success && data.data && data.data.length > 0) {
+        if (data.success && data.data?.length > 0) {
             container.style.display = 'block';
             renderMetadataFields(data.data);
         } else {
@@ -276,92 +108,43 @@ function loadMetadata(typeId) {
             fieldsDiv.innerHTML = '';
         }
     })
-    .catch(error => {
-        console.error('Erreur chargement métadonnées:', error);
-        container.style.display = 'none';
-        fieldsDiv.innerHTML = '';
-    });
+    .catch(() => { container.style.display = 'none'; fieldsDiv.innerHTML = ''; });
 }
 
 function renderMetadataFields(metadata) {
     const fieldsDiv = document.getElementById('metadata-fields');
     fieldsDiv.innerHTML = '';
-
     metadata.forEach(field => {
         if (!field.visible) return;
-
         const col = document.createElement('div');
-        col.className = 'col-md-6 mb-3';
-
-        const label = document.createElement('label');
-        label.className = 'form-label';
-        label.htmlFor = `metadata_${field.name}`;
-        label.innerHTML = field.name + (field.mandatory ? ' <span class="text-danger">*</span>' : '');
-
-        let input;
-        const fieldName = `metadata[${field.name}]`;
-        const required = field.mandatory ? 'required' : '';
-        const readonly = field.readonly ? 'readonly' : '';
-
+        col.className = 'col-md-6';
+        const req = field.mandatory ? 'required' : '';
+        const ro  = field.readonly  ? 'readonly'  : '';
+        const fn  = `metadata[${field.name}]`;
+        let inp;
         switch (field.data_type) {
-            case 'text':
-                input = `<input type="text" class="form-control" id="metadata_${field.name}" name="${fieldName}" value="${field.default_value || ''}" ${required} ${readonly}>`;
-                break;
-            case 'textarea':
-                input = `<textarea class="form-control" id="metadata_${field.name}" name="${fieldName}" rows="3" ${required} ${readonly}>${field.default_value || ''}</textarea>`;
-                break;
-            case 'number':
-                input = `<input type="number" class="form-control" id="metadata_${field.name}" name="${fieldName}" value="${field.default_value || ''}" ${required} ${readonly}>`;
-                break;
-            case 'date':
-                input = `<input type="date" class="form-control" id="metadata_${field.name}" name="${fieldName}" value="${field.default_value || ''}" ${required} ${readonly}>`;
-                break;
-            case 'datetime':
-                input = `<input type="datetime-local" class="form-control" id="metadata_${field.name}" name="${fieldName}" value="${field.default_value || ''}" ${required} ${readonly}>`;
-                break;
-            case 'boolean':
-                const checked = field.default_value ? 'checked' : '';
-                input = `<div class="form-check"><input type="checkbox" class="form-check-input" id="metadata_${field.name}" name="${fieldName}" value="1" ${checked} ${readonly}><input type="hidden" name="${fieldName}" value="0"></div>`;
-                break;
-            case 'email':
-                input = `<input type="email" class="form-control" id="metadata_${field.name}" name="${fieldName}" value="${field.default_value || ''}" ${required} ${readonly}>`;
-                break;
-            case 'url':
-                input = `<input type="url" class="form-control" id="metadata_${field.name}" name="${fieldName}" value="${field.default_value || ''}" ${required} ${readonly}>`;
-                break;
+            case 'textarea': inp = `<textarea class="form-control form-control-sm" name="${fn}" rows="2" ${req} ${ro}>${field.default_value||''}</textarea>`; break;
+            case 'number':   inp = `<input type="number" class="form-control form-control-sm" name="${fn}" value="${field.default_value||''}" ${req} ${ro}>`; break;
+            case 'date':     inp = `<input type="date"   class="form-control form-control-sm" name="${fn}" value="${field.default_value||''}" ${req} ${ro}>`; break;
+            case 'boolean':  inp = `<div class="form-check"><input type="checkbox" class="form-check-input" name="${fn}" value="1" ${field.default_value?'checked':''}></div>`; break;
             case 'select':
             case 'reference_list':
-                if (field.reference_list && field.reference_list.values) {
-                    let options = '<option value="">-- Sélectionner --</option>';
-                    field.reference_list.values.forEach(val => {
-                        const selected = val.value === field.default_value ? 'selected' : '';
-                        options += `<option value="${val.value}" ${selected}>${val.display_value}</option>`;
-                    });
-                    input = `<select class="form-select" id="metadata_${field.name}" name="${fieldName}" ${required} ${readonly}>${options}</select>`;
-                } else {
-                    input = `<input type="text" class="form-control" id="metadata_${field.name}" name="${fieldName}" value="${field.default_value || ''}" ${required} ${readonly}>`;
-                }
+                if (field.reference_list?.values) {
+                    let opts = '<option value="">--</option>';
+                    field.reference_list.values.forEach(v => { opts += `<option value="${v.value}" ${v.value===field.default_value?'selected':''}>${v.display_value}</option>`; });
+                    inp = `<select class="form-select form-select-sm" name="${fn}" ${req}>${opts}</select>`;
+                } else { inp = `<input type="text" class="form-control form-control-sm" name="${fn}" value="${field.default_value||''}" ${req}>`; }
                 break;
-            default:
-                input = `<input type="text" class="form-control" id="metadata_${field.name}" name="${fieldName}" value="${field.default_value || ''}" ${required} ${readonly}>`;
+            default: inp = `<input type="text" class="form-control form-control-sm" name="${fn}" value="${field.default_value||''}" ${req} ${ro}>`;
         }
-
-        col.innerHTML = label.outerHTML + input;
-        if (field.description) {
-            col.innerHTML += `<small class="form-text text-muted">${field.description}</small>`;
-        }
+        col.innerHTML = `<label class="form-label fw-semibold small">${field.name}${field.mandatory?' <span class="text-danger">*</span>':''}</label>${inp}${field.description?`<div class="form-text">${field.description}</div>`:''}`;
         fieldsDiv.appendChild(col);
     });
 }
 
-// Charger les métadonnées au chargement de la page si un type est déjà sélectionné
 document.addEventListener('DOMContentLoaded', function() {
-    const typeSelect = document.getElementById('type_id');
-    if (typeSelect && typeSelect.value) {
-        loadMetadata(typeSelect.value);
-    }
+    const t = document.getElementById('type_id');
+    if (t?.value) loadMetadata(t.value);
 });
 </script>
 @endpush
-
-@endsection
