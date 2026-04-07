@@ -1014,7 +1014,7 @@ Route::prefix('opac')->name('opac.')->middleware('opac.errors')->group(function 
     // Search routes - Primary search interface
     Route::get('/search', [\App\Http\Controllers\OPAC\SearchController::class, 'index'])->name('search');
     Route::get('/search/advanced', [\App\Http\Controllers\OPAC\SearchController::class, 'index'])->name('search.index');
-    Route::post('/search', [\App\Http\Controllers\OPAC\SearchController::class, 'search'])->name('search.results');
+    Route::get('/search/results', [\App\Http\Controllers\OPAC\SearchController::class, 'search'])->name('search.results');
     Route::get('/search/suggestions', [\App\Http\Controllers\OPAC\SearchController::class, 'suggestions'])->name('search.suggestions');
     Route::get('/api/search', [\App\Http\Controllers\OPAC\SearchController::class, 'apiSearch'])->name('api.search');
 
