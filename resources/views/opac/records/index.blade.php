@@ -173,22 +173,94 @@
                 </div>
             </div>
 
-            <!-- Records placeholder -->
-            <div class="opac-card text-center py-5">
-                <div class="card-body">
-                    <i class="fas fa-books fa-4x text-muted mb-4"></i>
-                    <h4>{{ __('Records Browser') }}</h4>
-                    <p class="text-muted mb-4">
-                        {{ __('This feature is being prepared and will be available soon.') }}
-                    </p>
-                    <p class="text-muted mb-4">
-                        {{ __('In the meantime, you can use the search functionality to find specific documents.') }}
-                    </p>
-                    <a href="{{ route('opac.search') }}" class="btn btn-primary">
-                        <i class="fas fa-search me-2"></i>{{ __('Go to Search') }}
-                    </a>
+            <!-- Records List -->
+            @if($records->count() > 0)
+                <div class="row">
+                    @foreach($records as $record)
+                        <div class="col-12 mb-4">
+                            <div class="opac-card h-100">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-2 d-none d-md-flex align-items-center justify-content-center bg-opac-light rounded me-md-3" style="min-height: 150px;">
+                                            @if($record->cover_image)
+                                                <img src="{{ asset('storage/' . $record->cover_image) }}" alt="{{ $record->title }}" class="img-fluid rounded shadow-sm" style="max-height: 130px;">
+                                            @else
+                                                <i class="fas fa-book-open fa-4x text-muted opacity-25"></i>
+                                            @endif
+                                        </div>
+                                        <div class="col-md-7">
+                                            <div class="d-flex align-items-center gap-2 mb-2">
+                                                <span class="opac-badge bg-secondary small">
+                                                    <i class="fas fa-archive me-1"></i>{{ __('Physical Record') }}
+                                                </span>
+                                                @if($record->record->level)
+                                                    <span class="opac-badge bg-info small">
+                                                        {{ $record->record->level->name }}
+                                                    </span>
+                                                @endif
+                                            </div>
+
+                                            <h4 class="h5 mb-2">
+                                                <a href="{{ route('opac.records.show', $record->id) }}" class="text-decoration-none text-dark fw-bold hover-text-primary">
+                                                    {{ $record->title }}
+                                                </a>
+                                            </h4>
+
+                                            @if($record->authors)
+                                                <p class="small mb-2">
+                                                    <span class="text-muted">{{ __('Author(s):') }}</span>
+                                                    <span class="fw-medium">{{ $record->authors }}</span>
+                                                </p>
+                                            @endif
+
+                                            @if($record->record->content)
+                                                <p class="text-muted small mb-3">
+                                                    {{ Str::limit(strip_tags($record->record->content), 200) }}
+                                                </p>
+                                            @endif
+
+                                            <div class="d-flex flex-wrap gap-2">
+                                                @foreach($record->record->thesaurusConcepts->take(3) as $concept)
+                                                    <span class="badge rounded-pill bg-light text-dark border">{{ $concept->term }}</span>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2 ms-auto d-flex flex-column justify-content-center gap-2">
+                                            <a href="{{ route('opac.records.show', $record->id) }}" class="btn btn-opac-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i>{{ __('View Details') }}
+                                            </a>
+                                            @auth('public')
+                                                <button class="btn btn-opac-outline btn-sm">
+                                                    <i class="fas fa-bookmark me-1"></i>{{ __('Save') }}
+                                                </button>
+                                            @endauth
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
-            </div>
+
+                <!-- Pagination -->
+                <div class="d-flex justify-content-center mt-4">
+                    {{ $records->links() }}
+                </div>
+            @else
+                <!-- No Records Found -->
+                <div class="opac-card text-center py-5">
+                    <div class="card-body">
+                        <i class="fas fa-books fa-4x text-muted mb-4"></i>
+                        <h4>{{ __('No records available') }}</h4>
+                        <p class="text-muted mb-4">
+                            {{ __('There are currently no records published in the catalog.') }}
+                        </p>
+                        <a href="{{ route('opac.search') }}" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>{{ __('Try a Search') }}
+                        </a>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 </div>

@@ -213,15 +213,93 @@
             @endif
             @endauth
 
-            <!-- Quick Access -->
+            <!-- Latest News and Events Section -->
             <div class="row mt-5">
+                <!-- Latest News -->
+                <div class="col-lg-8 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="h4 mb-0"><i class="fas fa-newspaper me-2 text-primary"></i>{{ __('Latest News') }}</h3>
+                        <a href="{{ route('opac.news.index') }}" class="btn btn-sm btn-outline-primary">{{ __('View All News') }}</a>
+                    </div>
+
+                    @if($latestNews->isNotEmpty())
+                        <div class="row">
+                            @foreach($latestNews as $news)
+                                <div class="col-md-6 mb-4">
+                                    <div class="opac-card h-100">
+                                        <div class="card-body">
+                                            <div class="mb-2">
+                                                <span class="badge bg-opac-light text-opac-primary border-opac">
+                                                    {{ $news->published_at ? $news->published_at->format('d M Y') : $news->created_at->format('d M Y') }}
+                                                </span>
+                                            </div>
+                                            <h5 class="h6 mb-2">
+                                                <a href="{{ route('opac.news.show', $news->id) }}" class="text-decoration-none text-dark fw-bold">
+                                                    {{ Str::limit($news->title, 60) }}
+                                                </a>
+                                            </h5>
+                                            <p class="small text-muted mb-0">
+                                                {{ Str::limit(strip_tags($news->content), 100) }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="opac-card-simple text-center py-4 bg-white border-opac">
+                            <p class="text-muted mb-0">{{ __('No recent news articles.') }}</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Upcoming Events -->
+                <div class="col-lg-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="h4 mb-0"><i class="fas fa-calendar-alt me-2 text-primary"></i>{{ __('Upcoming Events') }}</h3>
+                        <a href="{{ route('opac.events.index') }}" class="btn btn-sm btn-outline-primary">{{ __('All Events') }}</a>
+                    </div>
+
+                    @if($upcomingEvents->isNotEmpty())
+                        @foreach($upcomingEvents as $event)
+                            <div class="opac-card-simple mb-3 bg-white border-opac hover-shadow-sm transition-all d-flex gap-3">
+                                <div class="text-center bg-opac-light p-2 rounded d-flex flex-column justify-content-center" style="min-width: 65px; height: 65px;">
+                                    <span class="small fw-bold text-uppercase text-opac-primary">{{ $event->start_date->format('M') }}</span>
+                                    <span class="h5 mb-0 fw-bold">{{ $event->start_date->format('d') }}</span>
+                                </div>
+                                <div class="overflow-hidden">
+                                    <h6 class="mb-1 text-truncate">
+                                        <a href="{{ route('opac.events.show', $event->id) }}" class="text-decoration-none text-dark fw-bold">
+                                            {{ $event->title }}
+                                        </a>
+                                    </h6>
+                                    <p class="small text-muted mb-0">
+                                        <i class="fas fa-clock me-1 opacity-75"></i> {{ $event->start_date->format('H:i') }}
+                                        @if($event->location)
+                                            <span class="mx-1">•</span>
+                                            <i class="fas fa-map-marker-alt me-1 opacity-75"></i> {{ Str::limit($event->location, 20) }}
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="opac-card-simple text-center py-4 bg-white border-opac">
+                            <p class="text-muted mb-0">{{ __('No upcoming events scheduled.') }}</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Browse & Services Quick Access -->
+            <div class="row mt-4 mb-5">
                 <div class="col-md-4 mb-3">
                     <div class="opac-card text-center h-100">
                         <div class="card-body">
-                            <i class="fas fa-books fa-3x text-primary mb-3"></i>
+                            <i class="fas fa-book-reader fa-3x text-primary mb-3"></i>
                             <h5 class="card-title">{{ __('Browse Records') }}</h5>
-                            <p class="card-text">{{ __('Explore our complete collection') }}</p>
-                            <a href="{{ route('opac.records.index') }}" class="btn btn-primary">
+                            <p class="card-text small text-muted">{{ __('Explore our physical and digital collections through the catalog.') }}</p>
+                            <a href="{{ route('opac.records.index') }}" class="btn btn-opac-outline btn-sm stretched-link">
                                 {{ __('Browse Now') }}
                             </a>
                         </div>
@@ -230,11 +308,11 @@
                 <div class="col-md-4 mb-3">
                     <div class="opac-card text-center h-100">
                         <div class="card-body">
-                            <i class="fas fa-newspaper fa-3x text-success mb-3"></i>
-                            <h5 class="card-title">{{ __('Latest News') }}</h5>
-                            <p class="card-text">{{ __('Stay updated with library news') }}</p>
-                            <a href="{{ route('opac.news.index') }}" class="btn btn-success">
-                                {{ __('Read News') }}
+                            <i class="fas fa-folder-open fa-3x text-success mb-3"></i>
+                            <h5 class="card-title">{{ __('Digital Archives') }}</h5>
+                            <p class="card-text small text-muted">{{ __('Directly access digitized documents, manuscripts, and reports.') }}</p>
+                            <a href="{{ route('opac.digital.folders.index') }}" class="btn btn-opac-outline btn-sm stretched-link">
+                                {{ __('Explore Digital') }}
                             </a>
                         </div>
                     </div>
@@ -244,8 +322,8 @@
                         <div class="card-body">
                             <i class="fas fa-question-circle fa-3x text-info mb-3"></i>
                             <h5 class="card-title">{{ __('Need Help?') }}</h5>
-                            <p class="card-text">{{ __('Get assistance with your search') }}</p>
-                            <a href="{{ route('opac.feedback.create') }}" class="btn btn-info">
+                            <p class="card-text small text-muted">{{ __('Have a question? Get in touch with our expert library staff.') }}</p>
+                            <a href="{{ route('opac.feedback.create') }}" class="btn btn-opac-outline btn-sm stretched-link">
                                 {{ __('Contact Us') }}
                             </a>
                         </div>

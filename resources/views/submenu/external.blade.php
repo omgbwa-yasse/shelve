@@ -56,21 +56,19 @@
         </div>
     </div>
 
+    @once
     <script>
-        // Gérer l'état des menus déroulants
         document.addEventListener('DOMContentLoaded', function() {
-            let headings = document.querySelectorAll('.submenu-heading');
-
+            const headings = document.querySelectorAll('.submenu-heading');
             headings.forEach(heading => {
                 heading.addEventListener('click', function() {
-                    let target = document.querySelector(this.getAttribute('data-target'));
-                    if (target.style.display === 'none') {
-                        target.style.display = 'block';
-                    } else {
-                        target.style.display = 'none';
+                    const target = document.querySelector(this.getAttribute('data-target'));
+                    if (target) {
+                        target.style.display = target.style.display === 'none' ? 'block' : 'none';
                     }
                 });
             });
         });
     </script>
+    @endonce
 </div>

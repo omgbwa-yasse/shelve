@@ -158,35 +158,27 @@
     </div>
     @endif
 </div>
+@once
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Fonctionnalité de collapse optionnelle pour les sous-menus
     const headings = document.querySelectorAll('[data-menu-action="toggle"]');
-
     headings.forEach(function(heading) {
         heading.addEventListener('click', function(event) {
-            // Important: utiliser currentTarget pour référencer l'élément qui a l'écouteur d'événement
-            // et non pas nécessairement l'élément sur lequel l'utilisateur a cliqué
             const clickedHeading = event.currentTarget;
             const content = clickedHeading.nextElementSibling;
-
             if (content && content.classList.contains('submenu-content')) {
-                // Toggle la classe collapsed
                 content.classList.toggle('collapsed');
                 clickedHeading.classList.toggle('collapsed');
-
-                // Empêcher seulement la navigation par défaut, sans perturber le reste du document
                 event.preventDefault();
             }
         });
     });
-
-    // Fix pour formulaires - s'assurer que les éléments de formulaire fonctionnent correctement
     const formElements = document.querySelectorAll('input, select, textarea, button');
     formElements.forEach(function(element) {
-        // S'assurer que les événements de formulaire sont toujours traités correctement
         element.addEventListener('click', function(event) {
             event.stopPropagation();
         });
     });
-});</script>
+});
+</script>
+@endonce

@@ -82,15 +82,20 @@ class AuthController extends Controller
             'address' => 'nullable|string|max:500',
         ]);
 
+        $nameParts = explode(' ', $request->name, 2);
+        $firstName = $nameParts[0];
+        $lastName = $nameParts[1] ?? $firstName;
+
         $user = PublicUser::create([
-            'name' => $request->name,
+            'name' => $lastName,
+            'first_name' => $firstName,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'institution' => $request->institution,
-            'phone' => $request->phone,
-            'address' => $request->address,
+            'phone1' => $request->phone ?? '',
+            'phone2' => '',
+            'address' => $request->address ?? '',
             'is_approved' => false, // Requires admin approval
-            'registration_date' => now(),
+            'preferences' => [],
         ]);
 
         return redirect()->route('opac.login')->with('success',

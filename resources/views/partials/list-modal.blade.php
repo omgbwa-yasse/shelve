@@ -206,6 +206,7 @@
     </div>
 </div>
 
+@once
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('{{ $modalId }}');
@@ -270,7 +271,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+@endonce
 
+@once
 <style>
 #{{ $modalId }} .list-content {
     background: #fafafa;
@@ -304,3 +307,4 @@ document.addEventListener('DOMContentLoaded', function() {
     border-bottom-right-radius: 0.375rem;
 }
 </style>
+@endonce

@@ -140,6 +140,7 @@
 
 </div>
 
+@once
 <style>
 /* Styles spécifiques pour la sidebar AI */
 .quick-search-btn {
@@ -304,3 +305,4 @@ document.addEventListener('DOMContentLoaded', function() {
     renderSearchHistory();
 });
 </script>
+@endonce

@@ -69,60 +69,33 @@
     <!-- Les sections Configuration et Tools ont été retirées intentionnellement -->
 </div>
 
+@once
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Communications submenu initialized');
-
-    // Sélectionner uniquement les éléments de notre sous-menu
     const menuContainer = document.getElementById('communicationsMenu');
-    if (!menuContainer) {
-        console.error('Communications menu container not found');
-        return;
-    }
+    if (!menuContainer) return;
 
     const headings = menuContainer.querySelectorAll('.submenu-heading');
-    console.log('Found headings:', headings.length);
-
     headings.forEach(function(heading) {
         heading.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-
             const content = this.nextElementSibling;
-            console.log('Clicked heading:', this.textContent.trim());
-            console.log('Content element:', content);
-
             if (content && content.classList.contains('submenu-section-content')) {
-                // Toggle les classes
-                const isCollapsed = content.classList.contains('collapsed');
-
-                if (isCollapsed) {
-                    content.classList.remove('collapsed');
-                    this.classList.remove('collapsed');
-                    console.log('Expanded section');
-                } else {
-                    content.classList.add('collapsed');
-                    this.classList.add('collapsed');
-                    console.log('Collapsed section');
-                }
-            } else {
-                console.error('Content element not found or invalid');
+                content.classList.toggle('collapsed');
+                this.classList.toggle('collapsed');
             }
         });
     });
 
-    // S'assurer que tous les menus sont ouverts par défaut
     const allContents = menuContainer.querySelectorAll('.submenu-section-content');
     const allMenuHeadings = menuContainer.querySelectorAll('.submenu-heading');
-
     allContents.forEach(function(content) {
         content.classList.remove('collapsed');
     });
-
     allMenuHeadings.forEach(function(heading) {
         heading.classList.remove('collapsed');
     });
-
-    console.log('All sections opened by default');
 });
 </script>
+@endonce

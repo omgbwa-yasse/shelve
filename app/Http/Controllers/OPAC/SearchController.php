@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\OPAC;
 
 use App\Http\Controllers\Controller;
-use App\Models\PublicSearchLog;
-use App\Models\RecordBook;
+use App\Models\PublicNews;
+use App\Models\PublicEvent;
+use App\Models\PublicRecord;
 use App\Models\RecordDigitalDocument;
 use App\Models\RecordDigitalFolder;
 use Illuminate\Http\Request;
@@ -32,7 +33,14 @@ class SearchController extends Controller
                 ->get();
         }
 
-        return view('opac.search.index', compact('searchHistory'));
+        // Get latest news and upcoming events for the landing page
+        $latestNews = PublicNews::orderBy('published_at', 'desc')->limit(3)->get();
+        $upcomingEvents = PublicEvent::where('start_date', '>=', now())
+            ->orderBy('start_date', 'asc')
+            ->limit(3)
+            ->get();
+
+        return view('opac.search.index', compact('searchHistory', 'latestNews', 'upcomingEvents'));
     }
 
     /**
@@ -59,73 +67,48 @@ class SearchController extends Controller
         $type = $validated['type'] ?? null;
         $results = collect();
 
-        // Search Books
-        if (!$type || $type === 'book') {
-            $bookQuery = RecordBook::query()->with(['authors', 'publisher']);
+        // Search Public Records (replacing non-existent RecordBook)
+        if (!$type || $type === 'book' || $type === 'record') {
+            $recordQuery = PublicRecord::available()->with(['record.authors', 'publisher']);
 
             if ($query) {
-                $bookQuery->where(function($q) use ($query) {
-                    $q->where('title', 'like', "%{$query}%")
-                      ->orWhere('subtitle', 'like', "%{$query}%")
-                      ->orWhere('isbn', 'like', "%{$query}%")
-                      ->orWhereHas('authors', function($q) use ($query) {
-                          $q->where('last_name', 'like', "%{$query}%")
-                            ->orWhere('first_name', 'like', "%{$query}%");
-                      });
-                });
+                $recordQuery->searchContent($query);
             }
 
             if (!empty($validated['title'])) {
-                $bookQuery->where('title', 'like', "%{$validated['title']}%");
+                $recordQuery->whereHas('record', function($q) use ($validated) {
+                    $q->where('name', 'like', "%{$validated['title']}%");
+                });
             }
 
             if (!empty($validated['author'])) {
-                $bookQuery->whereHas('authors', function($q) use ($validated) {
+                $recordQuery->whereHas('record.authors', function($q) use ($validated) {
                     $q->where('last_name', 'like', "%{$validated['author']}%")
                       ->orWhere('first_name', 'like', "%{$validated['author']}%");
                 });
             }
 
-            if (!empty($validated['isbn'])) {
-                $bookQuery->where('isbn', 'like', "%{$validated['isbn']}%");
-            }
-
-            if (!empty($validated['language'])) {
-                $bookQuery->whereHas('language', function($q) use ($validated) {
-                    $q->where('code', $validated['language'])
-                      ->orWhere('iso_639_1', $validated['language']);
-                });
-            }
-
             if (!empty($validated['subject'])) {
-                $bookQuery->whereHas('subjects', function($q) use ($validated) {
+                $recordQuery->whereHas('record.keywords', function($q) use ($validated) {
                     $q->where('name', 'like', "%{$validated['subject']}%");
                 });
             }
 
-            if (!empty($validated['date_from'])) {
-                $bookQuery->where('publication_year', '>=', substr($validated['date_from'], 0, 4));
-            }
-
-            if (!empty($validated['date_to'])) {
-                $bookQuery->where('publication_year', '<=', substr($validated['date_to'], 0, 4));
-            }
-
-            $books = $bookQuery->get()->map(function($book) {
+            $records = $recordQuery->get()->map(function($publicRecord) {
                 return (object) [
-                    'id' => $book->id,
-                    'type' => 'book',
-                    'title' => $book->full_title,
-                    'description' => Str::limit($book->description, 150),
-                    'author' => $book->authors_string,
-                    'date' => $book->publication_year,
-                    'image' => null, // Add image logic if available
-                    'url' => route('opac.books.show', $book->id),
-                    'model' => $book
+                    'id' => $publicRecord->id,
+                    'type' => 'record',
+                    'title' => $publicRecord->title,
+                    'description' => Str::limit($publicRecord->description, 150),
+                    'author' => $publicRecord->authors,
+                    'date' => $publicRecord->publication_year,
+                    'image' => $publicRecord->cover_image,
+                    'url' => route('opac.records.show', $publicRecord->id),
+                    'model' => $publicRecord
                 ];
             });
 
-            $results = $results->merge($books);
+            $results = $results->merge($records);
         }
 
         // Search Digital Folders

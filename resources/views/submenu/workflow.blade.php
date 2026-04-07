@@ -74,6 +74,7 @@
 
 </div>
 
+@once
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const headings = document.querySelectorAll('[data-menu-action="toggle"]');
@@ -89,3 +90,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+@endonce

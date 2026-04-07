@@ -126,6 +126,7 @@
     </div>
 </div>
 
+@once
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('{{ $modalId }}');
@@ -280,7 +281,9 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 });
 </script>
+@endonce
 
+@once
 <style>
 #{{ $modalId }} .selection-item:hover {
     background-color: #f8f9fa;
@@ -321,3 +324,4 @@ document.addEventListener('DOMContentLoaded', function() {
     background-color: #f8fff9;
 }
 </style>
+@endonce

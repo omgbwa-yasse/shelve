@@ -63,17 +63,14 @@
         </div>
     </div>
 </div>
-
+@once
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Collapse functionality
     const headings = document.querySelectorAll('[data-menu-action="toggle"]');
-
     headings.forEach(function(heading) {
         heading.addEventListener('click', function(event) {
             const clickedHeading = event.currentTarget;
             const content = clickedHeading.nextElementSibling;
-
             if (content && content.classList.contains('submenu-content')) {
                 content.classList.toggle('collapsed');
                 clickedHeading.classList.toggle('collapsed');
@@ -83,3 +80,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+@endonce

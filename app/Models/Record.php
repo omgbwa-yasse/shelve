@@ -20,6 +20,8 @@ class Record extends Model
 {
     use HasFactory, Searchable, BelongsToOrganisation;
 
+    protected $table = 'record_physicals';
+
     protected $fillable = [
         'code',
         'name',
@@ -149,7 +151,7 @@ class Record extends Model
 
     public function attachments()
     {
-        return $this->belongsToMany(Attachment::class, 'record_attachment');
+        return $this->belongsToMany(Attachment::class, 'record_physical_attachment', 'record_physical_id', 'attachment_id');
     }
 
     public function user()
