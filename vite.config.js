@@ -9,6 +9,7 @@ export default defineConfig({
             input: [
                 'resources/sass/app.scss',
                 'resources/js/app.js',
+                'resources/js/layout.js',
                 'resources/js/opac-template-editor.js',
                 'resources/css/opac-template-editor.css'
             ],
