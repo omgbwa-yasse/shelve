@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PublicNews;
 use App\Models\PublicEvent;
 use App\Models\PublicRecord;
+use App\Models\PublicSearchLog;
 use App\Models\RecordDigitalDocument;
 use App\Models\RecordDigitalFolder;
 use Illuminate\Http\Request;
