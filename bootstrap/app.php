@@ -33,6 +33,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             CorsMiddleware::class,
         ]);
+
+        // Send unauthenticated visitors of the public OPAC to the OPAC login,
+        // not the staff login at /login.
+        $middleware->redirectGuestsTo(function ($request) {
+            if ($request->is('opac', 'opac/*')) {
+                return route('opac.login');
+            }
+            return route('login');
+        });
     })
     ->withExceptions(function () {
         //

@@ -592,6 +592,70 @@
             color: white;
             text-decoration: none;
         }
+
+        /* ── Global heading consistency (readability across all admin pages) ── */
+        main h1, .container h1, .container-fluid h1,
+        main .page-title, .page-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.25;
+            margin-bottom: .25rem;
+        }
+        main h2 { font-size: 1.35rem; font-weight: 700; color: #1e293b; }
+        main h3 { font-size: 1.2rem;  font-weight: 700; color: #1e293b; }
+        main h4 { font-size: 1.08rem; font-weight: 600; color: #1e293b; }
+
+        /* Colored card headers: guarantee strong contrast for their titles/icons.
+           Many admin pages put headings on bg-primary/info/success/etc. bands. */
+        .card-header.bg-primary, .card-header.bg-info, .card-header.bg-success,
+        .card-header.bg-warning, .card-header.bg-danger, .card-header.bg-secondary,
+        .card-header.bg-dark {
+            color: #fff !important;
+        }
+        .card-header.bg-primary h1, .card-header.bg-primary h2, .card-header.bg-primary h3,
+        .card-header.bg-primary h4, .card-header.bg-primary h5, .card-header.bg-primary h6,
+        .card-header.bg-info h5, .card-header.bg-info h6,
+        .card-header.bg-success h5, .card-header.bg-success h6,
+        .card-header.bg-danger h5, .card-header.bg-danger h6,
+        .card-header.bg-dark h5, .card-header.bg-dark h6,
+        .card-header.bg-secondary h5, .card-header.bg-secondary h6 {
+            color: #fff !important;
+            font-weight: 600;
+            text-shadow: 0 1px 1px rgba(0,0,0,.12);
+        }
+        .card-header.bg-warning, .card-header.bg-warning h5, .card-header.bg-warning h6 {
+            color: #3a2d00 !important;
+            text-shadow: none;
+        }
+        /* Card headers carrying an icon: keep icon and text vertically centered */
+        .card-header h5, .card-header h6 { display: flex; align-items: center; }
+
+        /* ── Modal header readability (Cart / Export / etc. modals) ── */
+        .modal-header.bg-primary, .modal-header.bg-info, .modal-header.bg-success,
+        .modal-header.bg-dark, .modal-header.bg-secondary {
+            color: #fff !important;
+            padding: 1rem 1.25rem;
+        }
+        .modal-header .modal-title {
+            color: inherit !important;
+            font-size: 1.15rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+        .modal-header.bg-primary .modal-title,
+        .modal-header.bg-info .modal-title,
+        .modal-header.bg-success .modal-title,
+        .modal-header.bg-dark .modal-title { color: #fff !important; text-shadow: 0 1px 1px rgba(0,0,0,.15); }
+
+        /* Cart (dollies) modal list items — clearer hierarchy */
+        #dolliesList .list-group-item, #dolliesList .card,
+        #dolliesList > div > div { border-radius: 8px; }
+        #dolliesList h5, #dolliesList h6, #dolliesList .dolly-name {
+            font-weight: 700; color: #1e293b; font-size: 1rem; margin-bottom: .15rem;
+        }
+        #dolliesList .text-muted, #dolliesList small { color: #6b7280 !important; }
     </style>
 </head>
 

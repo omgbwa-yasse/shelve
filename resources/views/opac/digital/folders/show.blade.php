@@ -2,6 +2,36 @@
 
 @section('title', $folder->name . ' - OPAC')
 
+@push('styles')
+<style>
+    .folder-hero-icon {
+        width: 64px; height: 64px; flex-shrink: 0;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 12px;
+        background: var(--opac-paper-deep);
+        color: var(--opac-primary);
+        font-size: 1.7rem;
+        border: 1px solid var(--opac-border-color);
+    }
+    .folder-hero-title {
+        font-family: var(--opac-serif);
+        font-size: clamp(1.6rem, 3vw, 2.2rem);
+        font-weight: 600;
+        color: var(--opac-dark);
+        letter-spacing: -0.01em;
+    }
+    .digital-section-title {
+        font-family: var(--opac-serif);
+        font-size: 1.3rem;
+        color: var(--opac-dark);
+        margin-bottom: 1rem;
+        padding-bottom: .5rem;
+        border-bottom: 1px solid var(--opac-border-color);
+    }
+    .subfolder-icon { color: var(--opac-primary); }
+</style>
+@endpush
+
 @section('content')
 <div class="container my-5">
     <nav aria-label="breadcrumb" class="mb-4">
@@ -19,24 +49,27 @@
         <div class="col-12">
             <div class="opac-card mb-4">
                 <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        <i class="fas fa-folder-open fa-3x text-warning me-3"></i>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="folder-hero-icon"><i class="fas fa-folder-open"></i></span>
                         <div>
-                            <h1 class="h3 mb-1">{{ $folder->name }}</h1>
-                            <p class="text-muted mb-0">{{ $folder->description }}</p>
+                            <span class="opac-eyebrow mb-1">{{ __('Digital Collection') }}</span>
+                            <h1 class="folder-hero-title mb-1">{{ $folder->name }}</h1>
+                            @if($folder->description)
+                                <p class="text-muted mb-0">{{ $folder->description }}</p>
+                            @endif
                         </div>
                     </div>
                 </div>
             </div>
 
             @if($folder->children->count() > 0)
-                <h4 class="mb-3">{{ __('Subfolders') }}</h4>
+                <h4 class="digital-section-title">{{ __('Subfolders') }}</h4>
                 <div class="row mb-4">
                     @foreach($folder->children as $child)
                         <div class="col-md-3 mb-3">
                             <div class="card h-100 opac-card">
                                 <div class="card-body d-flex align-items-center">
-                                    <i class="fas fa-folder fa-2x text-warning me-3"></i>
+                                    <i class="fas fa-folder fa-2x subfolder-icon me-3"></i>
                                     <div>
                                         <h6 class="card-title mb-0">
                                             <a href="{{ route('opac.digital.folders.show', $child->id) }}" class="text-decoration-none text-dark stretched-link">
@@ -53,7 +86,7 @@
             @endif
 
             @if($folder->documents->count() > 0)
-                <h4 class="mb-3">{{ __('Documents') }}</h4>
+                <h4 class="digital-section-title">{{ __('Documents') }}</h4>
                 <div class="opac-card">
                     <div class="list-group list-group-flush">
                         @foreach($folder->documents as $document)

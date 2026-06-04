@@ -22,8 +22,8 @@ class DashboardController extends Controller
     {
         $user = Auth::guard('public')->user();
 
+        // Note: public_events has no 'is_published' column — events are all public.
         $recentEvents = PublicEvent::where('start_date', '>=', now())
-            ->where('is_published', true)
             ->orderBy('start_date')
             ->limit(5)
             ->get();
@@ -45,9 +45,9 @@ class DashboardController extends Controller
 
         $stats = [
             'total_records'   => PublicRecord::available()->count(),
-            'total_events'    => PublicEvent::where('is_published', true)->count(),
+            'total_events'    => PublicEvent::count(),
             'total_news'      => PublicNews::where('is_published', true)->count(),
-            'upcoming_events' => PublicEvent::where('start_date', '>=', now())->where('is_published', true)->count(),
+            'upcoming_events' => PublicEvent::where('start_date', '>=', now())->count(),
         ];
 
         $userStats = [

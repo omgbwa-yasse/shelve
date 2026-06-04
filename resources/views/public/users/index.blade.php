@@ -40,7 +40,7 @@
                                         <td>{{ $user->email }}</td>
                                         <td>{{ $user->phone1 ?? '-' }}</td>
                                         <td>
-                                            <span class="badge badge-{{ $user->is_approved ? 'success' : 'warning' }}">
+                                            <span class="badge {{ $user->is_approved ? 'bg-success' : 'bg-warning text-dark' }}">
                                                 {{ $user->is_approved ? __('Approved') : __('Pending') }}
                                             </span>
                                         </td>

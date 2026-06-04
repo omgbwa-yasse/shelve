@@ -15,12 +15,12 @@ class SetLocale
             App::setLocale(session()->get('locale'));
         }
 
-        // Ensure currentOrganisation relationship is loaded for authenticated users
-        if (Auth::check() && Auth::user()) {
-            $user = Auth::user();
-            if (!$user->relationLoaded('currentOrganisation')) {
-                $user->load('currentOrganisation');
-            }
+        // Ensure currentOrganisation relationship is loaded for authenticated staff
+        // users. Public (OPAC) users use a different model without this relationship,
+        // so guard against it to avoid "undefined relationship" errors.
+        $user = Auth::user();
+        if ($user && method_exists($user, 'currentOrganisation') && ! $user->relationLoaded('currentOrganisation')) {
+            $user->load('currentOrganisation');
         }
 
         return $next($request);

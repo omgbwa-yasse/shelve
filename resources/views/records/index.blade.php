@@ -351,35 +351,48 @@
         <!-- Mosaic Container (hidden by default) -->
         <div id="mosaicView" class="d-none mb-4">
             <div class="row g-3" id="mosaicGrid">
+                {{-- One tile per record (with a placeholder when the record has no
+                     image attachment), so the mosaic is never blank. --}}
                 @foreach($records as $record)
                     @php
-                        // Récupérer les attachments selon le type de record
-                        $attachments = collect();
-                        if (method_exists($record, 'attachments') && $record->relationLoaded('attachments')) {
-                            $attachments = $record->attachments;
+                        $attachments = (method_exists($record, 'attachments') && $record->relationLoaded('attachments'))
+                            ? $record->attachments : collect();
+                        $firstThumb = null;
+                        foreach ($attachments as $att) {
+                            if ($att->thumbnail_path && Storage::disk('public')->exists($att->thumbnail_path)) {
+                                $firstThumb = asset('storage/'.$att->thumbnail_path);
+                                break;
+                            }
                         }
+                        $rType = $record->record_type ?? 'physical';
+                        $mosaicRoute = match($rType) {
+                            'folder' => route('folders.show', $record->id),
+                            'document' => route('documents.show', $record->id),
+                            default => route('records.show', $record->id)
+                        };
+                        $rIcon = match($rType) {
+                            'folder' => 'bi-folder2',
+                            'document' => 'bi-file-earmark-text',
+                            default => 'bi-archive'
+                        };
                     @endphp
-                    @foreach($attachments->take(12) as $attachment)
-                        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                            <a href="{{ route('records.show',$record) }}" class="text-decoration-none d-block mosaic-item border rounded overflow-hidden bg-white h-100">
-                                @php
-                                    $thumb = $attachment->thumbnail_path && Storage::disk('public')->exists($attachment->thumbnail_path)
-                                        ? asset('storage/'.$attachment->thumbnail_path)
-                                        : null;
-                                @endphp
-                                <div class="ratio ratio-1x1 bg-light position-relative">
-                                    @if($thumb)
-                                        <img src="{{ $thumb }}" alt="{{ $attachment->name }}" class="w-100 h-100 object-fit-cover">
-                                    @else
-                                        <div class="d-flex align-items-center justify-content-center h-100 text-muted">
-                                            <i class="bi bi-file-earmark" style="font-size:1.8rem;"></i>
-                                        </div>
-                                    @endif
-                                </div>
-                                <div class="p-1 small text-truncate" title="{{ $record->name }}">{{ $record->name }}</div>
-                            </a>
-                        </div>
-                    @endforeach
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <a href="{{ $mosaicRoute }}" class="text-decoration-none d-block mosaic-item border rounded overflow-hidden bg-white h-100">
+                            <div class="ratio ratio-1x1 bg-light position-relative">
+                                @if($firstThumb)
+                                    <img src="{{ $firstThumb }}" alt="{{ $record->name }}" class="w-100 h-100 object-fit-cover">
+                                @else
+                                    <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted gap-1">
+                                        <i class="bi {{ $rIcon }}" style="font-size:2rem;"></i>
+                                        @if($attachments->count() > 1)
+                                            <span class="badge bg-secondary">{{ $attachments->count() }} <i class="bi bi-paperclip"></i></span>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="p-1 small text-truncate text-dark" title="{{ $record->name }}">{{ $record->name }}</div>
+                        </a>
+                    </div>
                 @endforeach
             </div>
         </div>
