@@ -9,10 +9,11 @@ use App\Models\Floor;
 class Building extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'description', 'visibility', 'creator_id'];
+    protected $fillable = ['name', 'description', 'address', 'capacity', 'visibility', 'creator_id'];
 
     protected $casts = [
         'visibility' => 'string',
+        'capacity' => 'integer',
     ];
 
     public function floors()

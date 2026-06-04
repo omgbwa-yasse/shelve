@@ -108,10 +108,23 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        $user->delete();
+        // Prevent users from deleting their own account.
+        if (auth()->id() === $user->id) {
+            return redirect()->route('settings.users.index')
+                ->with('error', __('You cannot delete your own account.'));
+        }
+
+        try {
+            $user->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            // A foreign-key constraint (e.g. records, mails, pages created by this
+            // user) prevents deletion. Surface a friendly message instead of a 500.
+            return redirect()->route('settings.users.index')
+                ->with('error', __('This user cannot be deleted because they are linked to existing data (records, mail, pages, etc.). Deactivate the account instead.'));
+        }
 
         return redirect()->route('settings.users.index')
-            ->with('success', 'User deleted successfully.');
+            ->with('success', __('User deleted successfully.'));
     }
 
 }

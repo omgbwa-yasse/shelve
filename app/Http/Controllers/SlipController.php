@@ -380,35 +380,29 @@ class SlipController extends Controller
     {
         $this->authorize('update', $slip);
 
+        // Validate only the fields the edit form actually submits. Status, reception
+        // and approval are managed through dedicated status actions, so they are
+        // preserved here rather than required (otherwise the update silently failed).
         $request->validate([
             'code' => 'required|max:20',
             'name' => 'required|max:200',
             'description' => 'nullable',
+            'officer_organisation_id' => 'required|exists:organisations,id',
             'user_organisation_id' => 'required|exists:organisations,id',
             'user_id' => 'nullable|exists:users,id',
-            'slip_status_id' => 'required|exists:slip_statuses,id',
-            'is_received' => 'nullable|boolean',
-            'received_date' => 'nullable|date',
-            'is_approved' => 'nullable|boolean',
-            'approved_date' => 'nullable|date',
         ]);
 
         $slip->update([
             'code' => $request->code,
             'name' => $request->name,
             'description' => $request->description,
-            'officer_organisation_id' => Auth::user()->current_organisation_id,
+            'officer_organisation_id' => $request->officer_organisation_id,
             'officer_id' => Auth::id(),
             'user_organisation_id' => $request->user_organisation_id,
             'user_id' => $request->user_id,
-            'slip_status_id' => $request->slip_status_id,
-            'is_received' => $request->is_received ?? false,
-            'received_date' => $request->received_date,
-            'is_approved' => $request->is_approved ?? false,
-            'approved_date' => $request->approved_date,
         ]);
 
-        return redirect()->route('slips.index')
+        return redirect()->route('slips.show', $slip)
             ->with('success', 'Slip updated successfully.');
     }
 

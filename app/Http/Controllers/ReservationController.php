@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\communicationRecord;
+use App\Models\CommunicationRecord;
 use App\Models\ReservationRecord;
 use Illuminate\Http\Request;
 use App\Models\Reservation;
@@ -199,12 +199,14 @@ class ReservationController extends Controller
     public function update(Request $request, Reservation $reservation)
     {
         $request->validate([
-            'code' => 'required|unique:reservations,code,'.$reservation->id.'|max:10',
+            'code' => ['required', 'max:10', 'regex:/^[A-Za-z0-9\-\/]+$/', 'unique:reservations,code,'.$reservation->id],
             'name' => 'required|string|max:200',
             'content' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
             'user_organisation_id' => 'required|exists:organisations,id',
             'status' => 'required|in:' . implode(',', array_map(fn($case) => $case->value, ReservationStatus::cases())),
+        ], [
+            'code.regex' => __('The code may only contain letters, numbers, hyphens and slashes.'),
         ]);
 
         $reservation->update([

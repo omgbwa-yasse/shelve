@@ -157,6 +157,7 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script>
 $(document).ready(function() {
     // Conteneur des résultats
@@ -206,10 +207,10 @@ $(document).ready(function() {
                             <div class="mt-4">
                                 <h5>Exporter les résultats</h5>
                                 <div class="btn-group">
-                                    <a href="{{ route('thesaurus.export.skos') }}?${formData}" class="btn btn-outline-primary">
+                                    <a href="{{ route('thesaurus.export-import') }}" class="btn btn-outline-primary">
                                         <i class="fa fa-download"></i> Export SKOS
                                     </a>
-                                    <a href="{{ route('thesaurus.export.csv') }}?${formData}" class="btn btn-outline-success">
+                                    <a href="{{ route('thesaurus.export-import') }}" class="btn btn-outline-success">
                                         <i class="fa fa-file-excel"></i> Export CSV
                                     </a>
                                 </div>

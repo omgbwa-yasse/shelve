@@ -11,6 +11,14 @@
                 <input type="text" class="form-control" id="name" name="name" value="{{ $building->name }}" required>
             </div>
             <div class="mb-3">
+                <label for="address" class="form-label">{{ __('Adresse') }}</label>
+                <input type="text" class="form-control" id="address" name="address" value="{{ old('address', $building->address) }}" placeholder="Ex: 12 rue des Archives, 75003 Paris">
+            </div>
+            <div class="mb-3">
+                <label for="capacity" class="form-label">{{ __('Capacité') }}</label>
+                <input type="number" min="0" class="form-control" id="capacity" name="capacity" value="{{ old('capacity', $building->capacity) }}" placeholder="Ex: 5000">
+            </div>
+            <div class="mb-3">
                 <label for="description" class="form-label">Description</label>
                 <textarea class="form-control" id="description" name="description">{{ $building->description }}</textarea>
             </div>

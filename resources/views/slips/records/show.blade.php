@@ -199,14 +199,17 @@
         </div>
 
     </div>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.9.359/build/pdf.min.js"></script>
         <script>
-            document.getElementById('fileInput').addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file.type === 'application/pdf') {
-                    generatePdfThumbnail(file);
-                }
-            });
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file && file.type === 'application/pdf') {
+                        generatePdfThumbnail(file);
+                    }
+                });
+            }
 
             function generatePdfThumbnail(pdfFile) {
                 const fileReader = new FileReader();
@@ -237,7 +240,9 @@
                 fileReader.readAsArrayBuffer(pdfFile);
             }
 
-            document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            const uploadForm = document.getElementById('uploadForm');
+            if (uploadForm) {
+                uploadForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const formData = new FormData(this);
 
@@ -265,6 +270,7 @@
                         alert('Une erreur est survenue. Veuillez réessayer.');
                     });
                     });
+            }
         </script>
 
         <script>

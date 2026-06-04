@@ -8,10 +8,10 @@
 
     <title>@yield('title', 'OPAC - ' . config('app.name'))</title>
 
-    <!-- Fonts -->
+    <!-- Fonts: Fraunces (editorial serif display) + Source Sans 3 (refined body) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -19,45 +19,50 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Custom OPAC Styles - Inspired by Koha -->
+    <!-- OPAC Editorial Design System — Fraunces + Source Sans 3, paper & terracotta -->
     <style>
         :root {
-            /* Primary Colors - Professional Blue Palette */
-            --opac-primary: #004a99;
-            --opac-primary-light: #0066cc;
-            --opac-primary-dark: #003366;
-            --opac-secondary: #6c757d;
-            --opac-accent: #ff6b35;
+            /* Accent — terracotta / archive */
+            --opac-primary: #9c4221;
+            --opac-primary-light: #c05621;
+            --opac-primary-dark: #7b341e;
+            --opac-secondary: #6f655c;
+            --opac-accent: #b7791f; /* warm ochre, used sparingly */
 
-            /* Status Colors */
-            --opac-success: #28a745;
-            --opac-danger: #dc3545;
-            --opac-warning: #ffc107;
-            --opac-info: #17a2b8;
+            /* Status Colors (muted, editorial) */
+            --opac-success: #2f7a52;
+            --opac-danger: #b03a2e;
+            --opac-warning: #b7791f;
+            --opac-info: #2c6e7f;
 
-            /* Neutral Colors */
-            --opac-light: #f8f9fa;
-            --opac-light-gray: #e9ecef;
-            --opac-medium-gray: #6c757d;
-            --opac-dark: #212529;
+            /* Paper neutrals */
+            --opac-paper: #faf7f2;          /* page background */
+            --opac-paper-deep: #f3ede3;     /* subtle panels */
+            --opac-light: #f3ede3;
+            --opac-light-gray: #e7ddcf;
+            --opac-medium-gray: #6f655c;
+            --opac-dark: #1f1b17;           /* ink */
             --opac-white: #ffffff;
 
             /* Text Colors */
-            --opac-text-primary: #212529;
-            --opac-text-secondary: #6c757d;
-            --opac-text-muted: #999999;
+            --opac-text-primary: #2a241e;
+            --opac-text-secondary: #6f655c;
+            --opac-text-muted: #9b9085;
 
             /* Borders & Shadows */
-            --opac-border-color: #dee2e6;
-            --opac-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
-            --opac-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --opac-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+            --opac-border-color: #e3d8c8;
+            --opac-shadow-sm: 0 1px 2px rgba(43, 33, 20, 0.05);
+            --opac-shadow: 0 6px 18px -8px rgba(43, 33, 20, 0.18);
+            --opac-shadow-lg: 0 18px 40px -16px rgba(43, 33, 20, 0.28);
 
             /* Layout */
-            --opac-border-radius: 8px;
-            --opac-border-radius-lg: 12px;
-            --opac-header-height: 80px;
-            --opac-nav-height: 56px;
+            --opac-border-radius: 6px;
+            --opac-border-radius-lg: 10px;
+            --opac-header-height: 76px;
+            --opac-nav-height: 54px;
+
+            --opac-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+            --opac-sans: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
 
         * {
@@ -65,69 +70,90 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--opac-light);
+            font-family: var(--opac-sans);
+            background-color: var(--opac-paper);
+            /* faint paper grain */
+            background-image:
+                radial-gradient(circle at 20% 0%, rgba(156, 66, 33, 0.025), transparent 45%),
+                radial-gradient(circle at 100% 100%, rgba(183, 121, 31, 0.03), transparent 40%);
+            background-attachment: fixed;
             color: var(--opac-text-primary);
-            line-height: 1.6;
-            font-size: 15px;
+            line-height: 1.65;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
         }
 
         /* Typography */
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'Lora', Georgia, serif;
+            font-family: var(--opac-serif);
             font-weight: 600;
             color: var(--opac-dark);
-            line-height: 1.3;
+            line-height: 1.18;
+            letter-spacing: -0.01em;
         }
 
         .display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
-            font-family: 'Lora', Georgia, serif;
+            font-family: var(--opac-serif);
+            font-weight: 600;
+            letter-spacing: -0.02em;
         }
 
-        /* Header Styles - Koha Inspired */
+        a { color: var(--opac-primary); }
+        a:hover { color: var(--opac-primary-dark); }
+
+        ::selection { background: rgba(156, 66, 33, 0.16); }
+
+        /* Header Styles — sober masthead on paper, ink rule */
         .opac-masthead {
-            background: linear-gradient(135deg, var(--opac-primary) 0%, var(--opac-primary-dark) 100%);
-            color: white;
-            padding: 0.75rem 0;
-            box-shadow: var(--opac-shadow);
+            background: var(--opac-paper);
+            color: var(--opac-dark);
+            padding: 0.85rem 0;
+            border-bottom: 1px solid var(--opac-border-color);
+            box-shadow: var(--opac-shadow-sm);
             position: sticky;
             top: 0;
             z-index: 1000;
         }
 
         .opac-logo {
-            font-family: 'Lora', Georgia, serif;
-            font-size: 1.75rem;
+            font-family: var(--opac-serif);
+            font-size: 1.7rem;
             font-weight: 700;
-            color: white;
+            color: var(--opac-dark);
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.8rem;
+            letter-spacing: -0.02em;
         }
 
         .opac-logo:hover {
-            color: white;
-            opacity: 0.9;
+            color: var(--opac-primary);
+            opacity: 1;
         }
 
         .opac-logo-icon {
-            width: 42px;
-            height: 42px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
+            width: 44px;
+            height: 44px;
+            background: var(--opac-primary);
+            color: #fff;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.35rem;
+            box-shadow: var(--opac-shadow-sm);
         }
 
         .opac-tagline {
-            font-size: 0.8rem;
-            opacity: 0.9;
-            font-family: 'Inter', sans-serif;
-            font-weight: 400;
-            margin-top: -4px;
+            font-size: 0.72rem;
+            color: var(--opac-text-muted);
+            font-family: var(--opac-sans);
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-top: 1px;
         }
 
         .opac-user-menu {
@@ -137,24 +163,35 @@
         }
 
         .opac-user-btn {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            color: white;
-            padding: 0.5rem 1.25rem;
+            background: transparent;
+            border: 1px solid var(--opac-border-color);
+            color: var(--opac-text-primary);
+            padding: 0.5rem 1.15rem;
             border-radius: var(--opac-border-radius);
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
+            font-size: 0.92rem;
+            font-weight: 600;
+            transition: all 0.18s ease;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            text-decoration: none;
         }
 
         .opac-user-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
-            border-color: rgba(255, 255, 255, 0.35);
-            color: white;
-            transform: translateY(-1px);
+            background: var(--opac-primary);
+            border-color: var(--opac-primary);
+            color: #fff;
+        }
+
+        /* Register/primary call-to-action variant in masthead */
+        .opac-user-menu .opac-user-btn:last-child:not(.dropdown-toggle) {
+            background: var(--opac-primary);
+            border-color: var(--opac-primary);
+            color: #fff;
+        }
+        .opac-user-menu .opac-user-btn:last-child:not(.dropdown-toggle):hover {
+            background: var(--opac-primary-dark);
+            border-color: var(--opac-primary-dark);
         }
 
         .opac-user-dropdown {
@@ -261,26 +298,30 @@
 
         .opac-search-input {
             flex: 1;
-            padding: 0.9rem 1.25rem 0.9rem 3.25rem;
-            border: 2px solid var(--opac-border-color);
-            border-radius: var(--opac-border-radius-lg);
-            font-size: 1rem;
+            padding: 0.95rem 1.25rem 0.95rem 3.25rem;
+            border: 1px solid var(--opac-border-color);
+            border-radius: var(--opac-border-radius);
+            font-size: 1.02rem;
+            font-family: var(--opac-sans);
             transition: all 0.2s ease;
-            background: white;
+            background: #fff;
+            color: var(--opac-text-primary);
         }
+
+        .opac-search-input::placeholder { color: var(--opac-text-muted); }
 
         .opac-search-input:focus {
             outline: none;
             border-color: var(--opac-primary);
-            box-shadow: 0 0 0 4px rgba(0, 74, 153, 0.1);
+            box-shadow: 0 0 0 3px rgba(156, 66, 33, 0.12);
         }
 
         .opac-search-btn {
-            padding: 0.9rem 2rem;
+            padding: 0.95rem 2rem;
             background: var(--opac-primary);
             color: white;
-            border: none;
-            border-radius: var(--opac-border-radius-lg);
+            border: 1px solid var(--opac-primary);
+            border-radius: var(--opac-border-radius);
             font-weight: 600;
             font-size: 1rem;
             cursor: pointer;
@@ -293,44 +334,45 @@
 
         .opac-search-btn:hover {
             background: var(--opac-primary-dark);
-            transform: translateY(-2px);
-            box-shadow: var(--opac-shadow);
+            border-color: var(--opac-primary-dark);
         }
 
         .opac-search-btn:active {
-            transform: translateY(0);
+            transform: translateY(1px);
         }
 
-        /* Card Styles - Koha Inspired */
+        /* Card Styles — flat editorial panels */
         .opac-card {
-            background: white;
+            background: #fff;
             border: 1px solid var(--opac-border-color);
-            border-radius: var(--opac-border-radius-lg);
+            border-radius: var(--opac-border-radius);
             box-shadow: var(--opac-shadow-sm);
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
         }
 
         .opac-card:hover {
             box-shadow: var(--opac-shadow);
+            border-color: var(--opac-light-gray);
             transform: translateY(-2px);
         }
 
         .opac-card-header {
-            background: linear-gradient(to right, var(--opac-primary), var(--opac-primary-light));
-            color: white;
-            padding: 1rem 1.5rem;
+            background: var(--opac-paper-deep);
+            color: var(--opac-dark);
+            padding: 0.9rem 1.5rem;
+            font-family: var(--opac-serif);
             font-weight: 600;
             font-size: 1.05rem;
-            border-bottom: none;
+            border-bottom: 1px solid var(--opac-border-color);
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.65rem;
         }
 
         .opac-card-header i {
-            font-size: 1.2rem;
-            opacity: 0.9;
+            font-size: 1.05rem;
+            color: var(--opac-primary);
         }
 
         .opac-card-body {
@@ -338,7 +380,7 @@
         }
 
         .opac-card-simple {
-            background: white;
+            background: #fff;
             border: 1px solid var(--opac-border-color);
             border-radius: var(--opac-border-radius);
             padding: 1.5rem;
@@ -378,35 +420,34 @@
         .opac-badge-outline {
             background: transparent;
             color: var(--opac-primary);
-            border: 2px solid var(--opac-primary);
+            border: 1px solid var(--opac-primary);
         }
 
         /* Button Styles */
         .btn-opac-primary {
             background: var(--opac-primary);
             color: white;
-            border: none;
-            padding: 0.65rem 1.5rem;
+            border: 1px solid var(--opac-primary);
+            padding: 0.6rem 1.5rem;
             border-radius: var(--opac-border-radius);
             font-weight: 600;
-            transition: all 0.2s ease;
+            transition: all 0.18s ease;
         }
 
         .btn-opac-primary:hover {
             background: var(--opac-primary-dark);
+            border-color: var(--opac-primary-dark);
             color: white;
-            transform: translateY(-2px);
-            box-shadow: var(--opac-shadow);
         }
 
         .btn-opac-outline {
             background: transparent;
             color: var(--opac-primary);
-            border: 2px solid var(--opac-primary);
-            padding: 0.65rem 1.5rem;
+            border: 1px solid var(--opac-primary);
+            padding: 0.6rem 1.5rem;
             border-radius: var(--opac-border-radius);
             font-weight: 600;
-            transition: all 0.2s ease;
+            transition: all 0.18s ease;
         }
 
         .btn-opac-outline:hover {
@@ -414,6 +455,29 @@
             color: white;
             border-color: var(--opac-primary);
         }
+
+        /* Bootstrap primary buttons used across OPAC views -> terracotta */
+        .btn-primary, .btn-outline-primary {
+            --bs-btn-color: var(--opac-primary);
+            --bs-btn-border-color: var(--opac-primary);
+            --bs-btn-bg: transparent;
+            --bs-btn-hover-bg: var(--opac-primary);
+            --bs-btn-hover-border-color: var(--opac-primary);
+            --bs-btn-hover-color: #fff;
+            --bs-btn-active-bg: var(--opac-primary-dark);
+            --bs-btn-active-border-color: var(--opac-primary-dark);
+        }
+        .btn-primary {
+            --bs-btn-color: #fff;
+            --bs-btn-bg: var(--opac-primary);
+        }
+        .text-primary { color: var(--opac-primary) !important; }
+        .badge.bg-primary, .opac-badge.bg-primary { background-color: var(--opac-primary) !important; }
+        /* Harmonize Bootstrap contextual badges with editorial palette */
+        .badge.bg-info, .opac-badge.bg-info { background-color: var(--opac-info) !important; color:#fff !important; }
+        .badge.bg-secondary, .opac-badge.bg-secondary { background-color: var(--opac-secondary) !important; color:#fff !important; }
+        .badge.bg-success, .opac-badge.bg-success { background-color: var(--opac-success) !important; }
+        .badge.bg-light { background-color: var(--opac-paper-deep) !important; color: var(--opac-text-primary) !important; border-color: var(--opac-border-color) !important; }
 
         /* Alert Styles */
         .alert {
@@ -450,37 +514,37 @@
             color: #856404;
         }
 
-        /* Footer Styles */
+        /* Footer Styles — deep ink with terracotta rule */
         .opac-footer {
-            background: var(--opac-dark);
-            color: #adb5bd;
-            padding: 3rem 0 1.5rem;
-            margin-top: 4rem;
-            border-top: 4px solid var(--opac-primary);
+            background: #211c17;
+            color: #b8ac9c;
+            padding: 3.5rem 0 1.5rem;
+            margin-top: 4.5rem;
+            border-top: 3px solid var(--opac-primary);
         }
 
         .opac-footer h6 {
-            color: white;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
+            color: #f3ede3;
+            font-family: var(--opac-sans);
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 1.1rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.12em;
         }
 
         .opac-footer a {
-            color: #adb5bd;
+            color: #b8ac9c;
             text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.2s ease;
+            font-size: 0.92rem;
+            transition: color 0.2s ease, padding-left 0.2s ease;
             display: inline-block;
-            padding: 0.25rem 0;
+            padding: 0.22rem 0;
         }
 
         .opac-footer a:hover {
-            color: white;
-            padding-left: 0.5rem;
+            color: #fff;
+            padding-left: 0.4rem;
         }
 
         .opac-footer .list-unstyled li {
@@ -568,6 +632,59 @@
         /* Smooth Scrolling */
         html {
             scroll-behavior: smooth;
+        }
+
+        /* Editorial harmonization for Bootstrap utilities used across OPAC */
+        .bg-opac-light { background-color: var(--opac-paper-deep) !important; }
+        .text-opac-primary, .text-opac-primary a { color: var(--opac-primary) !important; }
+        .text-muted { color: var(--opac-text-muted) !important; }
+        .text-success { color: var(--opac-success) !important; }
+        .text-info { color: var(--opac-info) !important; }
+        .card { border-color: var(--opac-border-color); border-radius: var(--opac-border-radius); }
+
+        .form-control, .form-select {
+            border-color: var(--opac-border-color);
+            border-radius: var(--opac-border-radius);
+            font-family: var(--opac-sans);
+            color: var(--opac-text-primary);
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--opac-primary);
+            box-shadow: 0 0 0 3px rgba(156, 66, 33, 0.12);
+        }
+
+        /* Section heading helper — small terracotta eyebrow above a serif title */
+        .opac-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: var(--opac-sans);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--opac-primary);
+        }
+        .opac-eyebrow::before {
+            content: "";
+            width: 28px;
+            height: 2px;
+            background: var(--opac-primary);
+            display: inline-block;
+        }
+
+        /* Staggered page-load reveal (home/hero) */
+        @keyframes opacRise {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .opac-reveal { opacity: 0; animation: opacRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .opac-reveal-1 { animation-delay: 0.05s; }
+        .opac-reveal-2 { animation-delay: 0.18s; }
+        .opac-reveal-3 { animation-delay: 0.31s; }
+        @media (prefers-reduced-motion: reduce) {
+            .opac-reveal { animation: none; opacity: 1; }
+            html { scroll-behavior: auto; }
         }
     </style>
 

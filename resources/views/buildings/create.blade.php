@@ -318,6 +318,47 @@
                         </div>
                     </div>
 
+                    <!-- Capacité -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="capacity" class="form-label">
+                                <i class="bi bi-box-seam text-warning"></i>
+                                {{ __('Capacité') }}
+                            </label>
+                            <input type="number"
+                                   min="0"
+                                   class="form-control @error('capacity') is-invalid @enderror"
+                                   id="capacity"
+                                   name="capacity"
+                                   value="{{ old('capacity') }}"
+                                   placeholder="Ex: 5000">
+                            @error('capacity')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div class="help-text">{{ __('Capacité de stockage (nombre de conteneurs / boîtes)') }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Adresse -->
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label for="address" class="form-label">
+                                <i class="bi bi-geo-alt text-danger"></i>
+                                {{ __('Adresse') }}
+                            </label>
+                            <input type="text"
+                                   class="form-control @error('address') is-invalid @enderror"
+                                   id="address"
+                                   name="address"
+                                   value="{{ old('address') }}"
+                                   placeholder="Ex: 12 rue des Archives, 75003 Paris">
+                            @error('address')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div class="help-text">{{ __('Adresse physique du bâtiment') }}</div>
+                        </div>
+                    </div>
+
                     <!-- Description -->
                     <div class="col-12">
                         <div class="form-group">

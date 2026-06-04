@@ -322,8 +322,14 @@ class MailReceivedController extends Controller
 
         $mailActions = MailAction::all();
         $senderOrganisations = Organisation::whereNot('id', Auth::user()->current_organisation_id)->get();
+        $users = User::all();
+        $priorities = MailPriority::all();
+        $typologies = MailTypology::all();
 
-        return view('mails.received.edit', compact('received', 'mailActions', 'senderOrganisations'));
+        // The edit view references $mail; expose the loaded record under both names.
+        $mail = $received;
+
+        return view('mails.received.edit', compact('received', 'mail', 'mailActions', 'senderOrganisations', 'users', 'priorities', 'typologies'));
     }
 
     public function update(Request $request, int $id)

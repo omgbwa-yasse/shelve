@@ -48,7 +48,7 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="{{ route('users.show', auth()->user()->id) }}" class="btn btn-outline-primary rounded-3">
+                        <a href="{{ route('settings.users.show', auth()->user()->id) }}" class="btn btn-outline-primary rounded-3">
                             <i class="bi bi-gear me-2"></i>{{ __('my_account') }}
                         </a>
                     </div>
@@ -64,7 +64,7 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="{{ route('users.index') }}" class="btn btn-outline-primary rounded-3">
+                        <a href="{{ route('settings.users.index') }}" class="btn btn-outline-primary rounded-3">
                             <i class="bi bi-person me-2"></i>{{ __('users') }}
                         </a>
                         <a href="{{ route('user-organisation-role.index') }}" class="btn btn-outline-primary rounded-3">
@@ -88,25 +88,6 @@
                         </a>
                         <a href="{{ route('role_permissions.index') }}" class="btn btn-outline-info rounded-3">
                             <i class="bi bi-key me-2"></i>{{ __('assign_permissions') }}
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tâches -->
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card h-100 rounded-4 shadow-sm">
-                <div class="card-header bg-success text-white rounded-top-4">
-                    <h5 class="mb-0"><i class="bi bi-list-task me-2"></i>{{ __('tasks') }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ route('taskstatus.index') }}" class="btn btn-outline-success rounded-3">
-                            <i class="bi bi-tag me-2"></i>{{ __('task_types') }}
-                        </a>
-                        <a href="{{ route('tasktype.index') }}" class="btn btn-outline-success rounded-3">
-                            <i class="bi bi-flag me-2"></i>{{ __('task_statuses') }}
                         </a>
                     </div>
                 </div>
@@ -215,15 +196,6 @@
                         </a>
                         <a href="{{ route('languages.index') }}" class="btn btn-outline-success rounded-3">
                             <i class="bi bi-translate me-2"></i>{{ __('thesaurus_languages') }}
-                        </a>
-                        <a href="{{ route('term-categories.index') }}" class="btn btn-outline-success rounded-3">
-                            <i class="bi bi-bookmark me-2"></i>{{ __('thesaurus_categories') }}
-                        </a>
-                        <a href="{{ route('term-equivalent-types.index') }}" class="btn btn-outline-success rounded-3">
-                            <i class="bi bi-arrows-angle-expand me-2"></i>{{ __('thesaurus_equivalents') }}
-                        </a>
-                        <a href="{{ route('term-types.index') }}" class="btn btn-outline-success rounded-3">
-                            <i class="bi bi-type me-2"></i>{{ __('thesaurus_types') }}
                         </a>
                     </div>
                 </div>

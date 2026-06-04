@@ -3,34 +3,33 @@
 @section('title', $record->title . ' — ' . config('app.name'))
 
 @push('styles')
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+{{-- Fonts already loaded in layout (Fraunces + Source Sans 3) — reuse them here --}}
 <style>
-/* ── OPAC Record Show ── */
+/* ── OPAC Record Show — harmonized with editorial OPAC theme ── */
 :root {
-    --rs-ink:       #1a1f2e;
-    --rs-ink-70:    #4a5068;
-    --rs-ink-40:    #8b90a7;
-    --rs-ink-10:    #eef0f6;
-    --rs-ink-05:    #f6f7fb;
-    --rs-gold:      #9a6c2e;
-    --rs-gold-lt:   #fdf4e7;
-    --rs-gold-mid:  #c99040;
-    --rs-blue:      #004a99;
-    --rs-blue-lt:   #e8f0fa;
-    --rs-green:     #0a6640;
-    --rs-green-lt:  #e6f4ee;
-    --rs-red:       #8b1a1a;
-    --rs-red-lt:    #fdeaea;
-    --rs-radius:    10px;
-    --rs-radius-lg: 16px;
-    --rs-shadow-sm: 0 1px 4px rgba(26,31,46,.06);
-    --rs-shadow:    0 4px 16px rgba(26,31,46,.09);
-    --rs-shadow-lg: 0 12px 40px rgba(26,31,46,.13);
+    --rs-ink:       #2a241e;
+    --rs-ink-70:    #6f655c;
+    --rs-ink-40:    #9b9085;
+    --rs-ink-10:    #e3d8c8;
+    --rs-ink-05:    #faf7f2;
+    --rs-gold:      #9c4221;   /* terracotta accent */
+    --rs-gold-lt:   #f7ece2;
+    --rs-gold-mid:  #c05621;
+    --rs-blue:      #9c4221;   /* remap former blue -> accent */
+    --rs-blue-lt:   #f7ece2;
+    --rs-green:     #2f7a52;
+    --rs-green-lt:  #e6f1ea;
+    --rs-red:       #b03a2e;
+    --rs-red-lt:    #f8e8e5;
+    --rs-radius:    8px;
+    --rs-radius-lg: 12px;
+    --rs-shadow-sm: 0 1px 2px rgba(43,33,20,.05);
+    --rs-shadow:    0 6px 18px -8px rgba(43,33,20,.18);
+    --rs-shadow-lg: 0 18px 40px -16px rgba(43,33,20,.28);
 }
 
 .rs-page {
-    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--rs-ink-05);
     padding-bottom: 5rem;
 }
@@ -121,7 +120,7 @@
 }
 
 .rs-hero-title {
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Fraunces', Georgia, serif;
     font-size: clamp(1.8rem, 4vw, 2.75rem);
     font-weight: 700;
     color: #fff;
@@ -137,7 +136,7 @@
     font-size: 0.8rem;
     color: rgba(255,255,255,.55);
     margin-bottom: 1rem;
-    font-family: 'DM Sans', monospace;
+    font-family: 'Source Sans 3', monospace;
     letter-spacing: 0.04em;
 }
 
@@ -149,7 +148,7 @@
 }
 
 .rs-hero-authors {
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Fraunces', Georgia, serif;
     font-style: italic;
     font-size: 1.1rem;
     color: rgba(255,255,255,.75);
@@ -324,7 +323,7 @@
     color: var(--rs-blue);
     border-radius: var(--rs-radius);
     padding: 0.6rem 1rem;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Source Sans 3', sans-serif;
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
@@ -380,7 +379,7 @@
 }
 
 .rs-card-head h2 {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Source Sans 3', sans-serif;
     font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -395,7 +394,7 @@
 
 /* Description */
 .rs-description {
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Fraunces', Georgia, serif;
     font-size: 1.15rem;
     color: var(--rs-ink-70);
     line-height: 1.75;
@@ -540,7 +539,7 @@
 }
 
 .rs-related-title {
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Fraunces', Georgia, serif;
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--rs-ink);

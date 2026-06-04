@@ -39,8 +39,8 @@
             </div>
 
             <div class="mb-3">
-                <label for="name" class="form-label">Nom du courrier</label>
-                <input type="text" id="name" name="name" class="form-control" value="{{ old('name') }}" required>
+                <label for="name" class="form-label">{{ __('Objet') }}</label>
+                <input type="text" id="name" name="name" class="form-control" value="{{ old('name') }}" placeholder="{{ __('Objet du courrier') }}" required>
             </div>
 
             <div class="mb-3">

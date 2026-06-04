@@ -685,7 +685,11 @@ class ThesaurusController extends Controller
         $conceptId = $request->get('concept_id');
 
         $schemes = ThesaurusScheme::all();
-        $records = collect();
+        // Default to an empty paginator (not a bare Collection) so the view can
+        // safely call ->appends()->links() even when no filter is selected.
+        $records = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20, 1, [
+            'path' => $request->url(),
+        ]);
         $concept = null;
 
         if ($conceptId) {
@@ -712,13 +716,13 @@ class ThesaurusController extends Controller
             'total_concepts' => DB::table('thesaurus_concepts')->count(),
             'total_labels' => DB::table('thesaurus_labels')->count(),
             'total_relations' => DB::table('thesaurus_concept_relations')->count(),
-            'records_with_concepts' => DB::table('record_thesaurus_concept')
-                                    ->select('record_id')
+            'records_with_concepts' => DB::table('record_physical_thesaurus_concept')
+                                    ->select('record_physical_id')
                                     ->distinct()
                                     ->count(),
             'notes' => DB::table('thesaurus_concept_notes')->count(),
             'organizations' => DB::table('thesaurus_organizations')->count(),
-            'total_record_concept_relations' => DB::table('record_thesaurus_concept')->count(),
+            'total_record_concept_relations' => DB::table('record_physical_thesaurus_concept')->count(),
         ];
 
         if ($schemeId) {
@@ -761,7 +765,7 @@ class ThesaurusController extends Controller
 
         // Statistiques par type de label
         $labelStats = DB::table('thesaurus_labels')
-            ->select('type', DB::raw('count(*) as count'))
+            ->select('type as label_type', DB::raw('count(*) as count'))
             ->groupBy('type')
             ->orderByDesc('count')
             ->get();
@@ -775,10 +779,9 @@ class ThesaurusController extends Controller
             ->get();
 
         // Top 10 des concepts les plus utilisés
-        $topConcepts = ThesaurusConcept::with(['labels', 'scheme']) // Chargement des relations nécessaires
-            ->select('thesaurus_concepts.*', DB::raw('COUNT(record_thesaurus_concept.record_id) as records_count'))
-            ->join('record_thesaurus_concept', 'thesaurus_concepts.id', '=', 'record_thesaurus_concept.concept_id')
-            ->groupBy('thesaurus_concepts.id')
+        // Use withCount on the records relation to avoid ONLY_FULL_GROUP_BY issues.
+        $topConcepts = ThesaurusConcept::with(['labels', 'scheme'])
+            ->withCount('records as records_count')
             ->orderByDesc('records_count')
             ->limit(10)
             ->get();

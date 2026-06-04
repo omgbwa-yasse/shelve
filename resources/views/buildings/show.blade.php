@@ -65,6 +65,24 @@
                         </div>
                     </div>
                     @endif
+                    @if($building->address)
+                    <div class="deposit-info-item">
+                        <i class="bi bi-geo-alt"></i>
+                        <div>
+                            <div class="info-label">{{ __('Adresse') }}</div>
+                            <div class="info-value">{{ $building->address }}</div>
+                        </div>
+                    </div>
+                    @endif
+                    @if(!is_null($building->capacity))
+                    <div class="deposit-info-item">
+                        <i class="bi bi-box-seam"></i>
+                        <div>
+                            <div class="info-label">{{ __('Capacité') }}</div>
+                            <div class="info-value">{{ number_format($building->capacity) }}</div>
+                        </div>
+                    </div>
+                    @endif
                     <div class="deposit-info-item">
                         <i class="bi bi-eye"></i>
                         <div>

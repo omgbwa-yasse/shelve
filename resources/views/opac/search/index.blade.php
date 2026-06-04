@@ -4,125 +4,120 @@
 
 @push('styles')
 <style>
-    /* Hero Search Specific Styles */
+    /* Hero — editorial archive masthead */
+    .opac-hero {
+        position: relative;
+        padding: 5rem 0 4.5rem;
+        background:
+            radial-gradient(ellipse 80% 60% at 50% -10%, rgba(156, 66, 33, 0.10), transparent 70%),
+            var(--opac-paper);
+        border-bottom: 1px solid var(--opac-border-color);
+        overflow: hidden;
+    }
+    /* decorative oversized serif ampersand / catalog flourish */
+    .opac-hero::after {
+        content: "\201C";
+        position: absolute;
+        right: 4%;
+        top: -2.5rem;
+        font-family: var(--opac-serif);
+        font-size: 22rem;
+        line-height: 1;
+        color: rgba(156, 66, 33, 0.06);
+        pointer-events: none;
+        user-select: none;
+    }
+    .opac-hero-title {
+        font-size: clamp(2.4rem, 5vw, 3.6rem);
+        font-weight: 600;
+        color: var(--opac-dark);
+        margin-bottom: 0.75rem;
+    }
+    .opac-hero-title em {
+        font-style: italic;
+        color: var(--opac-primary);
+    }
+    .opac-hero-lead {
+        font-size: 1.12rem;
+        color: var(--opac-text-secondary);
+        max-width: 34rem;
+    }
+
     .opac-search-icon {
         position: absolute;
         left: 1.25rem;
         top: 50%;
         transform: translateY(-50%);
-        color: #6c757d;
-        font-size: 1.1rem;
+        color: var(--opac-text-muted);
+        font-size: 1.05rem;
         z-index: 5;
     }
-
-    .opac-search-input {
-        width: 100%;
-        padding: 1rem 1rem 1rem 3.25rem;
-        border: 2px solid #e0e0e0;
+    .hero-search-shell {
+        background: #fff;
+        border: 1px solid var(--opac-border-color);
         border-radius: var(--opac-border-radius);
-        font-size: 1.05rem;
-        transition: all 0.3s ease;
-        background: white;
+        padding: 0.4rem;
+        box-shadow: var(--opac-shadow);
+        display: flex;
+        gap: 0.4rem;
     }
-
-    .opac-search-input:focus {
-        outline: none;
-        border-color: var(--opac-primary);
-        box-shadow: 0 0 0 0.25rem rgba(0, 74, 153, 0.15);
-    }
-
-    .opac-search-btn {
-        padding: 1rem 2.5rem;
-        background: var(--opac-accent);
-        color: white;
+    .hero-search-shell .opac-search-input {
         border: none;
+        box-shadow: none;
+        background: transparent;
+    }
+    .hero-search-shell .opac-search-input:focus { box-shadow: none; }
+
+    .quick-tile {
+        display: block;
+        height: 100%;
+        background: #fff;
+        border: 1px solid var(--opac-border-color);
         border-radius: var(--opac-border-radius);
-        font-weight: 600;
-        font-size: 1.05rem;
-        transition: all 0.3s ease;
-        white-space: nowrap;
+        padding: 1.75rem 1.5rem;
+        text-decoration: none;
+        transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     }
-
-    .opac-search-btn:hover {
-        background: #e55a2a;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
-    }
-
-    /* Advanced Search Styling */
-    .form-label.fw-semibold {
-        color: var(--opac-text-primary);
-        margin-bottom: 0.5rem;
-        font-size: 0.95rem;
-    }
-
-    .form-control:focus,
-    .form-select:focus {
+    .quick-tile:hover {
         border-color: var(--opac-primary);
-        box-shadow: 0 0 0 0.2rem rgba(0, 74, 153, 0.15);
+        transform: translateY(-3px);
+        box-shadow: var(--opac-shadow);
     }
-
-    /* Quick Access Cards */
-    .opac-card.text-center .card-body {
-        padding: 2rem 1.5rem;
+    .quick-tile-icon {
+        width: 52px; height: 52px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 10px;
+        background: var(--opac-paper-deep);
+        color: var(--opac-primary);
+        font-size: 1.35rem;
+        margin-bottom: 1rem;
     }
+    .quick-tile h5 { font-size: 1.15rem; margin-bottom: 0.35rem; }
 
-    .opac-card.text-center .fa-3x {
-        opacity: 0.9;
-    }
-
-    .opac-card.text-center:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-    }
-
-    .opac-card.text-center:hover .fa-3x {
-        transform: scale(1.1);
-        transition: transform 0.3s ease;
-    }
-
-    /* Search Tips */
-    .text-warning {
-        color: #ffc107 !important;
-    }
-
-    /* Responsive Adjustments */
     @media (max-width: 768px) {
-        .opac-search-btn {
-            padding: 1rem 1.5rem;
-            font-size: 1rem;
-        }
-
-        .opac-search-input {
-            font-size: 1rem;
-        }
-
-        .display-5 {
-            font-size: 2rem;
-        }
-
-        .lead {
-            font-size: 1rem;
-        }
+        .opac-hero { padding: 3rem 0; }
+        .opac-hero::after { display: none; }
+        .hero-search-shell { flex-direction: column; }
     }
 </style>
 @endpush
 
 @section('content')
 <!-- Hero Search Section -->
-<div style="background: linear-gradient(135deg, var(--opac-primary) 0%, var(--opac-primary-dark) 100%); color: white; padding: 3.5rem 0 4rem;">
-    <div class="container">
-        <div class="row justify-content-center">
+<div class="opac-hero">
+    <div class="container position-relative">
+        <div class="row">
             <div class="col-lg-10 col-xl-9">
-                <div class="text-center mb-4">
-                    <h1 class="display-5 fw-bold mb-3" style="font-family: 'Lora', Georgia, serif;">{{ __('Search Our Collections') }}</h1>
-                    <p class="lead opacity-90">{{ __('Explore thousands of documents, books, and digital resources') }}</p>
+                <div class="mb-4 opac-reveal opac-reveal-1">
+                    <span class="opac-eyebrow mb-3">{{ __('Online Public Access Catalog') }}</span>
+                    <h1 class="opac-hero-title mt-3">{{ __('Search our') }} <em>{{ __('collections') }}</em></h1>
+                    <p class="opac-hero-lead">{{ __('Explore thousands of documents, books, and digital resources') }}</p>
                 </div>
 
                 <!-- Quick Search Form -->
-                <form method="GET" action="{{ route('opac.search.results') }}" id="quickSearchForm">
-                    <div class="d-flex gap-2">
-                        <div class="flex-grow-1 position-relative">
+                <form method="GET" action="{{ route('opac.search.results') }}" id="quickSearchForm" class="opac-reveal opac-reveal-2">
+                    <div class="hero-search-shell">
+                        <div class="flex-grow-1 position-relative d-flex align-items-center">
                             <i class="fas fa-search opac-search-icon"></i>
                             <input type="text"
                                    name="q"
@@ -136,6 +131,12 @@
                             <i class="fas fa-search"></i>
                             {{ __('Search') }}
                         </button>
+                    </div>
+                    <div class="mt-3 d-flex flex-wrap gap-2 align-items-center opac-reveal opac-reveal-3">
+                        <span class="small text-muted me-1">{{ __('Browse Catalog') }}:</span>
+                        <a href="{{ route('opac.records.index') }}" class="btn btn-sm btn-opac-outline">{{ __('Browse Records') }}</a>
+                        <a href="{{ route('opac.digital.folders.index') }}" class="btn btn-sm btn-opac-outline">{{ __('Digital Archives') }}</a>
+                        <a href="{{ route('opac.news.index') }}" class="btn btn-sm btn-opac-outline">{{ __('Latest News') }}</a>
                     </div>
                 </form>
             </div>
@@ -292,42 +293,28 @@
             </div>
 
             <!-- Browse & Services Quick Access -->
-            <div class="row mt-4 mb-5">
-                <div class="col-md-4 mb-3">
-                    <div class="opac-card text-center h-100">
-                        <div class="card-body">
-                            <i class="fas fa-book-reader fa-3x text-primary mb-3"></i>
-                            <h5 class="card-title">{{ __('Browse Records') }}</h5>
-                            <p class="card-text small text-muted">{{ __('Explore our physical and digital collections through the catalog.') }}</p>
-                            <a href="{{ route('opac.records.index') }}" class="btn btn-opac-outline btn-sm stretched-link">
-                                {{ __('Browse Now') }}
-                            </a>
-                        </div>
-                    </div>
+            <div class="mb-2"><span class="opac-eyebrow">{{ __('Discover') }}</span></div>
+            <div class="row g-3 mt-1 mb-5">
+                <div class="col-md-4">
+                    <a href="{{ route('opac.records.index') }}" class="quick-tile">
+                        <span class="quick-tile-icon"><i class="fas fa-book-reader"></i></span>
+                        <h5>{{ __('Browse Records') }}</h5>
+                        <p class="small text-muted mb-0">{{ __('Explore our physical and digital collections through the catalog.') }}</p>
+                    </a>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <div class="opac-card text-center h-100">
-                        <div class="card-body">
-                            <i class="fas fa-folder-open fa-3x text-success mb-3"></i>
-                            <h5 class="card-title">{{ __('Digital Archives') }}</h5>
-                            <p class="card-text small text-muted">{{ __('Directly access digitized documents, manuscripts, and reports.') }}</p>
-                            <a href="{{ route('opac.digital.folders.index') }}" class="btn btn-opac-outline btn-sm stretched-link">
-                                {{ __('Explore Digital') }}
-                            </a>
-                        </div>
-                    </div>
+                <div class="col-md-4">
+                    <a href="{{ route('opac.digital.folders.index') }}" class="quick-tile">
+                        <span class="quick-tile-icon"><i class="fas fa-folder-open"></i></span>
+                        <h5>{{ __('Digital Archives') }}</h5>
+                        <p class="small text-muted mb-0">{{ __('Directly access digitized documents, manuscripts, and reports.') }}</p>
+                    </a>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <div class="opac-card text-center h-100">
-                        <div class="card-body">
-                            <i class="fas fa-question-circle fa-3x text-info mb-3"></i>
-                            <h5 class="card-title">{{ __('Need Help?') }}</h5>
-                            <p class="card-text small text-muted">{{ __('Have a question? Get in touch with our expert library staff.') }}</p>
-                            <a href="{{ route('opac.feedback.create') }}" class="btn btn-opac-outline btn-sm stretched-link">
-                                {{ __('Contact Us') }}
-                            </a>
-                        </div>
-                    </div>
+                <div class="col-md-4">
+                    <a href="{{ route('opac.feedback.create') }}" class="quick-tile">
+                        <span class="quick-tile-icon"><i class="fas fa-question-circle"></i></span>
+                        <h5>{{ __('Need Help?') }}</h5>
+                        <p class="small text-muted mb-0">{{ __('Have a question? Get in touch with our expert library staff.') }}</p>
+                    </a>
                 </div>
             </div>
         </div>

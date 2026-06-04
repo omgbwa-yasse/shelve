@@ -3,6 +3,18 @@
 @section('content')
     <div class="container">
         <h1>Modifier un versement</h1>
+
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <strong>{{ __('Please correct the following errors:') }}</strong>
+                <ul class="mb-0 mt-2">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form action="{{ route('slips.update', $slip->id) }}" method="POST">
             @csrf
             @method('PUT')
@@ -43,8 +55,8 @@
                     @endforeach
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary">Update</button>
-            <button type="reset" class="btn btn-danger">Update</button>
+            <button type="submit" class="btn btn-primary">{{ __('Update') }}</button>
+            <a href="{{ route('slips.show', $slip) }}" class="btn btn-outline-secondary">{{ __('Cancel') }}</a>
         </form>
     </div>
 @endsection

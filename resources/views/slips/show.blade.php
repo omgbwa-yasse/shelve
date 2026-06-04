@@ -111,7 +111,7 @@
                                                 <input class="form-check-input" type="checkbox" id="record-{{ $record->id }}">
                                                 <label class="form-check-label" for="record-{{ $record->id }}">
                                                     <a href="{{  route('slips.records.show', [$slip,$record] ) }}">
-                                                    <strong>{{ $record->code }} : {{ $record->name }} de {{ $record->author->name?? 'Nan' }}</strong>
+                                                    <strong>{{ $record->code }} : {{ $record->name }}@if($record->author) de {{ $record->author->name }}@endif</strong>
                                                         @if (is_null($record->date_exact) && is_null($record->date_end))
                                                              du {{ $record->date_start }}
                                                         @elseif (is_null($record->date_exact) && !is_null($record->date_end))

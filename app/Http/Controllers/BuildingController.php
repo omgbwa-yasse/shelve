@@ -28,14 +28,18 @@ class BuildingController extends Controller
         $request->validate([
             'name' => 'required|max:100',
             'description' => 'nullable',
+            'address' => 'nullable|max:255',
+            'capacity' => 'nullable|integer|min:0',
             'visibility' => 'required|in:public,private,inherit',
         ]);
 
         Building::create([
             'name' => $request->name,
             'description' => $request->description,
+            'address' => $request->address,
+            'capacity' => $request->capacity,
             'visibility' => $request->visibility,
-            'creator_id' => 1, // TODO: Utiliser l'ID de l'utilisateur authentifié
+            'creator_id' => auth()->id(),
         ]);
 
         return redirect()->route('buildings.index')->with('success', 'Building created successfully.');
@@ -62,12 +66,16 @@ class BuildingController extends Controller
         $request->validate([
             'name' => 'required|max:100',
             'description' => 'nullable',
+            'address' => 'nullable|max:255',
+            'capacity' => 'nullable|integer|min:0',
             'visibility' => 'required|in:public,private,inherit',
         ]);
 
         $building->update([
             'name' => $request->name,
             'description' => $request->description,
+            'address' => $request->address,
+            'capacity' => $request->capacity,
             'visibility' => $request->visibility,
         ]);
 

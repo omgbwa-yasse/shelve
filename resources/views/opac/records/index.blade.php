@@ -8,8 +8,9 @@
         <div class="col-12">
             <!-- Header -->
             <div class="mb-4">
-                <h1 class="h3 mb-2">{{ __('Browse Records') }}</h1>
-                <p class="text-muted">{{ __('Explore our complete collection of documents and resources') }}</p>
+                <span class="opac-eyebrow mb-2">{{ __('Catalog') }}</span>
+                <h1 class="display-6 mt-2 mb-2">{{ __('Browse Records') }}</h1>
+                <p class="text-muted lead" style="font-size:1.05rem;">{{ __('Explore our complete collection of documents and resources') }}</p>
             </div>
 
             <!-- Search Bar -->

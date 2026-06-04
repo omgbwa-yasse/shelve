@@ -120,8 +120,10 @@
 <script>
     function confirmDelete(schemeId) {
         const form = document.getElementById('deleteForm');
-        form.action = `{{ route('thesaurus.schemes.destroy', '') }}/${schemeId}`;
-        $('#deleteModal').modal('show');
+        form.action = `{{ route('thesaurus.schemes.destroy', ['scheme' => '__ID__']) }}`.replace('__ID__', schemeId);
+        // Bootstrap 5 vanilla modal API (no jQuery dependency)
+        const modalEl = document.getElementById('deleteModal');
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
     }
 </script>
 @endsection
