@@ -15,8 +15,12 @@ class BatchSendController extends Controller
 
     public function show(BatchTransaction $batchTransaction)
     {
-        // Assurez-vous que l'utilisateur a les droits de voir cette transaction
-        if ($batchTransaction->organisation_send_id !== auth()->user()->currentOrganisation->id) {
+        // Assurez-vous que l'utilisateur a les droits de voir cette transaction.
+        // Les super-admins peuvent tout consulter; sinon on compare l'organisation
+        // d'envoi (comparaison souple int/string).
+        $user = auth()->user();
+        $userOrgId = $user->current_organisation_id ?? optional($user->currentOrganisation)->id;
+        if (! $user->isSuperAdmin() && (int) $batchTransaction->organisation_send_id !== (int) $userOrgId) {
             return redirect()->route('batch-send.index')->with('error', 'Unauthorized access.');
         }
 

@@ -46,10 +46,10 @@
                             </h5>
                             <div class="mb-3">
                                 <label class="text-muted small">Organisation de départ</label>
-                                <p class="fw-semibold mb-3">{{ $batchTransaction->organisationSend->name }}</p>
+                                <p class="fw-semibold mb-3">{{ optional($batchTransaction->organisationSend)->name ?? 'N/A' }}</p>
 
                                 <label class="text-muted small">Organisation d'arrivée</label>
-                                <p class="fw-semibold mb-0">{{ $batchTransaction->organisationReceived->name }}</p>
+                                <p class="fw-semibold mb-0">{{ optional($batchTransaction->organisationReceived)->name ?? 'N/A' }}</p>
                             </div>
                         </div>
                     </div>
@@ -131,11 +131,11 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <label class="text-muted small">Date d'envoi</label>
-                                    <p class="fw-semibold mb-0">{{ $batchTransaction->created_at->format('d/m/Y à H:i') }}</p>
+                                    <p class="fw-semibold mb-0">{{ $batchTransaction->created_at ? $batchTransaction->created_at->format('d/m/Y à H:i') : 'N/A' }}</p>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="text-muted small">Dernière mise à jour</label>
-                                    <p class="fw-semibold mb-0">{{ $batchTransaction->updated_at->format('d/m/Y à H:i') }}</p>
+                                    <p class="fw-semibold mb-0">{{ $batchTransaction->updated_at ? $batchTransaction->updated_at->format('d/m/Y à H:i') : 'N/A' }}</p>
                                 </div>
                             </div>
                         </div>
