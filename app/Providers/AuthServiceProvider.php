@@ -8,6 +8,7 @@ use App\Policies\PublicDocumentRequestPolicy;
 use App\Policies\PublicEventPolicy;
 use App\Services\PolicyService;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -62,6 +63,16 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPolicies();
+
+        // Superadmins can perform any action, even when a specific ability
+        // was not registered dynamically yet.
+        Gate::before(function ($user, string $ability) {
+            if (method_exists($user, 'hasRole') && $user->hasRole('superadmin')) {
+                return true;
+            }
+
+            return null;
+        });
 
         // Enregistrer les Gates personnalisés avec Spatie Permission
         PolicyService::registerGates();
