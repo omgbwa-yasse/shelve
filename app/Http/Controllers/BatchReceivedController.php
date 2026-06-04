@@ -58,7 +58,14 @@ class BatchReceivedController extends Controller
 
     public function show(INT $id)
     {
-        $batchTransaction = BatchTransaction::findOrFail($id);
+        $batchTransaction = BatchTransaction::with([
+            'batch',
+            'organisationSend',
+            'organisationReceived',
+            'mails.action',
+            'mails.sender',
+            'mails.senderOrganisation',
+        ])->findOrFail($id);
         $organisations = Organisation::all();
         return view('batch.received.show', compact('batchTransaction', 'organisations'));
     }

@@ -55,6 +55,72 @@
                     </div>
                 </div>
 
+                {{-- Courriers associés au parapheur --}}
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-envelope-paper me-2 text-primary"></i>
+                                    Courriers associés
+                                    <span class="badge bg-primary ms-2">{{ $batchTransaction->mails->count() }}</span>
+                                </h5>
+                                @if($batchTransaction->batch)
+                                    <a href="{{ route('batch.mail.index', $batchTransaction->batch->id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil-square me-1"></i>Gérer les courriers
+                                    </a>
+                                @endif
+                            </div>
+
+                            @if($batchTransaction->mails->count() > 0)
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Code</th>
+                                                <th>Objet</th>
+                                                <th>Expéditeur</th>
+                                                <th>Date</th>
+                                                <th class="text-end">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($batchTransaction->mails as $mail)
+                                                <tr>
+                                                    <td class="fw-semibold">{{ $mail->code ?? '—' }}</td>
+                                                    <td>{{ $mail->name ?? '—' }}</td>
+                                                    <td>{{ optional($mail->senderOrganisation)->name ?? optional($mail->sender)->name ?? '—' }}</td>
+                                                    <td>{{ $mail->date ? \Illuminate\Support\Carbon::parse($mail->date)->format('d/m/Y') : '—' }}</td>
+                                                    <td class="text-end">
+                                                        <a href="{{ route('mail-received.show', $mail->id) }}" class="btn btn-sm btn-outline-secondary" title="Voir le courrier">
+                                                            <i class="bi bi-eye"></i>
+                                                        </a>
+                                                        @if($batchTransaction->batch)
+                                                            <form action="{{ route('batch.mail.destroy', [$batchTransaction->batch->id, $mail->id]) }}" method="POST" class="d-inline"
+                                                                  onsubmit="return confirm('Retirer ce courrier du parapheur ?');">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Retirer du parapheur">
+                                                                    <i class="bi bi-x-lg"></i>
+                                                                </button>
+                                                            </form>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <div class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox display-6 d-block mb-2 opacity-50"></i>
+                                    Aucun courrier associé à ce parapheur.
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body">

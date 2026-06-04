@@ -31,7 +31,9 @@ class BatchTransaction extends Model
 
     public function mails()
     {
-        return $this->belongsToMany(Mail::class, 'batch_mail', 'batch_id', 'mail_id');
+        return $this->belongsToMany(Mail::class, 'batch_mail', 'batch_id', 'mail_id')
+                    ->withPivot('id', 'insert_date', 'remove_date')
+                    ->withTimestamps();
     }
 
 }

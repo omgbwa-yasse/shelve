@@ -21,7 +21,10 @@ class BatchSendController extends Controller
         }
 
         // Récupérez les détails de la transaction de batch
-        $batchTransaction->load(['batch', 'organisationSend', 'organisationReceived']);
+        $batchTransaction->load([
+            'batch', 'organisationSend', 'organisationReceived',
+            'mails.action', 'mails.recipient', 'mails.recipientOrganisation',
+        ]);
 
         return view('batch.send.show', compact('batchTransaction'));
     }
