@@ -39,14 +39,19 @@ return new class extends Migration
         // Troisième étape : supprimer la contrainte de clé étrangère et la colonne status_id
         if (Schema::hasColumn('communications', 'status_id')) {
             // Obtenir toutes les contraintes de clé étrangère de la table
-            $foreignKeys = DB::select("
-                SELECT CONSTRAINT_NAME
-                FROM information_schema.TABLE_CONSTRAINTS
-                WHERE CONSTRAINT_SCHEMA = DATABASE()
-                AND TABLE_NAME = 'communications'
-                AND CONSTRAINT_TYPE = 'FOREIGN KEY'
-                AND CONSTRAINT_NAME LIKE '%status_id%'
-            ");
+            // (information_schema n'existe que sur MySQL/MariaDB ; SQLite gère
+            // la suppression de colonne sans lever les contraintes nommées)
+            $foreignKeys = [];
+            if (DB::getDriverName() === 'mysql') {
+                $foreignKeys = DB::select("
+                    SELECT CONSTRAINT_NAME
+                    FROM information_schema.TABLE_CONSTRAINTS
+                    WHERE CONSTRAINT_SCHEMA = DATABASE()
+                    AND TABLE_NAME = 'communications'
+                    AND CONSTRAINT_TYPE = 'FOREIGN KEY'
+                    AND CONSTRAINT_NAME LIKE '%status_id%'
+                ");
+            }
             
             // Supprimer chaque contrainte trouvée
             foreach ($foreignKeys as $fk) {
@@ -58,11 +63,17 @@ return new class extends Migration
                     // La clé étrangère n'existe pas, on continue
                 }
             }
-            
-            // Supprimer la colonne status_id
-            Schema::table('communications', function (Blueprint $table) {
-                $table->dropColumn('status_id');
-            });
+
+            if (DB::getDriverName() === 'sqlite') {
+                // SQLite ne peut pas supprimer une colonne visée par une contrainte
+                // FK : la colonne héritée reste en place (nullable, non utilisée).
+                DB::table('communications')->update(['status_id' => null]);
+            } else {
+                // Supprimer la colonne status_id
+                Schema::table('communications', function (Blueprint $table) {
+                    $table->dropColumn('status_id');
+                });
+            }
         }
 
         // Quatrième étape : supprimer la table communication_statuses si elle existe

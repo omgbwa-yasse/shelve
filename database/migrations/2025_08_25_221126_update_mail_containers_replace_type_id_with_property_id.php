@@ -22,7 +22,8 @@ return new class extends Migration
             $table->foreignId('property_id')->nullable()->constrained('container_properties')->cascadeOnDelete();
 
             // Supprimer l'ancienne colonne type_id si elle existe
-            if (Schema::hasColumn('mail_containers', 'type_id')) {
+            // (impossible sous SQLite quand la colonne porte une contrainte FK)
+            if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite' && Schema::hasColumn('mail_containers', 'type_id')) {
                 $table->dropColumn('type_id');
             }
         });

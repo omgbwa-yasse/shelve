@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -34,11 +35,15 @@ return new class extends Migration
             });
         }
         
-        Schema::table('rooms', function (Blueprint $table) {
-            if (Schema::hasColumn('rooms', 'type_id')) {
-                $table->dropColumn('type_id');
-            }
-        });
+        // SQLite ne peut pas supprimer une colonne visée par une contrainte FK :
+        // la colonne héritée type_id reste en place (nullable, non utilisée).
+        if (DB::getDriverName() !== 'sqlite') {
+            Schema::table('rooms', function (Blueprint $table) {
+                if (Schema::hasColumn('rooms', 'type_id')) {
+                    $table->dropColumn('type_id');
+                }
+            });
+        }
 
         // Ajouter la colonne type enum directement dans rooms
         Schema::table('rooms', function (Blueprint $table) {

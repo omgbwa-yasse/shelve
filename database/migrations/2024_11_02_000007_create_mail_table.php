@@ -48,7 +48,9 @@ return new class extends Migration
                 $table->id();
                 $table->string('code', 50)->unique();  // Assurer l'unicité des codes de conteneurs
                 $table->string('name', 100)->nullable();
-                $table->foreignId('type_id')->constrained('container_types')->cascadeOnDelete();
+                // Nullable : remplacée par property_id dans une migration ultérieure
+                // (SQLite ne peut pas supprimer une colonne sous contrainte FK)
+                $table->foreignId('type_id')->nullable()->constrained('container_types')->cascadeOnDelete();
                 $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
                 $table->foreignId('creator_organisation_id')->constrained('organisations')->cascadeOnDelete();
                 $table->timestamps();

@@ -12,7 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE record_digital_documents MODIFY COLUMN signature_status ENUM('unsigned', 'pending', 'signed', 'rejected', 'revoked') DEFAULT 'unsigned'");
+        // MODIFY COLUMN est spécifique à MySQL/MariaDB ; SQLite stocke les enums en texte
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE record_digital_documents MODIFY COLUMN signature_status ENUM('unsigned', 'pending', 'signed', 'rejected', 'revoked') DEFAULT 'unsigned'");
+        }
     }
 
     /**
@@ -20,6 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE record_digital_documents MODIFY COLUMN signature_status ENUM('unsigned', 'pending', 'signed', 'rejected') DEFAULT 'unsigned'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE record_digital_documents MODIFY COLUMN signature_status ENUM('unsigned', 'pending', 'signed', 'rejected') DEFAULT 'unsigned'");
+        }
     }
 };

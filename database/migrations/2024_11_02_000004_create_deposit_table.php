@@ -50,7 +50,9 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->unsignedBigInteger('floor_id');
             $table->unsignedBigInteger('creator_id');
-            $table->unsignedBigInteger('type_id');
+            // Nullable : remplacée par un enum 'type' dans une migration ultérieure
+            // (SQLite ne peut pas supprimer une colonne sous contrainte FK)
+            $table->unsignedBigInteger('type_id')->nullable();
             $table->timestamps();
             $table->foreign('floor_id')->references('id')->on('floors')->onDelete('cascade');
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');

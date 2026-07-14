@@ -962,6 +962,9 @@ Route::prefix('public')->name('public.')->group(function () {
 Route::middleware(['auth'])->prefix('ai-search')->name('ai-search.')->group(function () {
     Route::get('/', [\App\Http\Controllers\AiSearchController::class, 'index'])->name('index');
     Route::post('/chat', [\App\Http\Controllers\AiSearchController::class, 'chat'])->name('chat');
+    Route::post('/agent', [\App\Http\Controllers\AiSearchController::class, 'agent'])->name('agent');
+    Route::post('/agent/stream', [\App\Http\Controllers\AiSearchController::class, 'agentStream'])->name('agent.stream');
+    Route::get('/preview/{type}/{id}', [\App\Http\Controllers\AiSearchController::class, 'preview'])->name('preview')->where('id', '[0-9]+');
 
     // Documentation de l'IA
     Route::get('/documentation', [\App\Http\Controllers\AiSearchController::class, 'documentation'])->name('documentation');

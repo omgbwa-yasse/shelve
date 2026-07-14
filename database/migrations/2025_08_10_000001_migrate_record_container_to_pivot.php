@@ -59,11 +59,15 @@ return new class extends Migration {
             }
 
             // Drop column after FK removal
-            Schema::table('records', function (Blueprint $table) {
-                if (Schema::hasColumn('records', 'container_id')) {
-                    $table->dropColumn('container_id');
-                }
-            });
+            // (SQLite ne peut pas supprimer une colonne sous contrainte FK :
+            // la colonne héritée reste en place, non utilisée)
+            if (DB::getDriverName() !== 'sqlite') {
+                Schema::table('records', function (Blueprint $table) {
+                    if (Schema::hasColumn('records', 'container_id')) {
+                        $table->dropColumn('container_id');
+                    }
+                });
+            }
         }
     }
 

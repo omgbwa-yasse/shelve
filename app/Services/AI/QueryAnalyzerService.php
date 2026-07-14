@@ -66,6 +66,15 @@ class QueryAnalyzerService
 
     private function getAnalysisPrompt(string $searchType): string
     {
+        $now = now();
+        $today = $now->toDateString();
+        $yesterday = $now->copy()->subDay()->toDateString();
+        $weekStart = $now->copy()->startOfWeek()->toDateString();
+        $weekEnd = $now->copy()->endOfWeek()->toDateString();
+        $monthName = $now->locale('fr')->translatedFormat('F Y');
+        $month = $now->month;
+        $year = $now->year;
+
         return "Tu es un analyseur de requêtes intelligent spécialisé dans les archives. Tu analyses les demandes utilisateur et retournes des instructions JSON précises pour Laravel.
 
 TYPES D'ACTIONS DISPONIBLES:
@@ -144,7 +153,7 @@ DATES: created_at, updated_at
 \"documents avec terme juridique\" → {\"action\":\"filter\",\"filters\":{\"term\":\"juridique\"},\"table\":\"records\"}
 
 📧 MAILS:
-\"mails urgents reçus hier\" → {\"action\":\"filter\",\"filters\":{\"priority\":\"urgent\",\"date_from\":\"2025-09-25\",\"date_to\":\"2025-09-25\"},\"table\":\"mails\"}
+\"mails urgents reçus hier\" → {\"action\":\"filter\",\"filters\":{\"priority\":\"urgent\",\"date_from\":\"{$yesterday}\",\"date_to\":\"{$yesterday}\"},\"table\":\"mails\"}
 \"courriers de type administratif\" → {\"action\":\"filter\",\"filters\":{\"typology\":\"administratif\"},\"table\":\"mails\"}
 \"emails avec pièces jointes PDF\" → {\"action\":\"search\",\"keywords\":[\"PDF\"],\"fields\":[\"attachment_content\"],\"table\":\"mails\"}
 
@@ -154,7 +163,7 @@ DATES: created_at, updated_at
 
 📋 SLIPS:
 \"bordereaux approuvés par Admin\" → {\"action\":\"filter\",\"filters\":{\"slip_status\":\"approuvé\",\"approved_by\":\"Admin\"},\"table\":\"slips\"}
-\"transferts intégrés cette semaine\" → {\"action\":\"filter\",\"filters\":{\"slip_status\":\"intégré\",\"date_from\":\"2025-09-20\",\"date_to\":\"2025-09-26\"},\"table\":\"slips\"}
+\"transferts intégrés cette semaine\" → {\"action\":\"filter\",\"filters\":{\"slip_status\":\"intégré\",\"date_from\":\"{$weekStart}\",\"date_to\":\"{$weekEnd}\"},\"table\":\"slips\"}
 
 👤 AUTHORS:
 \"liste des auteurs\" → {\"action\":\"list\",\"table\":\"authors\",\"order\":\"asc\",\"order_by\":\"name\"}
@@ -162,11 +171,11 @@ DATES: created_at, updated_at
 \"tous les auteurs\" → {\"action\":\"list\",\"table\":\"authors\",\"limit\":50}
 
 GESTION INTELLIGENTE DES DATES:
-- \"aujourd'hui\" = 2025-09-26
-- \"hier\" = 2025-09-25
-- \"cette semaine\" = 2025-09-20 to 2025-09-26
-- \"ce mois\" = septembre 2025 (month: 9, year: 2025)
-- \"cette année\" = 2025
+- \"aujourd'hui\" = {$today}
+- \"hier\" = {$yesterday}
+- \"cette semaine\" = {$weekStart} to {$weekEnd}
+- \"ce mois\" = {$monthName} (month: {$month}, year: {$year})
+- \"cette année\" = {$year}
 - \"janvier\", \"février\", etc. = month: 1, 2, etc.
 - \"2024\", \"2023\" = year spécifique
 

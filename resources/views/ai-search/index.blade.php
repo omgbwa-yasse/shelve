@@ -13,43 +13,52 @@
     </h4>
 </div>
 <div class="card-body">
+    <div class="ai-workspace">
+        <div class="ai-chat-col">
 
-                    <!-- Sélecteur de type de recherche -->
-                    <div class="row mb-4">
-                        <div class="col-md-8">
+                    <!-- Barre d'outils : mode agent + actions -->
+                    <div class="ai-toolbar d-flex align-items-center justify-content-between mb-3">
+                        <div class="form-check form-switch mb-0" title="{{ __('the AI searches in several steps across all your data (contacts, mails, records, transfers…) and shows its reasoning') }}">
+                            <input class="form-check-input" type="checkbox" role="switch" id="agentMode" checked>
+                            <label class="form-check-label fw-semibold" for="agentMode">
+                                {{ __('Agent mode') }}
+                            </label>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('ai-search.documentation') }}" class="btn btn-sm btn-outline-secondary" target="_blank" title="{{ __('Documentation') }}">
+                                <i class="bi bi-book"></i>
+                            </a>
+                            <button class="btn btn-sm btn-outline-secondary" id="clearChat" title="{{ __('Clear Chat') }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sélecteur de type de recherche (mode classique uniquement) -->
+                    <div class="row mb-3" id="searchTypeRow" style="display: none;">
+                        <div class="col-12">
                             <div class="search-type-selector">
-                                <label class="form-label fw-bold">{{ __('Search in:') }}</label>
                                 <div class="btn-group w-100" role="group">
                                     <input type="radio" class="btn-check" name="searchType" id="searchRecords" value="records" checked>
-                                    <label class="btn btn-outline-primary" for="searchRecords">
+                                    <label class="btn btn-outline-primary btn-sm" for="searchRecords">
                                         <i class="bi bi-folder me-1"></i>{{ __('Records') }}
                                     </label>
 
                                     <input type="radio" class="btn-check" name="searchType" id="searchMails" value="mails">
-                                    <label class="btn btn-outline-primary" for="searchMails">
+                                    <label class="btn btn-outline-primary btn-sm" for="searchMails">
                                         <i class="bi bi-envelope me-1"></i>{{ __('Mails') }}
                                     </label>
 
                                     <input type="radio" class="btn-check" name="searchType" id="searchCommunications" value="communications">
-                                    <label class="btn btn-outline-primary" for="searchCommunications">
+                                    <label class="btn btn-outline-primary btn-sm" for="searchCommunications">
                                         <i class="bi bi-chat-dots me-1"></i>{{ __('Communications') }}
                                     </label>
 
                                     <input type="radio" class="btn-check" name="searchType" id="searchSlips" value="slips">
-                                    <label class="btn btn-outline-primary" for="searchSlips">
+                                    <label class="btn btn-outline-primary btn-sm" for="searchSlips">
                                         <i class="bi bi-arrow-left-right me-1"></i>{{ __('Transfers') }}
                                     </label>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="text-end">
-                                <a href="{{ route('ai-search.documentation') }}" class="btn btn-outline-info me-2" target="_blank">
-                                    <i class="bi bi-book me-1"></i>{{ __('Documentation') }}
-                                </a>
-                                <button class="btn btn-outline-secondary" id="clearChat">
-                                    <i class="bi bi-trash me-1"></i>{{ __('Clear Chat') }}
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -123,10 +132,174 @@
                         </div>
                     </div>
 
+        </div><!-- /.ai-chat-col -->
+
+        <!-- Panneau de détail incrusté (style preview Claude) -->
+        <aside id="previewPanel" aria-hidden="true">
+            <div class="preview-inner">
+                <div class="preview-header">
+                    <div class="preview-header-title">
+                        <i id="previewIcon" class="bi bi-file-earmark me-2"></i>
+                        <div>
+                            <div class="preview-type" id="previewType"></div>
+                            <div class="preview-title" id="previewTitle"></div>
+                        </div>
+                    </div>
+                    <div class="preview-header-actions">
+                        <a id="previewOpenLink" href="#" target="_blank" class="btn btn-sm btn-outline-primary" style="display:none;">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>{{ __('Open full page') }}
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="previewClose" title="{{ __('Close') }} (Esc)">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="preview-body" id="previewBody">
+                    <div class="text-muted p-3">{{ __('Loading...') }}</div>
+                </div>
+            </div>
+        </aside>
+    </div><!-- /.ai-workspace -->
+</div>
+
 @endsection
 
-@section('styles')
+@push('styles')
 <style>
+/* ===== Espace de travail : chat + panneau incrusté ===== */
+.ai-workspace {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+}
+
+.ai-chat-col {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+#previewPanel {
+    flex: 0 0 0px;
+    width: 0;
+    overflow: hidden;
+    transition: flex-basis 0.3s ease, width 0.3s ease;
+    background: #fff;
+}
+
+#previewPanel.open {
+    flex: 0 0 420px;
+    width: 420px;
+    border-left: 1px solid #dee2e6;
+    margin-left: 16px;
+}
+
+.preview-inner {
+    width: 420px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e9ecef;
+    background: #f8f9fa;
+}
+
+.preview-header-title {
+    display: flex;
+    align-items: flex-start;
+    min-width: 0;
+    font-size: 15px;
+}
+
+.preview-header-title i {
+    font-size: 20px;
+    color: #007bff;
+    margin-top: 2px;
+}
+
+.preview-type {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+}
+
+.preview-title {
+    font-weight: 600;
+    line-height: 1.3;
+    word-break: break-word;
+}
+
+.preview-header-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.preview-body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 12px 16px;
+    max-height: 640px;
+}
+
+.preview-field {
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.preview-field-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #8e9297;
+    margin-bottom: 2px;
+}
+
+.preview-field-value {
+    font-size: 14px;
+    color: #212529;
+    word-break: break-word;
+}
+
+.preview-field.highlight {
+    background: #e7f1ff;
+    border-radius: 8px;
+    padding: 10px 12px;
+    border-bottom: none;
+    margin: 6px 0;
+}
+
+.preview-field.highlight .preview-field-label {
+    color: #0d6efd;
+}
+
+@media (max-width: 991px) {
+    #previewPanel.open {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        flex: none;
+        z-index: 1055;
+        margin-left: 0;
+        border-left: none;
+    }
+
+    #previewPanel.open .preview-inner {
+        width: 100%;
+    }
+
+    #previewPanel.open .preview-body {
+        max-height: none;
+    }
+}
+
 .chat-container {
     height: 600px;
     display: flex;
@@ -136,10 +309,11 @@
 .chat-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    margin-bottom: 20px;
+    padding: 24px;
+    background-color: #fafbfc;
+    border: 1px solid #eef0f2;
+    border-radius: 12px;
+    margin-bottom: 16px;
 }
 
 .ai-message, .user-message {
@@ -196,49 +370,20 @@
 
 .message-text {
     background-color: white;
-    padding: 14px 18px;
-    border-radius: 20px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    padding: 12px 16px;
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     margin-bottom: 6px;
     position: relative;
-    line-height: 1.5;
+    line-height: 1.55;
     word-wrap: break-word;
-    border: 1px solid #f1f3f4;
-    transition: box-shadow 0.2s ease;
-}
-
-.message-text:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-}
-
-.ai-message .message-text::before {
-    content: '';
-    position: absolute;
-    left: -8px;
-    top: 16px;
-    width: 0;
-    height: 0;
-    border-top: 8px solid transparent;
-    border-bottom: 8px solid transparent;
-    border-right: 8px solid white;
+    border: 1px solid #eef0f2;
 }
 
 .user-message .message-text {
     background: linear-gradient(135deg, #007bff, #0056b3);
     color: white;
     border-color: #0056b3;
-}
-
-.user-message .message-text::before {
-    content: '';
-    position: absolute;
-    right: -8px;
-    top: 16px;
-    width: 0;
-    height: 0;
-    border-top: 8px solid transparent;
-    border-bottom: 8px solid transparent;
-    border-left: 8px solid #007bff;
 }
 
 .message-time {
@@ -322,6 +467,47 @@
 
 .result-card:hover .result-actions {
     color: #007bff !important;
+}
+
+/* Étapes de recherche de l'agent */
+.agent-steps {
+    border-left: 3px solid #dee2e6;
+    padding-left: 10px;
+    margin-bottom: 10px;
+}
+
+.agent-step {
+    font-size: 12px;
+    color: #6c757d;
+    padding: 2px 0;
+    animation: messageSlideIn 0.25s ease-out;
+}
+
+.agent-step-count {
+    color: #adb5bd;
+}
+
+/* Vignettes enrichies */
+.result-type-badge {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #e7f1ff;
+    color: #0d6efd;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.result-meta {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.result-open-link {
+    font-size: 12px;
+    text-decoration: none;
 }
 
 /* Styles pour les anciens liens (compatibilité) */
@@ -528,7 +714,7 @@ kbd {
     border-left: 1px solid #ced4da;
 }
 </style>
-@endsection
+@endpush
 
 @section('scripts')
 <script>
@@ -555,6 +741,19 @@ document.querySelectorAll('input[name="searchType"]').forEach(radio => {
     });
 });
 
+// Le sélecteur de type ne sert qu'au mode classique : l'agent choisit lui-même
+const agentModeSwitch = document.getElementById('agentMode');
+const searchTypeRow = document.getElementById('searchTypeRow');
+function syncSearchTypeRow() {
+    if (searchTypeRow && agentModeSwitch) {
+        searchTypeRow.style.display = agentModeSwitch.checked ? 'none' : '';
+    }
+}
+if (agentModeSwitch) {
+    agentModeSwitch.addEventListener('change', syncSearchTypeRow);
+    syncSearchTypeRow();
+}
+
 // Gestion du formulaire de chat
 document.getElementById('chatForm').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -579,6 +778,10 @@ document.getElementById('clearChat').addEventListener('click', function() {
     `;
 });
 
+function csrfToken() {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
+
 function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     const message = messageInput.value.trim();
@@ -589,15 +792,28 @@ function sendMessage() {
     addUserMessage(message);
     messageInput.value = '';
 
-    // Afficher indicateur de frappe
-    showTypingIndicator();
+    const agentMode = document.getElementById('agentMode')?.checked ?? false;
 
-    // Envoyer à l'IA
-    fetch('/ai-search/chat', {
+    if (agentMode) {
+        // Streaming SSE : les étapes s'affichent en direct, repli sur le POST
+        // classique si le flux échoue (proxy, buffering...).
+        sendAgentStream(message).catch(error => {
+            console.warn('Stream failed, falling back to classic agent:', error);
+            removeAgentLive();
+            sendClassic('/ai-search/agent', message);
+        });
+    } else {
+        showTypingIndicator(false);
+        sendClassic('/ai-search/chat', message);
+    }
+}
+
+function sendClassic(endpoint, message) {
+    fetch(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'X-CSRF-TOKEN': csrfToken()
         },
         body: JSON.stringify({
             message: message,
@@ -609,10 +825,10 @@ function sendMessage() {
         hideTypingIndicator();
 
         if (data.success) {
-            addAIMessage(data.response, data.results || []);
+            addAIMessage(data.response, data.results || [], data.steps || []);
         } else {
             console.error('AI search failed:', data.error || 'Unknown error');
-            addAIMessage(data.error || 'Une erreur est survenue.', []); // Use dynamic error or default
+            addAIMessage(data.error || 'Une erreur est survenue.', []);
         }
     })
     .catch(error => {
@@ -620,6 +836,125 @@ function sendMessage() {
         console.error('Error:', error);
         addAIMessage('Désolé, une erreur de connexion s\'est produite.', []);
     });
+}
+
+async function sendAgentStream(message) {
+    showAgentLive();
+
+    const response = await fetch('/ai-search/agent/stream', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'text/event-stream',
+            'X-CSRF-TOKEN': csrfToken()
+        },
+        body: JSON.stringify({ message: message })
+    });
+
+    if (!response.ok || !response.body) {
+        throw new Error('HTTP ' + response.status);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let gotFinal = false;
+
+    const handleEvent = (eventName, data) => {
+        if (eventName === 'step') {
+            addAgentLiveStep(data);
+        } else if (eventName === 'final') {
+            gotFinal = true;
+            removeAgentLive();
+            addAIMessage(data.response, data.results || [], data.steps || []);
+        } else if (eventName === 'error') {
+            gotFinal = true;
+            removeAgentLive();
+            addAIMessage(data.error || 'Une erreur est survenue.', []);
+        }
+    };
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        let sep;
+        while ((sep = buffer.indexOf('\n\n')) !== -1) {
+            const rawEvent = buffer.slice(0, sep);
+            buffer = buffer.slice(sep + 2);
+
+            let eventName = 'message';
+            let dataLine = '';
+            rawEvent.split('\n').forEach(line => {
+                if (line.startsWith('event:')) eventName = line.slice(6).trim();
+                if (line.startsWith('data:')) dataLine += line.slice(5).trim();
+            });
+
+            if (dataLine) {
+                try {
+                    handleEvent(eventName, JSON.parse(dataLine));
+                } catch (e) {
+                    console.warn('Bad SSE payload', e);
+                }
+            }
+        }
+    }
+
+    if (!gotFinal) {
+        throw new Error('Stream ended without final event');
+    }
+}
+
+// ===== Bulle de progression de l'agent (étapes en direct) =====
+
+function showAgentLive() {
+    const chatMessages = document.getElementById('chatMessages');
+    const html = `
+        <div class="ai-message" id="agentLive">
+            <div class="message-avatar">
+                <i class="bi bi-robot"></i>
+            </div>
+            <div class="message-content">
+                <div class="message-text">
+                    <div class="agent-steps" id="agentLiveSteps"></div>
+                    <div>
+                        <div class="typing-dots">
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                        </div>
+                        <span class="typing-text">L'agent cherche dans vos données...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    chatMessages.insertAdjacentHTML('beforeend', html);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function addAgentLiveStep(step) {
+    const container = document.getElementById('agentLiveSteps');
+    if (!container) return;
+
+    const label = step.thought || step.tool || '';
+    const countInfo = step.error ? '<span class="text-danger">erreur</span>' : `${step.count} résultat(s)`;
+    container.insertAdjacentHTML('beforeend', `
+        <div class="agent-step">
+            <i class="bi bi-search me-1"></i>
+            ${escapeHtml(label)}
+            <span class="agent-step-count">— ${countInfo}</span>
+        </div>
+    `);
+
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function removeAgentLive() {
+    const live = document.getElementById('agentLive');
+    if (live) live.remove();
 }
 
 function addUserMessage(message) {
@@ -642,9 +977,29 @@ function addUserMessage(message) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function addAIMessage(message, results = []) {
+function addAIMessage(message, results = [], steps = []) {
     const chatMessages = document.getElementById('chatMessages');
     const time = new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+
+    // Étapes de recherche de l'agent (raisonnement multi-étapes)
+    let stepsHtml = '';
+    if (steps.length > 0) {
+        stepsHtml = '<div class="agent-steps mb-2">';
+        steps.forEach(step => {
+            const label = step.thought || step.tool;
+            const countInfo = step.error
+                ? `<span class="text-danger">erreur</span>`
+                : `${step.count} résultat(s)`;
+            stepsHtml += `
+                <div class="agent-step">
+                    <i class="bi bi-search me-1"></i>
+                    ${escapeHtml(label)}
+                    <span class="agent-step-count">— ${countInfo}</span>
+                </div>
+            `;
+        });
+        stepsHtml += '</div>';
+    }
 
     let resultsHtml = '';
     if (results.length > 0) {
@@ -652,17 +1007,29 @@ function addAIMessage(message, results = []) {
         results.forEach(result => {
             const typeIcon = getTypeIcon(result.type);
             const description = result.description ? `<small class="text-muted">${escapeHtml(result.description)}</small>` : '';
+            const meta = result.meta ? `<div class="result-meta"><i class="bi bi-geo-alt me-1"></i>${escapeHtml(result.meta)}</div>` : '';
+            const hasPreview = PREVIEWABLE_TYPES.includes(result.type);
+            const hasUrl = result.url && result.url !== 'null';
+            const clickAttr = hasPreview
+                ? `onclick="openPreview('${result.type}', ${parseInt(result.id, 10)})"`
+                : (hasUrl ? `onclick="openResult('${result.url}')"` : '');
+            const openLink = hasUrl
+                ? `<a href="${result.url}" target="_blank" class="result-open-link" onclick="event.stopPropagation()"><i class="bi bi-box-arrow-up-right me-1"></i>Ouvrir la fiche</a>`
+                : '';
 
             resultsHtml += `
-                <div class="result-card" onclick="openResult('${result.url}')">
+                <div class="result-card" ${clickAttr} style="${clickAttr ? '' : 'cursor: default;'}">
                     <div class="result-card-content">
                         <div class="result-header">
                             <i class="${typeIcon} me-2"></i>
                             <span class="result-title">${escapeHtml(result.title)}</span>
+                            <span class="result-type-badge">${escapeHtml(getTypeName(result.type))}</span>
                         </div>
+                        ${meta}
                         ${description}
-                        <div class="result-actions">
-                            <small class="text-primary">Cliquer pour ouvrir</small>
+                        <div class="result-actions d-flex justify-content-between align-items-center">
+                            ${openLink}
+                            ${hasPreview ? '<small class="text-primary ms-auto"><i class="bi bi-layout-sidebar-inset-reverse me-1"></i>Aperçu</small>' : ''}
                         </div>
                     </div>
                 </div>
@@ -678,7 +1045,8 @@ function addAIMessage(message, results = []) {
             </div>
             <div class="message-content">
                 <div class="message-text">
-                    ${escapeHtml(message)}
+                    ${stepsHtml}
+                    ${formatAgentMessage(message)}
                     ${resultsHtml}
                 </div>
                 <div class="message-time">${time}</div>
@@ -712,8 +1080,11 @@ function addSystemMessage(message) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function showTypingIndicator() {
+function showTypingIndicator(agentMode = false) {
     const chatMessages = document.getElementById('chatMessages');
+    const text = agentMode
+        ? "L'agent cherche dans vos données (plusieurs étapes possibles)..."
+        : "L'IA analyse votre demande...";
     const indicator = `
         <div class="ai-message typing-indicator" id="typingIndicator">
             <div class="message-avatar">
@@ -726,7 +1097,7 @@ function showTypingIndicator() {
                         <div class="dot"></div>
                         <div class="dot"></div>
                     </div>
-                    <span class="typing-text">L'IA analyse votre demande...</span>
+                    <span class="typing-text">${text}</span>
                 </div>
             </div>
         </div>
@@ -744,13 +1115,162 @@ function hideTypingIndicator() {
 
 function getTypeName(type) {
     const types = {
-        'records': 'Documents',
-        'mails': 'Mails',
-        'communications': 'Communications',
-        'slips': 'Transferts'
+        'records': 'Archive',
+        'mails': 'Courrier',
+        'communications': 'Communication',
+        'slips': 'Versement',
+        'slip_records': 'Document versé',
+        'contacts': 'Contact',
+        'users': 'Utilisateur',
+        'authors': 'Producteur',
+        'containers': 'Conteneur',
+        'digital_folders': 'Dossier numérique',
+        'digital_documents': 'Document numérique',
+        'dollies': 'Chariot',
+        'tasks': 'Tâche',
+        'organisations': 'Organisation',
+        'external_organizations': 'Organisation externe',
+        'reservations': 'Réservation',
+        'accessions': 'Entrée',
+        'public_requests': 'Demande du public',
+        'workplaces': 'Espace de travail',
+        'activities': 'Plan de classement',
+        'thesaurus_concepts': 'Thésaurus',
+        'keywords': 'Mot-clé',
+        'laws': 'Loi'
     };
     return types[type] || type;
 }
+
+// Types disposant d'une fiche détaillée dans le panneau de preview
+const PREVIEWABLE_TYPES = ['records', 'mails', 'communications', 'slips', 'contacts', 'authors'];
+
+// Libellés français des champs du panneau de preview
+const PREVIEW_LABELS = {
+    code: 'Code',
+    date: 'Date',
+    from: 'Expéditeur',
+    to: 'Destinataire',
+    from_email: 'Email expéditeur',
+    to_email: 'Email destinataire',
+    email: 'Email',
+    phone: 'Téléphone',
+    address: 'Adresse',
+    position: 'Fonction',
+    organization: 'Organisation',
+    authors: 'Producteur(s)',
+    status: 'Statut',
+    activity: 'Classement (activité)',
+    location: 'Localisation physique',
+    archived_in: 'Archivé dans',
+    attachments: 'Pièces jointes',
+    communicability: 'Communicabilité',
+    retention: 'Rétention',
+    priority: 'Priorité',
+    parallel_name: 'Nom parallèle',
+    other_name: 'Autre nom',
+    lifespan: 'Dates d\'existence',
+    locations: 'Lieux',
+    operator: 'Opérateur',
+    requester: 'Demandeur',
+    return_date: 'Date de retour',
+    description: 'Description'
+};
+
+const PREVIEW_HIGHLIGHT = ['location', 'communicability', 'retention', 'email', 'from_email', 'to_email'];
+
+function openPreview(type, id) {
+    const panel = document.getElementById('previewPanel');
+    const body = document.getElementById('previewBody');
+    const title = document.getElementById('previewTitle');
+    const typeLabel = document.getElementById('previewType');
+    const icon = document.getElementById('previewIcon');
+    const openLink = document.getElementById('previewOpenLink');
+
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+    typeLabel.textContent = getTypeName(type);
+    title.textContent = '...';
+    icon.className = getTypeIcon(type) + ' me-2';
+    openLink.style.display = 'none';
+    body.innerHTML = '<div class="text-muted p-3"><div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div> Chargement...</div>';
+
+    fetch(`/ai-search/preview/${encodeURIComponent(type)}/${id}`, {
+        headers: { 'Accept': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success || !data.item) {
+            body.innerHTML = `<div class="alert alert-warning m-3">${escapeHtml(data.error || 'Élément introuvable ou hors de votre périmètre.')}</div>`;
+            return;
+        }
+
+        renderPreview(data.item);
+    })
+    .catch(() => {
+        body.innerHTML = '<div class="alert alert-danger m-3">Erreur de chargement de l\'aperçu.</div>';
+    });
+}
+
+function renderPreview(item) {
+    const body = document.getElementById('previewBody');
+    const title = document.getElementById('previewTitle');
+    const openLink = document.getElementById('previewOpenLink');
+
+    title.textContent = item.title || ('Élément #' + item.id);
+
+    if (item.url) {
+        openLink.href = item.url;
+        openLink.style.display = '';
+    }
+
+    const skip = ['type', 'id', 'title', 'url'];
+    let html = '';
+
+    // Champs mis en avant d'abord (localisation, communicabilité, emails...)
+    const orderedKeys = Object.keys(item).sort((a, b) => {
+        const ha = PREVIEW_HIGHLIGHT.includes(a) ? 0 : 1;
+        const hb = PREVIEW_HIGHLIGHT.includes(b) ? 0 : 1;
+        return ha - hb;
+    });
+
+    orderedKeys.forEach(key => {
+        if (skip.includes(key)) return;
+        let value = item[key];
+        if (value === null || value === '' || value === undefined) return;
+        if (Array.isArray(value)) {
+            if (!value.length) return;
+            value = value.join(', ');
+        }
+        if (typeof value === 'boolean') {
+            value = value ? 'Oui' : 'Non';
+        }
+
+        const label = PREVIEW_LABELS[key] || key.replace(/_/g, ' ');
+        const highlight = PREVIEW_HIGHLIGHT.includes(key) ? ' highlight' : '';
+        html += `
+            <div class="preview-field${highlight}">
+                <div class="preview-field-label">${escapeHtml(label)}</div>
+                <div class="preview-field-value">${escapeHtml(String(value))}</div>
+            </div>
+        `;
+    });
+
+    body.innerHTML = html || '<div class="text-muted p-3">Aucun détail disponible.</div>';
+}
+
+function closePreview() {
+    const panel = document.getElementById('previewPanel');
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+}
+
+document.getElementById('previewClose').addEventListener('click', closePreview);
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closePreview();
+    }
+});
 
 function escapeHtml(text) {
     const div = document.createElement('div');
@@ -758,12 +1278,30 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// Rendu léger du markdown des réponses de l'agent (gras + sauts de ligne),
+// appliqué APRÈS échappement HTML donc sans risque d'injection.
+function formatAgentMessage(text) {
+    return escapeHtml(text)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+}
+
 function getTypeIcon(type) {
     const icons = {
         'records': 'bi bi-folder',
         'mails': 'bi bi-envelope',
         'communications': 'bi bi-chat-dots',
-        'slips': 'bi bi-arrow-left-right'
+        'slips': 'bi bi-arrow-left-right',
+        'contacts': 'bi bi-person-lines-fill',
+        'users': 'bi bi-person-badge',
+        'authors': 'bi bi-person-vcard',
+        'containers': 'bi bi-box-seam',
+        'digital_folders': 'bi bi-folder-symlink',
+        'digital_documents': 'bi bi-file-earmark-text',
+        'dollies': 'bi bi-cart3',
+        'tasks': 'bi bi-check2-square',
+        'organisations': 'bi bi-building',
+        'external_organizations': 'bi bi-buildings'
     };
     return icons[type] || 'bi bi-file-earmark';
 }

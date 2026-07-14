@@ -30,7 +30,9 @@ return new class extends Migration
             $table->unsignedBigInteger('user_organisation_id')->nullable(false);
             $table->date('return_date')->nullable(false);
             $table->date('return_effective')->nullable();
-            $table->unsignedBigInteger('status_id')->nullable(false);
+            // Nullable : la colonne est remplacée par un enum 'status' puis supprimée
+            // dans une migration ultérieure (SQLite ne peut pas supprimer une colonne FK)
+            $table->unsignedBigInteger('status_id')->nullable();
             $table->timestamps();
             $table->foreign('operator_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
