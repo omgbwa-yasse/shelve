@@ -17,11 +17,30 @@ use Illuminate\Support\Facades\Auth;
 class MailWorkflowController extends Controller
 {
     /**
+     * Vrai si l'utilisateur courant a le rôle DG (dans son organisation) ou est superadmin.
+     */
+    private function isDg(): bool
+    {
+        $user = Auth::user();
+
+        return $user->isSuperAdmin()
+            || $user->hasRoleInOrganisation('DG', $user->current_organisation_id);
+    }
+
+    /**
+     * Abandonne la requête si l'utilisateur courant n'est pas DG.
+     */
+    private function requireDg(): void
+    {
+        abort_unless($this->isDg(), 403, 'Cette action est réservée au Directeur Général.');
+    }
+
+    /**
      * Formulaire de cotation d'un courrier entrant par le DG.
      */
     public function coteForm(Mail $mail)
     {
-        $this->authorize('update', $mail);
+        $this->requireDg();
 
         $organisations = Organisation::orderBy('name')->get();
         // Instructions de cotation du DG (sous-ensemble des actions).
@@ -37,7 +56,7 @@ class MailWorkflowController extends Controller
      */
     public function cote(Request $request, Mail $mail)
     {
-        $this->authorize('update', $mail);
+        $this->requireDg();
 
         $data = $request->validate([
             'assigned_organisation_id' => 'required|exists:organisations,id',
@@ -60,7 +79,14 @@ class MailWorkflowController extends Controller
      */
     public function confirmReception(Mail $mail)
     {
-        $this->authorize('update', $mail);
+        // Le responsable (ou un membre) de l'organisation destinataire/assignée valide la réception.
+        $user = Auth::user();
+        $orgId = $mail->assigned_organisation_id ?? $mail->recipient_organisation_id;
+        abort_unless(
+            $user->isSuperAdmin() || (int) $user->current_organisation_id === (int) $orgId,
+            403,
+            'Seul le service destinataire peut valider la réception.'
+        );
 
         $mail->confirmReception(Auth::id());
 
@@ -73,7 +99,15 @@ class MailWorkflowController extends Controller
      */
     public function submit(Request $request, Mail $mail)
     {
-        $this->authorize('update', $mail);
+        // L'initiateur (expéditeur) du courrier, ou un membre de son organisation, peut soumettre.
+        $user = Auth::user();
+        abort_unless(
+            $user->isSuperAdmin()
+                || (int) $mail->sender_user_id === (int) $user->id
+                || (int) $mail->sender_organisation_id === (int) $user->current_organisation_id,
+            403,
+            'Vous ne pouvez pas soumettre ce courrier.'
+        );
 
         $data = $request->validate([
             'explanatory_note' => 'nullable|string|max:2000',
