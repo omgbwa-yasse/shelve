@@ -123,13 +123,8 @@ class MailWorkflowController extends Controller
      */
     public function sign(Request $request, Mail $mail)
     {
-        $this->authorize('update', $mail);
-
-        // Seul un utilisateur ayant le rôle DG dans son organisation courante peut signer.
-        if (!Auth::user()->hasRoleInOrganisation('DG', Auth::user()->current_organisation_id)
-            && !Auth::user()->isSuperAdmin()) {
-            return back()->with('error', 'Seul le Directeur Général peut signer ce courrier.');
-        }
+        // Seul le DG (ou superadmin) peut signer / valider définitivement.
+        $this->requireDg();
 
         $data = $request->validate([
             'note' => 'nullable|string|max:1000',
@@ -141,11 +136,11 @@ class MailWorkflowController extends Controller
     }
 
     /**
-     * Rejet par le DG (ou le N+1) d'un courrier soumis.
+     * Rejet par le DG d'un courrier soumis.
      */
     public function reject(Request $request, Mail $mail)
     {
-        $this->authorize('update', $mail);
+        $this->requireDg();
 
         $data = $request->validate([
             'note' => 'nullable|string|max:1000',

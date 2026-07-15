@@ -242,7 +242,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('incoming/create', [MailController::class, 'createIncoming'])->name('mails.incoming.create');
     Route::get('count-unread', [MailController::class, 'countUnread'])->name('mails.count-unread');
         Route::post('incoming', [MailController::class, 'storeIncoming'])->name('mails.incoming.store');
-        Route::get('incoming/{id}', [MailController::class, 'show'])->name('mails.incoming.show');
+        // show() attend ($type, $id) : on fixe le type correspondant au courrier entrant.
+        Route::get('incoming/{id}', fn ($id) => app(MailController::class)->show('received', $id))->name('mails.incoming.show');
         Route::get('incoming/{id}/edit', [MailController::class, 'edit'])->name('mails.incoming.edit');
         Route::put('incoming/{id}', [MailController::class, 'update'])->name('mails.incoming.update');
         Route::patch('incoming/{id}', [MailController::class, 'update']);
@@ -251,7 +252,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('outgoing', [MailController::class, 'indexOutgoing'])->name('mails.outgoing.index');
         Route::get('outgoing/create', [MailController::class, 'createOutgoing'])->name('mails.outgoing.create');
         Route::post('outgoing', [MailController::class, 'storeOutgoing'])->name('mails.outgoing.store');
-        Route::get('outgoing/{id}', [MailController::class, 'show'])->name('mails.outgoing.show');
+        // show() attend ($type, $id) : on fixe le type correspondant au courrier sortant.
+        Route::get('outgoing/{id}', fn ($id) => app(MailController::class)->show('send', $id))->name('mails.outgoing.show');
         Route::get('outgoing/{id}/edit', [MailController::class, 'edit'])->name('mails.outgoing.edit');
         Route::put('outgoing/{id}', [MailController::class, 'update'])->name('mails.outgoing.update');
         Route::patch('outgoing/{id}', [MailController::class, 'update']);

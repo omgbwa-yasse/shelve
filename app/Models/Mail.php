@@ -183,12 +183,33 @@ class Mail extends Model
 
     /**
      * Override trait method to also check assigned_organisation_id.
+     *
+     * Portée hiérarchique : une organisation voit les courriers de sa propre branche
+     * (elle-même et ses descendants), ce qui permet au DG — racine de l'organigramme —
+     * de consulter et coter l'ensemble des courriers de la structure.
      */
     public function involvesOrganisation(int $organisationId): bool
     {
-        return $this->{$this->emitterOrgField} == $organisationId
-            || $this->{$this->beneficiaryOrgField} == $organisationId
-            || $this->assigned_organisation_id == $organisationId;
+        $mailOrgIds = array_filter([
+            $this->{$this->emitterOrgField},
+            $this->{$this->beneficiaryOrgField},
+            $this->assigned_organisation_id,
+        ]);
+
+        if (in_array($organisationId, array_map('intval', $mailOrgIds), true)) {
+            return true;
+        }
+
+        // Sinon, l'organisation courante couvre-t-elle (comme ancêtre) l'une des
+        // organisations du courrier ?
+        foreach ($mailOrgIds as $mailOrgId) {
+            $org = Organisation::find($mailOrgId);
+            if ($org && $org->ancestors()->contains('id', $organisationId)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // La relation workflow a été supprimée
