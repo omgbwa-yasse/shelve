@@ -350,13 +350,19 @@ class MailController extends Controller
                 abort(404);
         }
 
+        // Relations communes pour la traçabilité (timeline) et la signature DG.
+        $relations = array_merge($relations, ['histories.user', 'dgSigner', 'assignedOrganisation']);
+
         $mail = Mail::with($relations)->findOrFail($id);
 
         // Vérification des permissions via policy
         $this->authorize('view', $mail);
 
+        // Historique trié du plus récent au plus ancien pour la timeline.
+        $timeline = $mail->histories->sortByDesc('created_at')->values();
+
         // Vue centralisée unique
-        return view('mails.show', compact('mail', 'type'));
+        return view('mails.show', compact('mail', 'type', 'timeline'));
     }
 
 

@@ -270,6 +270,14 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('received/{mail}/approve', [MailReceivedController::class, 'approve'])->name('mail-received.approve');
         Route::get('received/{mail}/reject', [MailReceivedController::class, 'reject'])->name('mail-received.reject');
 
+        // Workflow courrier « zéro papier » (cotation, réception, soumission, signature DG)
+        Route::get('workflow/{mail}/cote', [\App\Http\Controllers\MailWorkflowController::class, 'coteForm'])->name('mails.workflow.cote-form');
+        Route::post('workflow/{mail}/cote', [\App\Http\Controllers\MailWorkflowController::class, 'cote'])->name('mails.workflow.cote');
+        Route::post('workflow/{mail}/confirm-reception', [\App\Http\Controllers\MailWorkflowController::class, 'confirmReception'])->name('mails.workflow.confirm-reception');
+        Route::post('workflow/{mail}/submit', [\App\Http\Controllers\MailWorkflowController::class, 'submit'])->name('mails.workflow.submit');
+        Route::post('workflow/{mail}/sign', [\App\Http\Controllers\MailWorkflowController::class, 'sign'])->name('mails.workflow.sign');
+        Route::post('workflow/{mail}/reject', [\App\Http\Controllers\MailWorkflowController::class, 'reject'])->name('mails.workflow.reject');
+
         // Route pour les courriers retournés
         Route::get('returned', [MailReceivedController::class, 'returned'])->name('mail-received.returned');
 

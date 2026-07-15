@@ -417,9 +417,146 @@
                     @endif
                 </div>
 
+                {{-- Actions du workflow courrier « zéro papier » --}}
+                @php
+                    $u = auth()->user();
+                    $isDg = $u && ($u->isSuperAdmin() || $u->hasRoleInOrganisation('DG', $u->current_organisation_id));
+                    $statusVal = $mail->status?->value;
+                @endphp
+                <div class="col-md-12 mt-3">
+                    <div class="d-flex flex-wrap gap-2">
 
+                        {{-- Courrier ENTRANT : cotation par le DG --}}
+                        @if($mail->mail_type === 'incoming' && $isDg && !$mail->assigned_organisation_id)
+                            <a href="{{ route('mails.workflow.cote-form', $mail->id) }}" class="btn btn-primary">
+                                <i class="bi bi-diagram-3"></i> Coter (affecter à une direction)
+                            </a>
+                        @endif
+
+                        {{-- Courrier ENTRANT coté : validation de la réception par le service --}}
+                        @if($mail->mail_type === 'incoming' && $mail->assigned_organisation_id && $statusVal !== 'completed')
+                            <form action="{{ route('mails.workflow.confirm-reception', $mail->id) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check2-circle"></i> Valider la réception
+                                </button>
+                            </form>
+                        @endif
+
+                        {{-- Courrier SORTANT en cours : soumettre pour validation (N+1 / DG) --}}
+                        @if($mail->mail_type === 'outgoing' && in_array($statusVal, ['draft', 'in_progress']))
+                            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#submitModal">
+                                <i class="bi bi-send"></i> Soumettre pour validation
+                            </button>
+                        @endif
+
+                        {{-- Courrier SORTANT soumis : signature ou rejet par le DG --}}
+                        @if($mail->mail_type === 'outgoing' && $statusVal === 'pending_approval' && $isDg)
+                            <form action="{{ route('mails.workflow.sign', $mail->id) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-pen"></i> Signer et transmettre
+                                </button>
+                            </form>
+                            <form action="{{ route('mails.workflow.reject', $mail->id) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-x-circle"></i> Rejeter
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+
+                    {{-- Bandeau signature DG --}}
+                    @if($mail->dg_signature_status === 'signed')
+                        <div class="alert alert-success mt-3 mb-0">
+                            <i class="bi bi-patch-check"></i>
+                            Signé par le DG ({{ $mail->dgSigner->name ?? '—' }}) le {{ optional($mail->dg_signed_at)->format('d/m/Y H:i') }}.
+                            @if($mail->dg_signature_note) — « {{ $mail->dg_signature_note }} » @endif
+                        </div>
+                    @elseif($mail->dg_signature_status === 'rejected')
+                        <div class="alert alert-danger mt-3 mb-0">
+                            <i class="bi bi-x-octagon"></i>
+                            Rejeté par le DG le {{ optional($mail->dg_signed_at)->format('d/m/Y H:i') }}.
+                            @if($mail->dg_signature_note) — « {{ $mail->dg_signature_note }} » @endif
+                        </div>
+                    @endif
+                </div>
+
+                {{-- Traçabilité : historique du courrier (qui / quand / durée par étape) --}}
+                @isset($timeline)
+                @if($timeline->count())
+                @php
+                    $actionLabels = [
+                        'created' => 'Créé',
+                        'updated' => 'Modifié',
+                        'coted' => 'Coté par le DG',
+                        'reception_confirmed' => 'Réception validée',
+                        'submitted_for_approval' => 'Soumis pour validation',
+                        'dg_signed' => 'Signé par le DG',
+                        'dg_rejected' => 'Rejeté par le DG',
+                        'deleted' => 'Supprimé',
+                    ];
+                @endphp
+                <div class="col-md-12 mt-4">
+                    <h5 class="text-secondary mb-3"><i class="bi bi-clock-history"></i> Historique du courrier</h5>
+                    <ul class="list-group">
+                        @foreach($timeline as $i => $event)
+                            @php
+                                // Délai depuis l'étape précédente (les événements sont triés du plus récent au plus ancien).
+                                $previous = $timeline[$i + 1] ?? null;
+                                $delay = $previous ? $previous->created_at->diffForHumans($event->created_at, ['syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE]) : null;
+                            @endphp
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <span>
+                                        <strong>{{ $actionLabels[$event->action] ?? ucfirst($event->action) }}</strong>
+                                        @if($event->user) — {{ $event->user->name }} @endif
+                                        @if($event->description)
+                                            <br><small class="text-muted">{{ $event->description }}</small>
+                                        @endif
+                                    </span>
+                                    <span class="text-nowrap text-muted small">
+                                        {{ $event->created_at->format('d/m/Y H:i') }}
+                                        @if($delay)
+                                            <br><span class="badge bg-light text-dark">+ {{ $delay }}</span>
+                                        @endif
+                                    </span>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+                @endisset
 
     </div>
+
+    {{-- Modal de soumission pour validation (courrier sortant) --}}
+    @if($mail->mail_type === 'outgoing' && in_array($mail->status?->value, ['draft', 'in_progress']))
+    <div class="modal fade" id="submitModal" tabindex="-1" aria-labelledby="submitModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route('mails.workflow.submit', $mail->id) }}" method="POST">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="submitModalLabel">Soumettre pour validation</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="explanatory_note" class="form-label">Note explicative (facultatif)</label>
+                        <textarea name="explanatory_note" id="explanatory_note" class="form-control" rows="4"
+                                  placeholder="Justification / contexte à l'attention du validateur ou du DG"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-warning">Soumettre</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
 
     {{-- Modal de suppression --}}
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">

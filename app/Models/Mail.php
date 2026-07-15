@@ -286,6 +286,96 @@ class Mail extends Model
         return $this;
     }
 
+    // === WORKFLOW COURRIER (circuits entrant / sortant) ===
+
+    /**
+     * Cotation d'un courrier entrant par le DG : affectation à une direction
+     * avec une instruction (mail_action), puis passage en cours de traitement.
+     */
+    public function cote(int $organisationId, ?int $actionId = null, ?string $instruction = null): self
+    {
+        $this->update([
+            'assigned_organisation_id' => $organisationId,
+            'action_id' => $actionId ?? $this->action_id,
+            'assigned_at' => now(),
+            'status' => MailStatusEnum::IN_PROGRESS,
+        ]);
+
+        $this->logAction('coted', 'assigned_organisation_id', null, (string) $organisationId, $instruction ?? 'Courrier coté par le DG');
+
+        return $this;
+    }
+
+    /**
+     * Validation de la réception par le responsable du service destinataire.
+     */
+    public function confirmReception(int $userId): self
+    {
+        $this->update([
+            'assigned_to' => $userId,
+            'processed_at' => now(),
+            'status' => MailStatusEnum::COMPLETED,
+        ]);
+
+        $this->logAction('reception_confirmed', 'status', null, MailStatusEnum::COMPLETED->value, 'Réception validée par le responsable');
+
+        return $this;
+    }
+
+    /**
+     * Soumission d'un courrier sortant pour validation hiérarchique (N+1)
+     * ou proposition au DG, avec note explicative facultative.
+     */
+    public function submitForApproval(?string $explanatoryNote = null): self
+    {
+        $this->update([
+            'status' => MailStatusEnum::PENDING_APPROVAL,
+            'explanatory_note' => $explanatoryNote ?? $this->explanatory_note,
+            'dg_signature_status' => 'pending',
+        ]);
+
+        $this->logAction('submitted_for_approval', 'status', null, MailStatusEnum::PENDING_APPROVAL->value, 'Courrier soumis pour validation');
+
+        return $this;
+    }
+
+    /**
+     * Signature / validation finale par le DG (courrier sortant).
+     */
+    public function signByDg(int $dgUserId, ?string $note = null): self
+    {
+        $this->update([
+            'dg_signature_status' => 'signed',
+            'dg_signed_by' => $dgUserId,
+            'dg_signed_at' => now(),
+            'dg_signature_note' => $note,
+            'status' => MailStatusEnum::TRANSMITTED,
+            'processed_at' => now(),
+        ]);
+
+        $this->logAction('dg_signed', 'dg_signature_status', null, 'signed', $note ?? 'Courrier signé par le DG');
+
+        return $this;
+    }
+
+    /**
+     * Rejet par le DG (ou par le N+1) d'un courrier soumis.
+     */
+    public function rejectByDg(int $dgUserId, ?string $note = null): self
+    {
+        $this->update([
+            'dg_signature_status' => 'rejected',
+            'dg_signed_by' => $dgUserId,
+            'dg_signed_at' => now(),
+            'dg_signature_note' => $note,
+            'status' => MailStatusEnum::REJECTED,
+        ]);
+
+        $this->logAction('dg_rejected', 'dg_signature_status', null, 'rejected', $note ?? 'Courrier rejeté par le DG');
+
+        return $this;
+    }
+
     public function isOverdue(): bool
     {
         return $this->deadline && now()->isAfter($this->deadline);
