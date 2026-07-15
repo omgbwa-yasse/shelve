@@ -71,15 +71,16 @@
                 <textarea id="description" name="description" class="form-control" rows="3">{{ old('description') }}</textarea>
             </div>
 
-            <h5 class="card-title mb-4 mt-4">Destinataire externe</h5>
+            <h5 class="card-title mb-4 mt-4">Expéditeur</h5>
 
             <div class="row">
                 <div class="col-md-4 mb-3">
-                    <label for="recipient_type" class="form-label">Type de destinataire</label>
-                    <select name="recipient_type" id="recipient_type" class="form-select" required>
-                        <option value="">Choisir le type de destinataire</option>
-                        <option value="external_contact" {{ old('recipient_type') == 'external_contact' ? 'selected' : '' }}>Contact externe</option>
-                        <option value="external_organization" {{ old('recipient_type') == 'external_organization' ? 'selected' : '' }}>Organisation externe</option>
+                    <label for="sender_type" class="form-label">Type d'expéditeur</label>
+                    <select name="sender_type" id="sender_type" class="form-select" required>
+                        <option value="">Choisir le type d'expéditeur</option>
+                        <option value="external_contact" {{ old('sender_type') == 'external_contact' ? 'selected' : '' }}>Contact externe</option>
+                        <option value="external_organization" {{ old('sender_type') == 'external_organization' ? 'selected' : '' }}>Organisation externe</option>
+                        <option value="organisation" {{ old('sender_type') == 'organisation' ? 'selected' : '' }}>Organisation</option>
                     </select>
                 </div>
             </div>
@@ -88,11 +89,11 @@
             <div id="external-contact-section" style="display: none;">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="external_recipient_id" class="form-label">Contact externe</label>
-                        <select name="external_recipient_id" id="external_recipient_id" class="form-select">
+                        <label for="external_sender_id" class="form-label">Contact externe</label>
+                        <select name="external_sender_id" id="external_sender_id" class="form-select">
                             <option value="">Sélectionner un contact externe</option>
                             @foreach($externalContacts as $contact)
-                                <option value="{{ $contact->id }}" {{ old('external_recipient_id') == $contact->id ? 'selected' : '' }}>
+                                <option value="{{ $contact->id }}" {{ old('external_sender_id') == $contact->id ? 'selected' : '' }}>
                                     {{ $contact->first_name }} {{ $contact->last_name }}
                                     @if($contact->organization)
                                         ({{ $contact->organization->name }})
@@ -108,11 +109,28 @@
             <div id="external-organization-section" style="display: none;">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="external_recipient_organization_id" class="form-label">Organisation externe</label>
-                        <select name="external_recipient_organization_id" id="external_recipient_organization_id" class="form-select">
+                        <label for="external_sender_organization_id" class="form-label">Organisation externe</label>
+                        <select name="external_sender_organization_id" id="external_sender_organization_id" class="form-select">
                             <option value="">Sélectionner une organisation externe</option>
                             @foreach($externalOrganizations as $organization)
-                                <option value="{{ $organization->id }}" {{ old('external_recipient_organization_id') == $organization->id ? 'selected' : '' }}>
+                                <option value="{{ $organization->id }}" {{ old('external_sender_organization_id') == $organization->id ? 'selected' : '' }}>
+                                    {{ $organization->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Organisation interne -->
+            <div id="organization-section" style="display: none;">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="sender_organisation_id" class="form-label">Organisation</label>
+                        <select name="sender_organisation_id" id="sender_organisation_id" class="form-select">
+                            <option value="">Sélectionner une organisation</option>
+                            @foreach($senderOrganisations as $organization)
+                                <option value="{{ $organization->id }}" {{ old('sender_organisation_id') == $organization->id ? 'selected' : '' }}>
                                     {{ $organization->name }}
                                 </option>
                             @endforeach

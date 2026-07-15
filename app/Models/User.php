@@ -233,4 +233,76 @@ class User extends Authenticatable
         // Utiliser le système natif pour vérifier la permission
         return $this->hasPermissionTo($permissionName);
     }
+
+    /**
+     * Rôle contextuel de l'utilisateur dans une organisation donnée
+     * (lu depuis le pivot user_organisation_role.role_id).
+     */
+    public function roleInOrganisation(?int $organisationId): ?Role
+    {
+        if (!$organisationId) {
+            return null;
+        }
+
+        $pivot = UserOrganisationRole::where('user_id', $this->id)
+            ->where('organisation_id', $organisationId)
+            ->first();
+
+        return $pivot ? Role::find($pivot->role_id) : null;
+    }
+
+    /**
+     * Vérifie si l'utilisateur porte l'un des rôles donnés dans une organisation.
+     *
+     * @param  string|array<int, string>  $roleNames
+     */
+    public function hasRoleInOrganisation($roleNames, ?int $organisationId): bool
+    {
+        $role = $this->roleInOrganisation($organisationId);
+
+        if (!$role) {
+            return false;
+        }
+
+        return in_array($role->name, (array) $roleNames, true);
+    }
+
+    /**
+     * Supérieur hiérarchique (N+1) de l'utilisateur dans le contexte d'une organisation.
+     *
+     * - Un agent a pour supérieur le responsable de sa propre organisation.
+     * - Un responsable/directeur a pour supérieur le responsable de l'organisation parente,
+     *   en remontant jusqu'au DG.
+     * Retourne null si l'utilisateur est déjà au sommet (DG) ou si aucun supérieur n'est trouvé.
+     */
+    public function hierarchicalSuperior(?int $organisationId = null): ?User
+    {
+        $organisationId = $organisationId ?? $this->current_organisation_id;
+        $organisation = Organisation::find($organisationId);
+
+        if (!$organisation) {
+            return null;
+        }
+
+        $myRole = $this->roleInOrganisation($organisationId);
+        $myRoleName = $myRole?->name;
+
+        // Un agent dépend du responsable de sa propre organisation.
+        if ($myRoleName === 'agent') {
+            $responsible = $organisation->responsible();
+            if ($responsible && $responsible->id !== $this->id) {
+                return $responsible;
+            }
+        }
+
+        // Sinon (responsable/directeur), on remonte via les organisations parentes.
+        foreach ($organisation->ancestors() as $ancestor) {
+            $responsible = $ancestor->responsible();
+            if ($responsible && $responsible->id !== $this->id) {
+                return $responsible;
+            }
+        }
+
+        return null;
+    }
 }

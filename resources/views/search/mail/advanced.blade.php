@@ -41,31 +41,31 @@
           <input type="date" name="date" class="form-control" id="date">
         </div>
         <div class="col-md-6 mb-3">
-          <label for="mail_priority_id">Priorité :</label>
-          <select name="mail_priority_id" class="form-select" id="mail_priority_id">
+          <label for="priority_id">Priorité :</label>
+          <select name="priority_id" class="form-select" id="priority_id">
             <option value="">Sélectionner une priorité</option>
             @foreach($data['priorities'] ?? [] as $priority)
-              <option value="{{ $priority->id }}">{{ $priority->name }}</option>
+              <option value="{{ $priority->id }}" {{ request('priority_id') == $priority->id ? 'selected' : '' }}>{{ $priority->name }}</option>
             @endforeach
           </select>
         </div>
       </div>
       <div class="row">
         <div class="col-md-6 mb-3">
-          <label for="mail_type_id">Type :</label>
-          <select name="mail_type_id" class="form-select" id="mail_type_id">
+          <label for="mail_type">Type :</label>
+          <select name="mail_type" class="form-select" id="mail_type">
             <option value="">Sélectionner un type</option>
-            @foreach($data['types'] ?? [] as $type)
-              <option value="{{ $type->id }}">{{ $type->name }}</option>
-            @endforeach
+            <option value="internal" {{ request('mail_type') == 'internal' ? 'selected' : '' }}>Interne</option>
+            <option value="incoming" {{ request('mail_type') == 'incoming' ? 'selected' : '' }}>Entrant</option>
+            <option value="outgoing" {{ request('mail_type') == 'outgoing' ? 'selected' : '' }}>Sortant</option>
           </select>
         </div>
         <div class="col-md-6 mb-3">
-          <label for="mail_typology_id">Typologie :</label>
-          <select name="mail_typology_id" class="form-select" id="mail_typology_id">
+          <label for="typology_id">Typologie :</label>
+          <select name="typology_id" class="form-select" id="typology_id">
             <option value="">Sélectionner une typologie</option>
             @foreach($data['typologies'] ?? [] as $typology)
-              <option value="{{ $typology->id }}">{{ $typology->name }}</option>
+              <option value="{{ $typology->id }}" {{ request('typology_id') == $typology->id ? 'selected' : '' }}>{{ $typology->name }}</option>
             @endforeach
           </select>
         </div>

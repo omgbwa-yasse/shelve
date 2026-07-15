@@ -2,7 +2,7 @@
 @section('content')
 
 <div class="container">
-    <h1>Mail Typology Details</h1>
+    <h1>Détails de la typologie du courrier</h1>
     <table class="table">
         <tbody>
             <tr>

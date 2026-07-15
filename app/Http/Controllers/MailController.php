@@ -629,7 +629,7 @@ class MailController extends Controller
         // Compter les mails entrants non traités pour l'organisation de l'utilisateur
         $count = Mail::where('recipient_organisation_id', $organisationId)
             ->where('mail_type', Mail::TYPE_INCOMING)
-            ->where('status', MailStatusEnum::RECEIVED)
+            ->whereIn('status', [MailStatusEnum::TRANSMITTED, MailStatusEnum::IN_PROGRESS])
             ->whereNull('processed_at')  // Mails non encore traités
             ->count();
 

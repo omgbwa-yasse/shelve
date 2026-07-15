@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>Batch Mail Details for {{ $batch->name }}</h1>
+    <h1>Détails du courrier du parapheur {{ $batch->name }}</h1>
     <table class="table">
         <tbody>
             <tr>
-                <th>Mail ID</th>
+                <th>ID Courrier</th>
                 <td>{{ $batchMail->mail_id }}</td>
             </tr>
             <tr>

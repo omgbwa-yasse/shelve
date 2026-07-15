@@ -23,6 +23,7 @@ use Database\Seeders\Workplaces\OrganisationServicesSeeder;
 use Database\Seeders\Workplaces\OrganisationRoomSeeder;
 use Database\Seeders\Workplaces\WorkplaceCategorySeeder;
 use Database\Seeders\Settings\SuperAdminSeeder;
+use Database\Seeders\Settings\RoleHierarchySeeder;
 use Database\Seeders\Tools\ToolActivitySeeder;
 use Database\Seeders\Tools\ToolCommunicabilitySeeder;
 use Database\Seeders\Settings\SettingSeeder;
@@ -86,6 +87,7 @@ class DatabaseSeeder extends Seeder
 
             // 6. UTILISATEURS (Dépendent des organisations et permissions)
             SuperAdminSeeder::class, // Seeder pour créer le superadmin avec toutes les permissions
+            RoleHierarchySeeder::class, // Rôles métier (DG/directeur/responsable/agent) + users démo hiérarchiques
 
             // 6bis. DONNÉES DÉPENDANTES DES UTILISATEURS
             ContainerStatusSeeder::class, // Seeder pour les statuts des contenants

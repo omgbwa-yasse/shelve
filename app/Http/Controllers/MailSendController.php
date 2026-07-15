@@ -11,6 +11,7 @@ use App\Models\MailTypology;
 use App\Models\MailAction;
 use App\Models\Organisation;
 use App\Models\MailAttachment;
+use App\Enums\MailStatusEnum;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -249,7 +250,7 @@ class MailSendController extends Controller
                 'typology_id' => $validatedData['typology_id'],
                 'sender_organisation_id' => auth()->user()->current_organisation_id,
                 'sender_user_id' => auth()->id(),
-                'status' => 'in_progress',
+                'status' => MailStatusEnum::IN_PROGRESS,
                 'mail_type' => 'outgoing', // Courrier sortant
                 'sender_type' => 'user', // L'expéditeur est toujours un utilisateur interne
             ];
@@ -326,7 +327,7 @@ class MailSendController extends Controller
                 'date' => now(),
                 'description' => $originalMail->description . "\n" . Auth::user()->name . " : " . now() . " : " . $validatedData['comment'],
                 'document_type' => $originalMail->document_type,
-                'status' => 'in_progress',
+                'status' => MailStatusEnum::IN_PROGRESS,
                 'typology_id' => $originalMail->typology_id,
 
                 'priority_id' => $originalMail->priority_id ?? null,
@@ -650,11 +651,12 @@ public function inprogress()
     try {
         $mails = Mail::with(['action', 'sender', 'senderOrganisation', 'attachments'])
             ->where('recipient_user_id', Auth::id())
-            ->where('status', 'in_progress')
+            ->where('status', MailStatusEnum::IN_PROGRESS->value)
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('mails.send.index', compact('mails'));
+        $type = 'send';
+        return view('mails.index', compact('mails', 'type'));
     } catch (Exception $e) {
         Log::error('Erreur lors de la récupération des courriers en cours : ' . $e->getMessage());
         return back()->with('error', 'Une erreur est survenue lors du chargement des courriers.');
@@ -670,10 +672,11 @@ public function rejected()
     try {
             $mails = Mail::with(['action', 'sender', 'senderOrganisation', 'attachments'])
                 ->where('recipient_user_id', Auth::id())
-                ->where('status', 'reject')
+                ->where('status', MailStatusEnum::REJECTED->value)
                 ->orderBy('created_at', 'desc')
                 ->get();
-            return view('mails.send.index', compact('mails'));
+            $type = 'send';
+            return view('mails.index', compact('mails', 'type'));
 
         } catch (Exception $e) {
 
@@ -694,7 +697,7 @@ public function approve(Request $request)
 
         $mail->update([
             'recipient_user_id' => auth()->id(),
-            'status' => 'received'
+            'status' => MailStatusEnum::TRANSMITTED,
         ]);
 
         return redirect()->route('mail-received.index')

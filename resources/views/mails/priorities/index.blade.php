@@ -2,8 +2,8 @@
 
 @section('content')
     <div class="container">
-        <h1>Mail priority</h1>
-        <a href="{{ route('mail-priority.create') }}" class="btn btn-primary mb-3">Create New Priority</a>
+        <h1>Priorités du courrier</h1>
+        <a href="{{ route('mail-priority.create') }}" class="btn btn-primary mb-3">Nouvelle priorité</a>
         <table class="table">
             <thead>
                 <tr>

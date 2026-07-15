@@ -47,7 +47,9 @@ class BuildingController extends Controller
 
     public function show(Building $building)
     {
-        $building->load('floors');
+        // Précharge les étages et leurs salles pour éviter les requêtes N+1
+        // dans la vue (buildings/show : $floor->rooms->count()).
+        $building->load('floors.rooms');
         return view('buildings.show', compact('building'));
     }
 

@@ -134,9 +134,6 @@ class MailSendExternalController extends Controller
                 $mail->attachments()->attach($pending, ['added_by' => Auth::id()]);
             }
 
-            // Initialize workflow for the mail
-            $mail->initializeWorkflow();
-
             // Log the action
             $mail->logAction('created', null, null, null, 'Courrier sortant externe créé');
 

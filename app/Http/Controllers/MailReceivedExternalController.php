@@ -81,6 +81,7 @@ class MailReceivedExternalController extends Controller
                 'typology_id' => 'required|exists:mail_typologies,id',
                 'priority_id' => 'nullable|exists:mail_priorities,id',
                 'action_id' => 'nullable|exists:mail_actions,id',
+                // Courrier reçu externe : l'émetteur est l'entité externe (ou une autre organisation).
                 'sender_type' => 'required|in:external_contact,external_organization,organisation',
                 'external_sender_id' => 'nullable|exists:external_contacts,id',
                 'external_sender_organization_id' => 'nullable|exists:external_organizations,id',
@@ -140,9 +141,6 @@ class MailReceivedExternalController extends Controller
                     ->pluck('id');
                 $mail->attachments()->attach($pending, ['added_by' => Auth::id()]);
             }
-
-            // Initialize workflow for the mail
-            $mail->initializeWorkflow();
 
             // Log the action
             $mail->logAction('created', null, null, null, 'Courrier entrant externe créé');
@@ -221,6 +219,7 @@ class MailReceivedExternalController extends Controller
                 'typology_id' => 'required|exists:mail_typologies,id',
                 'priority_id' => 'nullable|exists:mail_priorities,id',
                 'action_id' => 'nullable|exists:mail_actions,id',
+                // Courrier reçu externe : l'émetteur est l'entité externe (ou une autre organisation).
                 'sender_type' => 'required|in:external_contact,external_organization,organisation',
                 'external_sender_id' => 'nullable|exists:external_contacts,id',
                 'external_sender_organization_id' => 'nullable|exists:external_organizations,id',

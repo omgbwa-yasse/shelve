@@ -50,7 +50,12 @@ class Mail extends Model
         'assigned_to',
         'assigned_organisation_id',
         'assigned_at',
-        'estimated_processing_time'
+        'estimated_processing_time',
+        'dg_signature_status',
+        'dg_signed_by',
+        'dg_signed_at',
+        'dg_signature_note',
+        'explanatory_note',
     ];
 
     protected $casts = [
@@ -58,6 +63,7 @@ class Mail extends Model
         'deadline' => 'datetime',
         'processed_at' => 'datetime',
         'assigned_at' => 'datetime',
+        'dg_signed_at' => 'datetime',
         'is_archived' => 'boolean',
         'estimated_processing_time' => 'integer', // en minutes
         'status' => MailStatusEnum::class,
@@ -141,6 +147,12 @@ class Mail extends Model
     public function assignedTo()
     {
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    // DG ayant signé/validé le courrier sortant
+    public function dgSigner()
+    {
+        return $this->belongsTo(User::class, 'dg_signed_by');
     }
 
     // Relations pour les entités externes

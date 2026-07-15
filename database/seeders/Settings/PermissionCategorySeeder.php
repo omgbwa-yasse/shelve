@@ -124,6 +124,11 @@ class PermissionCategorySeeder extends Seeder
     {
         $permissions = [
             [
+                'name' => 'mail_viewAny',
+                'category' => 'mail',
+                'description' => 'Voir la liste des courriers'
+            ],
+            [
                 'name' => 'mail_view',
                 'category' => 'mail',
                 'description' => 'Voir les courriers'
@@ -132,6 +137,16 @@ class PermissionCategorySeeder extends Seeder
                 'name' => 'mail_create',
                 'category' => 'mail',
                 'description' => 'CrÃ©er des courriers'
+            ],
+            [
+                'name' => 'mail_update',
+                'category' => 'mail',
+                'description' => 'Mettre a jour des courriers'
+            ],
+            [
+                'name' => 'mail_force_delete',
+                'category' => 'mail',
+                'description' => 'Supprimer definitivement des courriers'
             ],
             [
                 'name' => 'mail_edit',

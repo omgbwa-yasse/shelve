@@ -35,7 +35,8 @@ class MailReceivedController extends Controller
         $dollies = Dolly::all();
         $categories = Dolly::categories();
         $users = User::all();
-        return view('mails.received.index', compact('mails','dollies', 'categories','users'));
+        $type = 'received';
+        return view('mails.index', compact('mails', 'dollies', 'categories', 'users', 'type'));
     }
 
     public function approve(Mail $mail)
@@ -49,14 +50,8 @@ class MailReceivedController extends Controller
                          ->with('success', 'Mail approved successfully.');
     }
 
-    public function reject(Request $request)
+    public function reject(Mail $mail)
     {
-        $validatedData = $request->validate([
-            'id' => 'required|exists:mails,id',
-        ]);
-
-        $mail = Mail::findOrFail($validatedData['id']);
-
         $mail->update([
             'recipient_user_id' => Auth::id(),
             'status' => MailStatusEnum::REJECTED,

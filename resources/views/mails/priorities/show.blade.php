@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1>Mail Priority Details</h1>
+        <h1>Détails de la priorité du courrier</h1>
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">{{ $mailPriority->name }}</h5>

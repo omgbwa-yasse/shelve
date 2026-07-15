@@ -11,7 +11,7 @@
             <input type="text" class="form-control" id="container_id" value="{{ $mailArchive->container->name }}" readonly>
         </div>
         <div class="mb-3">
-            <label for="mail_id" class="form-label">Mail</label>
+            <label for="mail_id" class="form-label">Courrier</label>
             <input type="text" class="form-control" id="mail_id" value="{{ $mailArchive->mail->name }}" readonly>
         </div>
         <div class="mb-3">

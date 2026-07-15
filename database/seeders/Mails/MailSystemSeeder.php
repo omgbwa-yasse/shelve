@@ -111,7 +111,32 @@ class MailSystemSeeder extends Seeder
                 'name' => 'Pour archivage',
                 'duration' => 0,
                 'to_return' => false,
-                'description' => 'Document Ã  archiver'
+                'description' => 'Document a archiver',
+            ],
+            // Instructions de cotation du Directeur General (courrier entrant)
+            [
+                'name' => 'Donner suite',
+                'duration' => 5,
+                'to_return' => true,
+                'description' => 'Instruction DG : donner suite au courrier',
+            ],
+            [
+                'name' => "M'expliquer",
+                'duration' => 3,
+                'to_return' => true,
+                'description' => 'Instruction DG : fournir des explications',
+            ],
+            [
+                'name' => 'En parler',
+                'duration' => 3,
+                'to_return' => true,
+                'description' => 'Instruction DG : en discuter avec le DG',
+            ],
+            [
+                'name' => 'Classer',
+                'duration' => 0,
+                'to_return' => false,
+                'description' => 'Instruction DG : classer le courrier sans suite',
             ]
         ];
 
@@ -312,6 +337,12 @@ class MailSystemSeeder extends Seeder
                 'code' => 'DIRS',
                 'name' => 'Divers',
                 'description' => 'Courrier divers non classÃ©',
+                'activity_id' => $defaultActivity->id
+            ],
+            [
+                'code' => 'NOTE',
+                'name' => 'Note de service',
+                'description' => 'Note de service interne',
                 'activity_id' => $defaultActivity->id
             ]
         ];
