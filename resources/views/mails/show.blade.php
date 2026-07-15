@@ -156,7 +156,11 @@
                         request()->routeIs('*send.external*') => route('mails.send.external.index'),
                         request()->routeIs('*received*') => route('mail-received.index'),
                         request()->routeIs('*send*') => route('mail-send.index'),
-                        default => route('mails.index')
+                        request()->routeIs('*incoming*') => route('mails.incoming.index'),
+                        request()->routeIs('*outgoing*') => route('mails.outgoing.index'),
+                        // Repli sur la liste correspondant au type de courrier affiché.
+                        ($type ?? null) === 'send' => route('mail-send.index'),
+                        default => route('mail-received.index'),
                     };
 
                     $editRoute = match(true) {
