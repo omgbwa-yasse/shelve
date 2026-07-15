@@ -98,8 +98,22 @@ class AgentOrchestratorService
         $invalidResponses = 0;
 
         for ($iteration = 1; $iteration <= $maxIterations; $iteration++) {
-            $response = AiBridge::provider($providerName)->chat($messages, ['model' => $model]);
-            $text = ResponseTextExtractor::extract($response);
+            $text = $this->chatWithRetry($providerName, $model, $messages);
+
+            if ($text === null) {
+                // Le fournisseur IA renvoie une erreur (rate limit, panne...) même
+                // après nouvelle tentative : on l'annonce clairement, en échec,
+                // plutôt que d'afficher le JSON brut ou de prétendre un succès.
+                return $this->emitFinal($this->buildResponse(
+                    "Le service IA est momentanément surchargé ou indisponible. Merci de réessayer dans quelques instants.",
+                    [],
+                    $steps,
+                    $itemMap,
+                    $iteration,
+                    success: false
+                ), $onEvent);
+            }
+
             $decision = $this->parseDecision($text);
 
             if ($decision === null) {
@@ -168,6 +182,71 @@ class AgentOrchestratorService
         ], $onEvent);
     }
 
+    /**
+     * Appelle le fournisseur IA et retente UNE fois, immédiatement, si la
+     * réponse est une erreur provider identifiée (ex. rate limit). Les
+     * exceptions réseau/config (clé invalide, DNS, timeout...) ne sont PAS
+     * catchées ici : elles remontent à run(), qui journalise l'échec réel
+     * (finishFailure) et le fait remonter à l'appelant plutôt que de le
+     * déguiser en réponse générique.
+     *
+     * Pas de pause bloquante : run() est appelé de façon synchrone depuis un
+     * contrôleur HTTP (pas une queue) — un usleep() retiendrait un worker
+     * PHP-FPM, risque réel en cas de plusieurs utilisateurs simultanés.
+     *
+     * Retourne null si la réponse reste une erreur provider après une tentative.
+     */
+    private function chatWithRetry(string $providerName, string $model, array $messages): ?string
+    {
+        for ($attempt = 1; $attempt <= 2; $attempt++) {
+            $response = AiBridge::provider($providerName)->chat($messages, ['model' => $model]);
+            $text = ResponseTextExtractor::extract($response);
+
+            if (!$this->isProviderError($text)) {
+                return $text;
+            }
+
+            Log::warning('AI Agent: réponse provider en erreur', ['attempt' => $attempt, 'raw' => mb_substr($text, 0, 300)]);
+        }
+
+        return null;
+    }
+
+    /**
+     * Détecte une réponse d'erreur brute du fournisseur (rate limit, panne...)
+     * plutôt qu'une réponse JSON conforme au protocole de l'agent. Couvre les
+     * formes réellement renvoyées par les providers connectés via AiBridge :
+     * OpenAI/Mistral ({"error":{"message","type","code"}}) et Anthropic/Claude
+     * ({"type":"error","error":{"type","message"}}).
+     */
+    private function isProviderError(string $text): bool
+    {
+        $clean = trim($text);
+        $clean = preg_replace('/^```(?:json)?\s*/i', '', $clean);
+        $clean = preg_replace('/\s*```$/', '', $clean);
+
+        $decoded = json_decode($clean, true);
+        if (!is_array($decoded)) {
+            return false;
+        }
+
+        // OpenAI / Mistral : {"error": {"message": ..., "type": ..., "code": ...}}
+        if (isset($decoded['error']) && is_array($decoded['error'])) {
+            return true;
+        }
+
+        // Anthropic / Claude : {"type": "error", "error": {...}}
+        if (($decoded['type'] ?? null) === 'error') {
+            return true;
+        }
+
+        // Formats génériques observés (gateways, proxies) : object=error, ou
+        // code HTTP explicite dans le corps de la réponse.
+        return (isset($decoded['object']) && $decoded['object'] === 'error')
+            || isset($decoded['raw_status_code'])
+            || isset($decoded['status_code']);
+    }
+
     private function emitFinal(array $response, ?callable $onEvent): array
     {
         if ($onEvent !== null) {
@@ -231,8 +310,10 @@ OUTILS DISPONIBLES :
 {$toolsBlock}
 
 FORMAT DE RÉPONSE — réponds UNIQUEMENT avec un objet JSON, sans texte avant ni après, sans balises markdown :
-- Pour appeler un outil :
+- Pour appeler un outil, "action" vaut TOUJOURS le mot littéral "tool" (jamais le nom de l'outil) ; le nom de l'outil va dans le champ séparé "tool" :
 {"action":"tool","tool":"nom_outil","arguments":{...},"thought":"une phrase en français expliquant cette étape (elle sera montrée à l'utilisateur)"}
+  Exemple pour appeler search_records : {"action":"tool","tool":"search_records","arguments":{"query":"AR-2010-007"},"thought":"..."}
+  INCORRECT (ne fais jamais ça) : {"action":"search_records",...} — "action" doit rester "tool".
 - Pour donner la réponse finale :
 {"action":"final","message":"réponse claire en français","results":[{"type":"mails","id":12},{"type":"contacts","id":3}]}
 
@@ -240,6 +321,8 @@ RÈGLES :
 - UN SEUL objet JSON par réponse : un seul appel d'outil à la fois, jamais plusieurs objets à la suite. Tu verras le résultat avant de décider de l'étape suivante.
 - Maximum {$maxIterations} appels d'outils au total : conclus dès que tu as ce qu'il faut.
 - Pour une question sur une PERSONNE (email, téléphone, coordonnées), commence par search_contacts.
+- Pour une question du type « propose/suggère des mots-clés ou une indexation pour... », utilise DIRECTEMENT suggest_indexing — ne fais jamais de recherche préalable dans les dossiers, mails ou versements pour ce type de question.
+- Pour une question du type « propose/suggère une classification/un classement pour... », utilise DIRECTEMENT suggest_classification, sans recherche préalable.
 - Dans "results", ne liste QUE des éléments réellement retournés par les outils (type et id exacts). Jamais d'élément inventé.
 - Ne fabrique jamais d'information : si tu ne trouves rien, dis-le et propose des pistes.
 - "message" est destiné à l'utilisateur final : concis, en français, et mentionne les informations clés trouvées (ex. l'adresse email demandée).
@@ -265,7 +348,21 @@ PROMPT;
             $decoded = $this->firstJsonObject($clean);
         }
 
-        if (!is_array($decoded) || !in_array($decoded['action'] ?? null, ['tool', 'final'], true)) {
+        if (!is_array($decoded)) {
+            return null;
+        }
+
+        // Auto-correction : le modèle met parfois le nom de l'outil directement
+        // dans "action" (ex. {"action":"search_records",...}) au lieu du littéral
+        // "tool" + champ "tool" séparé. On normalise plutôt que de rejeter.
+        $action = $decoded['action'] ?? null;
+        if (!in_array($action, ['tool', 'final'], true) && is_string($action) && array_key_exists($action, $this->tools->definitions())) {
+            $decoded['tool'] = $decoded['tool'] ?? $action;
+            $decoded['action'] = 'tool';
+            $action = 'tool';
+        }
+
+        if (!in_array($action, ['tool', 'final'], true)) {
             return null;
         }
 
@@ -349,7 +446,7 @@ PROMPT;
         return $compact;
     }
 
-    private function buildResponse(string $message, array $requestedResults, array $steps, array $itemMap, int $iterations): array
+    private function buildResponse(string $message, array $requestedResults, array $steps, array $itemMap, int $iterations, bool $success = true): array
     {
         $selected = [];
         foreach ($requestedResults as $reference) {
@@ -363,7 +460,7 @@ PROMPT;
         }
 
         return [
-            'success' => true,
+            'success' => $success,
             'response' => $message !== '' ? $message : 'Recherche terminée.',
             'results' => $this->presentItems(array_values($selected)),
             'steps' => $steps,

@@ -966,6 +966,10 @@ Route::middleware(['auth'])->prefix('ai-search')->name('ai-search.')->group(func
     Route::post('/agent/stream', [\App\Http\Controllers\AiSearchController::class, 'agentStream'])->name('agent.stream');
     Route::get('/preview/{type}/{id}', [\App\Http\Controllers\AiSearchController::class, 'preview'])->name('preview')->where('id', '[0-9]+');
 
+    // Historique des conversations avec l'assistant IA (persistant côté serveur)
+    Route::get('/conversations', [\App\Http\Controllers\AiSearchController::class, 'conversations'])->name('conversations');
+    Route::get('/conversations/{id}', [\App\Http\Controllers\AiSearchController::class, 'conversationShow'])->name('conversations.show')->where('id', '[0-9]+');
+
     // Documentation de l'IA
     Route::get('/documentation', [\App\Http\Controllers\AiSearchController::class, 'documentation'])->name('documentation');
 

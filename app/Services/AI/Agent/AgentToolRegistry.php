@@ -2,7 +2,6 @@
 
 namespace App\Services\AI\Agent;
 
-use App\Models\Accession;
 use App\Models\Activity;
 use App\Models\Author;
 use App\Models\Communication;
@@ -185,15 +184,6 @@ class AgentToolRegistry
                     'limit' => 'int optionnel (défaut 10, max 20)',
                 ],
             ],
-            'search_accessions' => [
-                'description' => "Recherche dans le registre des entrées (accessions) par mots-clés ou période.",
-                'arguments' => [
-                    'query' => 'string optionnel — mots-clés dans code, nom',
-                    'date_from' => 'string optionnel — AAAA-MM-JJ',
-                    'date_to' => 'string optionnel — AAAA-MM-JJ',
-                    'limit' => 'int optionnel (défaut 10, max 20)',
-                ],
-            ],
             'search_public_requests' => [
                 'description' => "Recherche les demandes de documents déposées par les usagers du portail public (à traiter par les archivistes), filtrables par statut.",
                 'arguments' => [
@@ -236,7 +226,7 @@ class AgentToolRegistry
             'count_items' => [
                 'description' => "Compte des éléments sans les lister (pour les questions « combien »), avec regroupement optionnel. Respecte les mêmes droits d'accès que les recherches.",
                 'arguments' => [
-                    'type' => 'string requis — mails, records, communications, slips, containers, tasks, digital_folders, digital_documents, dollies, reservations, accessions ou workplaces',
+                    'type' => 'string requis — mails, records, communications, slips, containers, tasks, digital_folders, digital_documents, dollies, reservations ou workplaces',
                     'query' => 'string optionnel — mots-clés',
                     'year' => 'int optionnel — année (date de création)',
                     'date_from' => 'string optionnel — AAAA-MM-JJ',
@@ -280,7 +270,8 @@ class AgentToolRegistry
                 'search_thesaurus' => $this->searchThesaurus($args, $user),
                 'browse_classification' => $this->browseClassification($args),
                 'search_reservations' => $this->searchReservations($args, $user),
-                'search_accessions' => $this->searchAccessions($args, $user),
+                // Pas de 'search_accessions' : le modèle Accession n'a aucune table
+                // en base dans ce schéma (aucune migration ne la crée).
                 'search_public_requests' => $this->searchPublicRequests($args, $user),
                 'search_workplaces' => $this->searchWorkplaces($args, $user),
                 'search_laws' => $this->searchLaws($args),
@@ -1067,34 +1058,6 @@ class AgentToolRegistry
         return ['count' => count($items), 'items' => $items];
     }
 
-    private function searchAccessions(array $args, User $user): array
-    {
-        $orgId = $this->scopeOrgId($user);
-
-        $accessions = Accession::query()
-            ->when($orgId !== null, fn ($q) => $q->where('organisation_id', $orgId))
-            ->when(!empty($args['query']), fn ($q) => $this->likeTerms($q, ['code', 'name', 'observation'], $args['query']))
-            ->when(!empty($args['date_from']), fn ($q) => $q->whereDate('created_at', '>=', $args['date_from']))
-            ->when(!empty($args['date_to']), fn ($q) => $q->whereDate('created_at', '<=', $args['date_to']))
-            ->orderByDesc('created_at')
-            ->limit($this->limit($args))
-            ->get();
-
-        $items = $accessions->map(function (Accession $accession) {
-            return [
-                'type' => 'accessions',
-                'id' => $accession->id,
-                'title' => $accession->name ?: ('Entrée ' . $accession->code),
-                'code' => $accession->code,
-                'date_creation' => $accession->date_creation ? (string) $accession->date_creation : null,
-                'description' => $this->preview($accession->observation),
-                'url' => null,
-            ];
-        })->all();
-
-        return ['count' => count($items), 'items' => $items];
-    }
-
     private function searchPublicRequests(array $args, User $user): array
     {
         $orgId = $this->scopeOrgId($user);
@@ -1427,7 +1390,6 @@ class AgentToolRegistry
             'digital_documents' => ['code', 'name', 'description'],
             'dollies' => ['name', 'description'],
             'reservations' => ['code', 'name', 'content'],
-            'accessions' => ['code', 'name', 'observation'],
             'workplaces' => ['code', 'name', 'description'],
         ];
 
@@ -1439,7 +1401,6 @@ class AgentToolRegistry
             'digital_folders' => 'organisation_id',
             'digital_documents' => 'organisation_id',
             'dollies' => 'owner_organisation_id',
-            'accessions' => 'organisation_id',
             'workplaces' => 'organisation_id',
         ];
 
@@ -1454,7 +1415,6 @@ class AgentToolRegistry
             'digital_documents' => RecordDigitalDocument::query()->when($orgId !== null, fn ($q) => $q->byOrganisation($orgId)),
             'dollies' => Dolly::query()->when($orgId !== null, fn ($q) => $q->where(fn ($sub) => $sub->where('owner_organisation_id', $orgId)->orWhere('is_public', true))),
             'reservations' => Reservation::query()->when($orgId !== null, fn ($q) => $q->where(fn ($sub) => $sub->where('operator_organisation_id', $orgId)->orWhere('user_organisation_id', $orgId))),
-            'accessions' => Accession::query()->when($orgId !== null, fn ($q) => $q->where('organisation_id', $orgId)),
             'workplaces' => Workplace::query()->when($orgId !== null, fn ($q) => $q->byOrganisation($orgId)),
             default => null,
         };

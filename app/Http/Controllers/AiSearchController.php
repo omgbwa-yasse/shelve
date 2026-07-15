@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\AI\Agent\AgentOrchestratorService;
 use App\Services\AI\Agent\AgentToolRegistry;
+use App\Services\AI\Agent\AiConversationService;
 use App\Services\AI\QueryAnalyzerService;
 use App\Services\AI\QueryExecutorService;
 use App\Services\AI\ResponseFormatterService;
@@ -40,9 +41,10 @@ class AiSearchController extends Controller
      * Mode agent : recherche multi-étapes, scopée sur les droits de
      * l'utilisateur connecté (organisation courante, superadmin = tout).
      */
-    public function agent(Request $request, AgentOrchestratorService $orchestrator)
+    public function agent(Request $request, AgentOrchestratorService $orchestrator, AiConversationService $conversations)
     {
         $message = trim((string) $request->input('message'));
+        $conversationId = $request->integer('conversation_id') ?: null;
 
         if ($message === '') {
             return response()->json([
@@ -53,6 +55,11 @@ class AiSearchController extends Controller
 
         try {
             $result = $orchestrator->run($message, $request->user());
+
+            if ($result['success'] ?? false) {
+                $conversation = $conversations->record($request->user(), $conversationId, $message, (string) ($result['response'] ?? ''));
+                $result['conversation_id'] = $conversation->id;
+            }
 
             return response()->json($result);
         } catch (\Throwable $e) {
@@ -73,9 +80,10 @@ class AiSearchController extends Controller
      * Mode agent en streaming SSE : les étapes de recherche sont émises au fur
      * et à mesure (event: step), puis la réponse complète (event: final).
      */
-    public function agentStream(Request $request, AgentOrchestratorService $orchestrator)
+    public function agentStream(Request $request, AgentOrchestratorService $orchestrator, AiConversationService $conversations)
     {
         $message = trim((string) $request->input('message'));
+        $conversationId = $request->integer('conversation_id') ?: null;
 
         if ($message === '') {
             return response()->json(['success' => false, 'error' => 'Message is required'], 422);
@@ -83,8 +91,13 @@ class AiSearchController extends Controller
 
         $user = $request->user();
 
-        return response()->stream(function () use ($orchestrator, $message, $user) {
-            $send = function (string $event, array $data) {
+        return response()->stream(function () use ($orchestrator, $message, $user, $conversationId, $conversations) {
+            $send = function (string $event, array $data) use ($user, $message, $conversationId, $conversations) {
+                if ($event === 'final' && ($data['success'] ?? false)) {
+                    $conversation = $conversations->record($user, $conversationId, $message, (string) ($data['response'] ?? ''));
+                    $data['conversation_id'] = $conversation->id;
+                }
+
                 echo "event: {$event}\n";
                 echo 'data: ' . json_encode($data, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) . "\n\n";
                 if (ob_get_level() > 0) {
@@ -104,6 +117,46 @@ class AiSearchController extends Controller
             'Cache-Control' => 'no-cache, no-transform',
             'Connection' => 'keep-alive',
             'X-Accel-Buffering' => 'no',
+        ]);
+    }
+
+    /**
+     * Liste des conversations IA récentes de l'utilisateur connecté.
+     */
+    public function conversations(Request $request, AiConversationService $conversations)
+    {
+        $items = $conversations->recentConversations($request->user())->map(fn ($c) => [
+            'id' => $c->id,
+            'title' => $c->title,
+            'messages_count' => $c->messages_count,
+            'updated_at' => $c->updated_at?->toIso8601String(),
+        ]);
+
+        return response()->json(['success' => true, 'conversations' => $items]);
+    }
+
+    /**
+     * Détail d'une conversation IA (messages complets), scopée à l'utilisateur.
+     */
+    public function conversationShow(Request $request, AiConversationService $conversations, int $id)
+    {
+        $conversation = $conversations->conversationWithMessages($request->user(), $id);
+
+        if (!$conversation) {
+            return response()->json(['success' => false, 'error' => 'Conversation introuvable'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'conversation' => [
+                'id' => $conversation->id,
+                'title' => $conversation->title,
+                'messages' => $conversation->messages->map(fn ($m) => [
+                    'role' => $m->role,
+                    'content' => $m->content,
+                    'created_at' => $m->created_at?->toIso8601String(),
+                ]),
+            ],
         ]);
     }
 
