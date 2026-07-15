@@ -211,6 +211,8 @@ class MailSendController extends Controller
                 'typology_id' => 'required|exists:mail_typologies,id',
                 'recipient_type' => 'required|in:internal,external_contact,external_organization',
                 'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
+                'attachments_pending' => 'nullable|array',
+                'attachments_pending.*' => 'integer|exists:attachments,id',
             ];
 
             // Validation conditionnelle selon le type de destinataire
@@ -277,6 +279,13 @@ class MailSendController extends Controller
                 foreach ($request->file('attachments') as $file) {
                     $this->handleFileUpload($file, $mail);
                 }
+            }
+
+            if (!empty($validatedData['attachments_pending'])) {
+                $pending = \App\Models\Attachment::whereIn('id', $validatedData['attachments_pending'])
+                    ->where('creator_id', auth()->id())
+                    ->pluck('id');
+                $mail->attachments()->attach($pending, ['added_by' => auth()->id()]);
             }
 
             \Log::info('Redirection vers mail-send.index');

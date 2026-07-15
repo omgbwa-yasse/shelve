@@ -131,10 +131,10 @@
                             <button type="button" class="list-group-item list-group-item-action parent-item"
                                     data-id="{{ $parent->id }}"
                                     data-name="{{ $parent->name }}"
-                                    data-type="{{ $parent->type->name }}">
+                                    data-type="{{ $parent->authorType->name ?? '' }}">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h6 class="mb-1">{{ $parent->name }}</h6>
-                                    <span class="badge bg-secondary">{{ $parent->type->name }}</span>
+                                    <span class="badge bg-secondary">{{ $parent->authorType->name ?? '' }}</span>
                                 </div>
                             </button>
                         @endforeach

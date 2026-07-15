@@ -28,6 +28,7 @@ use Database\Seeders\Tools\ToolCommunicabilitySeeder;
 use Database\Seeders\Settings\SettingSeeder;
 use Database\Seeders\AI\AiProvidersSeeder;
 use Database\Seeders\AI\PromptSeeder;
+use Database\Seeders\AI\RecordAiActionsPromptSeeder;
 use Database\Seeders\Public\OpacConfigurationSeeder;
 use Database\Seeders\Public\OpacTemplateSeeder;
 use Database\Seeders\Tools\KeywordSeeder;
@@ -102,6 +103,7 @@ class DatabaseSeeder extends Seeder
             // 9. IA ET PROMPTS (Indépendants)
             AiProvidersSeeder::class, // Paramètres des providers IA (settings)
             PromptSeeder::class, // Prompts système pour l'IA
+            RecordAiActionsPromptSeeder::class, // Prompts requis par les boutons IA de la fiche archive
 
             // 10. CONFIGURATION OPAC (Dépend des organisations)
             OpacConfigurationSeeder::class, // Configuration OPAC par organisation

@@ -91,7 +91,12 @@ class MailReceivedExternalController extends Controller
                 'estimated_processing_time' => 'nullable|integer|min:1',
                 'attachments' => 'nullable|array',
                 'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
+                'attachments_pending' => 'nullable|array',
+                'attachments_pending.*' => 'integer|exists:attachments,id',
             ]);
+
+            $pendingAttachmentIds = $validatedData['attachments_pending'] ?? [];
+            unset($validatedData['attachments'], $validatedData['attachments_pending']);
 
             // Validation conditionnelle selon le type d'expéditeur
             if ($validatedData['sender_type'] === 'external_contact' && empty($validatedData['external_sender_id'])) {
@@ -127,6 +132,13 @@ class MailReceivedExternalController extends Controller
                 foreach ($request->file('attachments') as $file) {
                     $this->handleFileUpload($file, $mail);
                 }
+            }
+
+            if (!empty($pendingAttachmentIds)) {
+                $pending = \App\Models\Attachment::whereIn('id', $pendingAttachmentIds)
+                    ->where('creator_id', Auth::id())
+                    ->pluck('id');
+                $mail->attachments()->attach($pending, ['added_by' => Auth::id()]);
             }
 
             // Initialize workflow for the mail

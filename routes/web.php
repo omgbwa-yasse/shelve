@@ -261,6 +261,10 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('{mail}/summarize', [\App\Http\Controllers\Api\AiMailController::class, 'summarize'])->name('mail.summarize');
         Route::post('{mail}/save-summary', [\App\Http\Controllers\Api\AiMailController::class, 'saveSummary'])->name('mail.saveSummary');
 
+        // Préremplissage IA du formulaire de courrier depuis une pièce jointe
+        Route::post('ai-prefill/upload', [\App\Http\Controllers\Api\MailAiPrefillController::class, 'upload'])->name('mail.ai-prefill.upload');
+        Route::post('ai-prefill/suggest', [\App\Http\Controllers\Api\MailAiPrefillController::class, 'suggest'])->name('mail.ai-prefill.suggest');
+
         Route::resource('received', MailReceivedController::class)->names('mail-received');
 
         Route::get('received/{mail}/approve', [MailReceivedController::class, 'approve'])->name('mail-received.approve');

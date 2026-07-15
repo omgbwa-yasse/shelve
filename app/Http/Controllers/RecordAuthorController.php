@@ -149,8 +149,8 @@ class RecordAuthorController extends Controller
     public function create()
     {
         $types = AuthorType::all();
-        $parents = author::all();
-        $parents->load('type');
+        $parents = Author::all();
+        $parents->load('authorType');
         return view('records.authors.create', compact('types','parents'));
     }
 

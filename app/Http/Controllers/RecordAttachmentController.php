@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\RecordAttachment;
 use App\Models\RecordPhysical;
 use App\Models\Attachment;
 use Intervention\Image\Image;
@@ -194,7 +193,7 @@ class RecordAttachmentController extends Controller
     }
     public function download($id)
     {
-        $attachment = RecordAttachment::findOrFail($id);
+        $attachment = Attachment::findOrFail($id);
         $filePath = storage_path('app/' . $attachment->path);
 
         if (file_exists($filePath)) {
@@ -209,7 +208,7 @@ class RecordAttachmentController extends Controller
     }
     public function preview($id)
     {
-        $attachment = RecordAttachment::findOrFail($id);
+        $attachment = Attachment::findOrFail($id);
         $filePath = storage_path('app/' . $attachment->path);
 
         if (file_exists($filePath)) {

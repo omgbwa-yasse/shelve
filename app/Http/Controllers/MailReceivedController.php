@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attachment;
 use App\Models\Mail;
 use App\Models\User;
 use App\Models\MailAction;
@@ -104,6 +105,10 @@ class MailReceivedController extends Controller
             'priority_id' => 'required|exists:mail_priorities,id',
             'typology_id' => 'required|exists:mail_typologies,id',
             'sender_type' => 'required|in:internal,external_contact,external_organization',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx,gif',
+            'attachments_pending' => 'nullable|array',
+            'attachments_pending.*' => 'integer|exists:attachments,id',
         ];
 
         // Validation conditionnelle selon le type d'expéditeur
@@ -174,7 +179,21 @@ class MailReceivedController extends Controller
             $mailData['sender_type'] = 'external_organization';
         }
 
-        Mail::create($mailData);
+        $mail = Mail::create($mailData);
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $attachment = Attachment::createFromUpload($file, Attachment::TYPE_ATTACHMENT, Auth::id());
+                $mail->attachments()->attach($attachment->id, ['added_by' => Auth::id()]);
+            }
+        }
+
+        if (!empty($validatedData['attachments_pending'])) {
+            $pending = Attachment::whereIn('id', $validatedData['attachments_pending'])
+                ->where('creator_id', Auth::id())
+                ->pluck('id');
+            $mail->attachments()->attach($pending, ['added_by' => Auth::id()]);
+        }
 
         return redirect()->route('mail-received.index')
                          ->with('success', 'Mail créé avec succès.');
