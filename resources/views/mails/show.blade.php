@@ -606,8 +606,14 @@
 
     </div>
 
-    {{-- Modal de soumission pour validation (courrier sortant ou interne) --}}
-    @if(in_array($mail->mail_type, ['outgoing', 'internal']) && in_array($mail->status?->value, ['draft', 'in_progress']) && !$mail->assigned_organisation_id)
+    {{-- Modal de soumission pour validation (courrier sortant ou interne).
+         Pas affichée pour le DG initiateur d'un sortant : il signe directement. --}}
+    @php
+        $dgInitiatesOutgoing = $mail->mail_type === 'outgoing'
+            && auth()->user()->hasRoleInOrganisation('DG', auth()->user()->current_organisation_id)
+            && (int) $mail->sender_user_id === (int) auth()->id();
+    @endphp
+    @if(in_array($mail->mail_type, ['outgoing', 'internal']) && in_array($mail->status?->value, ['draft', 'in_progress']) && !$mail->assigned_organisation_id && !$dgInitiatesOutgoing)
     <div class="modal fade" id="submitModal" tabindex="-1" aria-labelledby="submitModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
