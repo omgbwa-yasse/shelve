@@ -48,6 +48,10 @@ class MistralDefaultProviderSeeder extends Seeder
         $set('mistral_api_key', self::API_KEY, 'Clé API Mistral');
         $set('mistral_default_model', 'mistral-large-latest', 'Modèle Mistral par défaut');
         $set('mistral_base_url', 'https://api.mistral.ai/v1', 'URL de base API Mistral');
+        // ai_default_model est lu tel quel par certains écrans (drag-drop des records,
+        // application IA). On l'aligne sur un modèle Mistral valide, sinon l'API Mistral
+        // reçoit un modèle Ollama (ex. gemma3:4b) inconnu → « AI Agent Stream Error ».
+        $set('ai_default_model', 'mistral-large-latest', 'Modèle IA par défaut (aligné sur le provider actif)');
 
         $this->command->info('Mistral configuré comme provider IA par défaut.');
     }
