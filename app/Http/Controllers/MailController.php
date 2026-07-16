@@ -683,6 +683,12 @@ class MailController extends Controller
                 ->count();
         }
 
+        // Courriers sortants en attente de MON visa hiérarchique (validateur courant).
+        $toValidate = Mail::where('mail_type', Mail::TYPE_OUTGOING)
+            ->where('status', MailStatusEnum::PENDING_REVIEW)
+            ->where('assigned_to', $user->id)
+            ->count();
+
         // Réception à valider par le service auquel le courrier a été coté.
         $toConfirm = Mail::where('mail_type', Mail::TYPE_INCOMING)
             ->where('assigned_organisation_id', $organisationId)
@@ -699,9 +705,10 @@ class MailController extends Controller
             'unread' => $unread,
             'to_cote' => $toCote,
             'to_sign' => $toSign,
+            'to_validate' => $toValidate,
             'to_confirm' => $toConfirm,
             'to_fix' => $toFix,
-            'pending_actions' => $toCote + $toSign + $toConfirm + $toFix,
+            'pending_actions' => $toCote + $toSign + $toValidate + $toConfirm + $toFix,
             'status' => 'success',
         ]);
     }

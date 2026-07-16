@@ -29,6 +29,7 @@
             ['label' => 'Non lus',             'value' => $mailStats['unread'],     'color' => 'danger',  'icon' => 'bi-envelope',        'href' => route('mail-received.index'),  'show' => true],
             ['label' => 'À coter',             'value' => $mailStats['to_cote'],    'color' => 'primary', 'icon' => 'bi-diagram-3',       'href' => route('mails.incoming.index'), 'show' => $isDg],
             ['label' => 'À signer',            'value' => $mailStats['to_sign'],    'color' => 'warning', 'icon' => 'bi-pen',             'href' => route('mails.outgoing.index'), 'show' => $isDg],
+            ['label' => 'À viser (N+1)',       'value' => $mailStats['to_validate'],'color' => 'info',    'icon' => 'bi-check2-all',      'href' => route('mails.outgoing.index'), 'show' => true],
             ['label' => 'Réception à valider', 'value' => $mailStats['to_confirm'], 'color' => 'success', 'icon' => 'bi-check2-circle',   'href' => route('mail-received.index'),  'show' => true],
             ['label' => 'À reprendre',         'value' => $mailStats['to_fix'],     'color' => 'secondary','icon' => 'bi-arrow-counterclockwise', 'href' => route('mail-send.index'), 'show' => true],
         ];

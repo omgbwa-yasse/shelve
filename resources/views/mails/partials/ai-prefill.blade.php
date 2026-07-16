@@ -24,6 +24,8 @@
 
         <div id="aiPrefillSummary" class="mt-2 small text-muted d-none"></div>
 
-        <input type="hidden" name="attachments_pending[]" id="aiPrefillAttachmentIdInput" value="">
+        {{-- Désactivé par défaut : non soumis tant qu'aucune pièce jointe IA n'est chargée
+             (évite l'erreur « attachments_pending doit être un entier » sur un champ vide). --}}
+        <input type="hidden" name="attachments_pending[]" id="aiPrefillAttachmentIdInput" value="" disabled>
     </div>
 </div>

@@ -55,6 +55,11 @@ class DashboardController extends Controller
                     ->count()
                 : 0,
 
+            'to_validate' => Mail::where('mail_type', Mail::TYPE_OUTGOING)
+                ->where('status', MailStatusEnum::PENDING_REVIEW)
+                ->where('assigned_to', $user->id)
+                ->count(),
+
             'to_confirm' => Mail::where('mail_type', Mail::TYPE_INCOMING)
                 ->where('assigned_organisation_id', $organisationId)
                 ->whereNot('status', MailStatusEnum::COMPLETED)
@@ -88,6 +93,13 @@ class DashboardController extends Controller
                     $sub->where('mail_type', Mail::TYPE_INCOMING)
                         ->where('assigned_organisation_id', $organisationId)
                         ->whereNot('status', MailStatusEnum::COMPLETED);
+                });
+
+                // Validateur courant : sortants en attente de mon visa.
+                $q->orWhere(function ($sub) use ($user) {
+                    $sub->where('mail_type', Mail::TYPE_OUTGOING)
+                        ->where('status', MailStatusEnum::PENDING_REVIEW)
+                        ->where('assigned_to', $user->id);
                 });
 
                 // Initiateur : sortants rejetés à reprendre.

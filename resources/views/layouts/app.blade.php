@@ -835,9 +835,19 @@
             <div class="bottom-band">
                 <div class="bottom-band-container">
                     <nav class="main-navigation">
+                        {{-- Tableau de bord : page d'accueil (bulles de notification + actions à faire) --}}
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'dashboard') active @endif" href="{{ route('dashboard') }}">
+                                <span class="nav-icon-wrapper">
+                                    <i class="bi bi-speedometer2"></i>
+                                </span>
+                                <span>{{ __('Tableau de bord') }}</span>
+                            </a>
+                        </div>
+
                         @can('module_mails_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'mails' || Request::segment(1) == '') active @endif" href="{{ route('mail-received.index') }}">
+                            <a class="nav-link @if (Request::segment(1) == 'mails') active @endif" href="{{ route('mail-received.index') }}">
                                 {{-- L'icône ancre la bulle : elle reste dans la barre, pas sous le header --}}
                                 <span class="nav-icon-wrapper">
                                     <i class="bi bi-envelope"></i>

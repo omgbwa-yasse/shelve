@@ -48,12 +48,24 @@ class RoleHierarchySeeder extends Seeder
                 // Consultation fine des modules exposés
                 'records_view', 'records_create', 'records_edit', 'records_search', 'records_export', 'authors_view',
                 'communications_view', 'communications_create',
+                // Outils / référentiels d'archivage (plan de classement, rétention, etc.)
+                'activity_viewAny', 'activity_view', 'activity_create', 'activity_update', 'activity_delete',
+                'retention_viewAny', 'retention_view', 'retention_create',
+                'communicability_viewAny', 'communicability_view', 'communicability_create',
+                'law_viewAny', 'law_view',
+                'organisations_view', 'organisations_create', 'organisations_update',
             ],
             'directeur' => [
                 'mail_viewAny', 'mail_view', 'mail_create', 'mail_update',
                 'module_mails_access', 'module_repositories_access', 'module_communications_access',
+                'module_tools_access',
                 'records_view', 'records_create', 'records_edit', 'records_search', 'authors_view',
                 'communications_view',
+                // Consultation des référentiels d'archivage
+                'activity_viewAny', 'activity_view',
+                'retention_viewAny', 'retention_view',
+                'communicability_viewAny', 'communicability_view',
+                'organisations_view',
             ],
             'responsable' => [
                 'mail_viewAny', 'mail_view', 'mail_create', 'mail_update',
@@ -65,6 +77,28 @@ class RoleHierarchySeeder extends Seeder
                 'module_mails_access',
             ],
         ];
+
+        // S'assurer que les permissions des référentiels Tools existent (elles ne
+        // sont pas créées par PermissionCategorySeeder) afin que les gates dynamiques
+        // soient enregistrés et que le sous-menu Tools s'affiche.
+        $toolPermissions = [
+            'activity_viewAny' => 'Voir le plan de classement',
+            'activity_view' => 'Voir une activité',
+            'activity_create' => 'Créer une activité',
+            'activity_update' => 'Modifier une activité',
+            'activity_delete' => 'Supprimer une activité',
+            'retention_viewAny' => 'Voir le référentiel de conservation',
+            'retention_view' => 'Voir une règle de conservation',
+            'retention_create' => 'Créer une règle de conservation',
+            'communicability_viewAny' => 'Voir les règles de communicabilité',
+            'communicability_view' => 'Voir une règle de communicabilité',
+            'communicability_create' => 'Créer une règle de communicabilité',
+            'law_viewAny' => 'Voir les lois',
+            'law_view' => 'Voir une loi',
+        ];
+        foreach ($toolPermissions as $name => $desc) {
+            Permission::firstOrCreate(['name' => $name], ['category' => 'tools', 'description' => $desc]);
+        }
 
         $roles = [];
         foreach ($rolePermissions as $roleName => $permNames) {

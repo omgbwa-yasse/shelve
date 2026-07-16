@@ -386,19 +386,41 @@ class Mail extends Model
             return $this;
         }
 
-        $target = $needsN1 ? MailStatusEnum::PENDING_REVIEW : MailStatusEnum::PENDING_APPROVAL;
+        // Courrier sortant : on démarre la remontée hiérarchique (visa niveau par
+        // niveau) à partir du supérieur direct de l'initiateur, jusqu'au DG.
+        $this->explanatory_note = $explanatoryNote ?? $this->explanatory_note;
+        $this->dg_signature_status = 'pending';
 
-        $this->update([
-            'status' => $target,
-            'explanatory_note' => $explanatoryNote ?? $this->explanatory_note,
-            'dg_signature_status' => 'pending',
-        ]);
+        $sender = $this->sender_user_id ? User::find($this->sender_user_id) : null;
+        $firstValidator = ($sender && $needsN1)
+            ? $sender->hierarchicalSuperior($this->sender_organisation_id)
+            : null; // pas de visa intermédiaire (responsable/directeur) → directement au DG
 
-        $desc = $needsN1
-            ? 'Courrier soumis à la validation du supérieur (N+1)'
-            : 'Courrier soumis directement à la signature du DG';
+        return $this->routeToNextValidatorOrDg($firstValidator, 'submitted_for_approval', 'Courrier soumis pour validation');
+    }
 
-        $this->logAction('submitted_for_approval', 'status', null, $target->value, $desc);
+    /**
+     * Oriente le courrier sortant vers le prochain validateur hiérarchique, ou
+     * vers la signature du DG si le sommet de la chaîne est atteint.
+     * Le validateur courant est mémorisé dans `assigned_to`.
+     */
+    private function routeToNextValidatorOrDg(?User $validator, string $action, string $baseDesc): self
+    {
+        $reachedDg = !$validator
+            || $validator->isSuperAdmin()
+            || $validator->hasRoleInOrganisation('DG', $validator->current_organisation_id);
+
+        if ($reachedDg) {
+            $this->status = MailStatusEnum::PENDING_APPROVAL;
+            $this->assigned_to = null;
+            $this->save();
+            $this->logAction($action, 'status', null, MailStatusEnum::PENDING_APPROVAL->value, $baseDesc . ' — en attente de signature du DG');
+        } else {
+            $this->status = MailStatusEnum::PENDING_REVIEW;
+            $this->assigned_to = $validator->id; // validateur courant de la remontée
+            $this->save();
+            $this->logAction($action, 'status', null, MailStatusEnum::PENDING_REVIEW->value, $baseDesc . ' — visa attendu de ' . trim($validator->name . ' ' . ($validator->surname ?? '')));
+        }
 
         return $this;
     }
@@ -424,14 +446,17 @@ class Mail extends Model
             return $this;
         }
 
-        // Courrier sortant : direction du DG.
-        $this->update([
-            'status' => MailStatusEnum::PENDING_APPROVAL,
-        ]);
+        // Courrier sortant : le validateur courant vise, puis on remonte au niveau
+        // supérieur (autre visa) ou, si le sommet est atteint, à la signature du DG.
+        $validator = User::find($userId);
+        $nextValidator = $validator
+            ? $validator->hierarchicalSuperior($validator->current_organisation_id)
+            : null;
 
-        $this->logAction('n1_validated', 'status', null, MailStatusEnum::PENDING_APPROVAL->value, $note ?? 'Validé par le supérieur hiérarchique (N+1)');
+        $validatorLabel = $validator ? trim($validator->name . ' ' . ($validator->surname ?? '')) : 'le supérieur';
+        $this->logAction('n1_validated', 'status', null, null, $note ?? ('Visa de ' . $validatorLabel));
 
-        return $this;
+        return $this->routeToNextValidatorOrDg($nextValidator, 'n1_escalated', 'Visa accordé');
     }
 
     /**
@@ -471,22 +496,19 @@ class Mail extends Model
     }
 
     /**
-     * Resoumission par l'initiateur après révision : le courrier repart dans le
-     * circuit (validation N+1 pour un agent, sinon signature DG).
+     * Resoumission par l'initiateur après révision : le courrier reprend la
+     * remontée hiérarchique depuis le supérieur direct (ou directement au DG).
      */
     public function resubmit(?string $note = null): self
     {
-        $needsN1 = $this->senderNeedsSuperiorValidation();
-        $target = $needsN1 ? MailStatusEnum::PENDING_REVIEW : MailStatusEnum::PENDING_APPROVAL;
+        $this->dg_signature_status = 'pending';
 
-        $this->update([
-            'status' => $target,
-            'dg_signature_status' => 'pending',
-        ]);
+        $sender = $this->sender_user_id ? User::find($this->sender_user_id) : null;
+        $firstValidator = ($sender && $this->senderNeedsSuperiorValidation())
+            ? $sender->hierarchicalSuperior($this->sender_organisation_id)
+            : null;
 
-        $this->logAction('resubmitted', 'status', null, $target->value, $note ?? 'Courrier corrigé et resoumis');
-
-        return $this;
+        return $this->routeToNextValidatorOrDg($firstValidator, 'resubmitted', $note ?? 'Courrier corrigé et resoumis');
     }
 
     /**

@@ -126,6 +126,7 @@
         }
 
         pendingInput.value = uploadResult.attachment_id;
+        pendingInput.disabled = false; // Réactivé : la pièce jointe IA sera soumise avec le formulaire
         setStatus("Analyse du document en cours...", true);
 
         let result;

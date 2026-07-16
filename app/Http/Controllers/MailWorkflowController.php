@@ -156,6 +156,13 @@ class MailWorkflowController extends Controller
             return true;
         }
 
+        // Pendant la remontée hiérarchique, le validateur courant est mémorisé
+        // dans assigned_to (voir Mail::routeToNextValidatorOrDg()).
+        if ($mail->status?->value === 'pending_review' && (int) $mail->assigned_to === (int) $user->id) {
+            return true;
+        }
+
+        // Repli : le supérieur direct de l'initiateur (au cas où assigned_to serait vide).
         $sender = $mail->sender_user_id ? \App\Models\User::find($mail->sender_user_id) : null;
         if (!$sender) {
             return false;

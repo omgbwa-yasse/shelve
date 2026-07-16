@@ -28,6 +28,7 @@ use Database\Seeders\Tools\ToolActivitySeeder;
 use Database\Seeders\Tools\ToolCommunicabilitySeeder;
 use Database\Seeders\Settings\SettingSeeder;
 use Database\Seeders\AI\AiProvidersSeeder;
+use Database\Seeders\AI\MistralDefaultProviderSeeder;
 use Database\Seeders\AI\PromptSeeder;
 use Database\Seeders\AI\RecordAiActionsPromptSeeder;
 use Database\Seeders\Public\OpacConfigurationSeeder;
@@ -104,6 +105,7 @@ class DatabaseSeeder extends Seeder
 
             // 9. IA ET PROMPTS (Indépendants)
             AiProvidersSeeder::class, // Paramètres des providers IA (settings)
+            MistralDefaultProviderSeeder::class, // Configure Mistral comme provider par défaut (avec clé API)
             PromptSeeder::class, // Prompts système pour l'IA
             RecordAiActionsPromptSeeder::class, // Prompts requis par les boutons IA de la fiche archive
 

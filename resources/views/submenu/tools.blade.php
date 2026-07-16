@@ -138,6 +138,31 @@
         </div>
     </div>
 
+    {{-- Intérims des responsables (gestion réservée au DG / superadmin) --}}
+    @php
+        $canManageInterims = auth()->check() && (auth()->user()->isSuperAdmin()
+            || auth()->user()->hasRoleInOrganisation('DG', auth()->user()->current_organisation_id));
+    @endphp
+    @if($canManageInterims)
+    <div class="submenu-section">
+        <div class="submenu-heading">
+            <i class="bi bi-person-badge"></i> Intérims
+        </div>
+        <div class="submenu-content" id="interimsMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('organisation-interims.index') }}">
+                    <i class="bi bi-people"></i> Intérims des responsables
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('organisation-interims.create') }}">
+                    <i class="bi bi-plus-square"></i> Désigner un intérimaire
+                </a>
+            </div>
+        </div>
+    </div>
+    @endif
+
     @auth
     <div class="submenu-section">
         <div class="submenu-heading" >

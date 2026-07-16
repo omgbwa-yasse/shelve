@@ -412,9 +412,12 @@
                     $u = auth()->user();
                     $isDg = $u && ($u->isSuperAdmin() || $u->hasRoleInOrganisation('DG', $u->current_organisation_id));
                     $statusVal = $mail->status?->value;
-                    // L'utilisateur courant est-il le N+1 de l'initiateur ?
-                    $isN1 = false;
-                    if ($mail->sender_user_id) {
+                    // L'utilisateur courant est-il le validateur attendu à ce niveau ?
+                    // Pendant la remontée, le validateur courant est dans assigned_to.
+                    $isN1 = $statusVal === 'pending_review'
+                        && (int) $mail->assigned_to === (int) $u->id;
+                    // Repli : supérieur direct de l'initiateur si assigned_to est vide.
+                    if (!$isN1 && $statusVal === 'pending_review' && !$mail->assigned_to && $mail->sender_user_id) {
                         $senderUser = \App\Models\User::find($mail->sender_user_id);
                         $sup = $senderUser?->hierarchicalSuperior($mail->sender_organisation_id);
                         $isN1 = $sup && (int) $sup->id === (int) $u->id;
@@ -543,7 +546,8 @@
                         'coted' => 'Coté par le DG',
                         'reception_confirmed' => 'Réception validée',
                         'submitted_for_approval' => 'Soumis pour validation',
-                        'n1_validated' => 'Validé par le supérieur (N+1)',
+                        'n1_validated' => 'Visa hiérarchique (N+1)',
+                        'n1_escalated' => 'Transmis au niveau supérieur',
                         'assigned_to_user' => 'Affecté à un agent',
                         'dg_signed' => 'Signé par le DG',
                         'dg_rejected' => 'Rejeté par le DG',

@@ -34,9 +34,11 @@ class AiProvidersSeeder extends Seeder
     // Paramètres généraux pour l'IA
     $aiSettings = $this->buildSettings($aiCategory->id, $aiProvidersCategory->id, $aiModelsCategory->id);
 
-        // Upsert pour mettre à jour les valeurs par défaut si déjà existantes
+        // firstOrCreate (pas updateOrCreate) : ce seeder pose des valeurs par
+        // défaut initiales, il ne doit jamais écraser un réglage déjà en
+        // place (ex. un provider IA configuré manuellement en production).
         foreach ($aiSettings as $settingData) {
-            Setting::updateOrCreate(
+            Setting::firstOrCreate(
                 ['name' => $settingData['name']],
                 $settingData
             );
