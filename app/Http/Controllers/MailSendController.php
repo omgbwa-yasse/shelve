@@ -218,9 +218,11 @@ class MailSendController extends Controller
 
             // Validation conditionnelle selon le type de destinataire
             if ($request->input('recipient_type') === 'internal') {
+                // Le destinataire principal est l'organisation ; préciser une personne
+                // reste facultatif (à défaut, le courrier va au responsable attitré).
                 $recipientValidation = [
-                    'recipient_user_id' => 'required|exists:users,id',
                     'recipient_organisation_id' => 'required|exists:organisations,id',
+                    'recipient_user_id' => 'nullable|exists:users,id',
                 ];
             } elseif ($request->input('recipient_type') === 'external_contact') {
                 $recipientValidation = [
@@ -257,9 +259,22 @@ class MailSendController extends Controller
 
             // Ajouter les données du destinataire selon le type
             if ($validatedData['recipient_type'] === 'internal') {
-                $mailData['recipient_user_id'] = $validatedData['recipient_user_id'];
                 $mailData['recipient_organisation_id'] = $validatedData['recipient_organisation_id'];
-                $mailData['recipient_type'] = 'user';
+
+                // Individu précisé ? Sinon, on route vers le responsable attitré de
+                // l'organisation destinataire (chaque entité a un responsable).
+                $recipientUserId = $validatedData['recipient_user_id'] ?? null;
+
+                if ($recipientUserId) {
+                    $mailData['recipient_user_id'] = $recipientUserId;
+                    $mailData['recipient_type'] = 'user';
+                } else {
+                    $organisation = Organisation::find($validatedData['recipient_organisation_id']);
+                    $responsible = $organisation?->responsible();
+
+                    $mailData['recipient_user_id'] = $responsible?->id;
+                    $mailData['recipient_type'] = 'organisation';
+                }
             } elseif ($validatedData['recipient_type'] === 'external_contact') {
                 $mailData['external_recipient_id'] = $validatedData['external_recipient_id'];
                 $mailData['recipient_type'] = 'external_contact';

@@ -12,34 +12,34 @@ class AddressTypeSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     * Types d'adresses basÃ©s sur les normes ISAD(G) et ISAAR(CPF)
+     * Types d'adresses basés sur les normes ISAD(G) et ISAAR(CPF)
      */
     public function run(): void
     {
-        // VÃ©rifier si la table address_types existe
+        // Vérifier si la table address_types existe
         if (Schema::hasTable('address_types')) {
             $addressTypes = [
                 [
-                    'name' => 'Adresse lÃ©gale',
-                    'description' => 'Adresse officielle ou siÃ¨ge social d\'une entitÃ©.',
+                    'name' => 'Adresse légale',
+                    'description' => 'Adresse officielle ou siège social d\'une entité.',
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ],
                 [
                     'name' => 'Adresse postale',
-                    'description' => 'Adresse utilisÃ©e pour la correspondance.',
+                    'description' => 'Adresse utilisée pour la correspondance.',
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ],
                 [
                     'name' => 'Adresse physique',
-                    'description' => 'Emplacement physique oÃ¹ l\'entitÃ© exerce ses activitÃ©s.',
+                    'description' => 'Emplacement physique où l\'entité exerce ses activités.',
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ],
                 [
                     'name' => 'Domicile',
-                    'description' => 'Adresse de rÃ©sidence pour une personne physique.',
+                    'description' => 'Adresse de résidence pour une personne physique.',
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ],
@@ -63,7 +63,7 @@ class AddressTypeSeeder extends Seeder
                 ],
                 [
                     'name' => 'Autre',
-                    'description' => 'Type d\'adresse non spÃ©cifiÃ© dans les catÃ©gories standard.',
+                    'description' => 'Type d\'adresse non spécifié dans les catégories standard.',
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ],

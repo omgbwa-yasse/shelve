@@ -11,7 +11,7 @@ class AuthorTypeSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     * BasÃ© sur les normes ISAD(G) et ISAAR(CPF) pour la description archivistique
+     * Basé sur les normes ISAD(G) et ISAAR(CPF) pour la description archivistique
      */
     public function run(): void
     {
@@ -20,24 +20,24 @@ class AuthorTypeSeeder extends Seeder
             // Types de personnes selon ISAAR(CPF)
             [
                 'name' => 'Personne physique',
-                'description' => 'Individu identifiÃ© comme entitÃ© archivistique conforme Ã  ISAAR(CPF).',
+                'description' => 'Individu identifié comme entité archivistique conforme à ISAAR(CPF).',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
             [
-                'name' => 'CollectivitÃ©',
-                'description' => 'Organisation ou groupe de personnes identifiÃ© par un nom particulier et agissant comme une entitÃ©.',
+                'name' => 'Collectivité',
+                'description' => 'Organisation ou groupe de personnes identifié par un nom particulier et agissant comme une entité.',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
             [
                 'name' => 'Famille',
-                'description' => 'Personnes liÃ©es par le sang ou constituant lÃ©galement une famille.',
+                'description' => 'Personnes liées par le sang ou constituant légalement une famille.',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
 
-            // Sous-types de collectivitÃ©s selon ISAAR(CPF)
+            // Sous-types de collectivités selon ISAAR(CPF)
             [
                 'name' => 'Institution publique',
                 'description' => 'Organisme gouvernemental ou administration publique.',
@@ -46,33 +46,33 @@ class AuthorTypeSeeder extends Seeder
             ],
             [
                 'name' => 'Organisme international',
-                'description' => 'Organisation avec une portÃ©e ou une activitÃ© internationale.',
+                'description' => 'Organisation avec une portée ou une activité internationale.',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
             [
-                'name' => 'Entreprise privÃ©e',
-                'description' => 'EntitÃ© commerciale ou sociÃ©tÃ© privÃ©e.',
+                'name' => 'Entreprise privée',
+                'description' => 'Entité commerciale ou société privée.',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
             [
                 'name' => 'Association',
-                'description' => 'Groupe formÃ© volontairement Ã  des fins sociales, professionnelles ou autres fins non lucratives.',
+                'description' => 'Groupe formé volontairement à des fins sociales, professionnelles ou autres fins non lucratives.',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
             [
                 'name' => 'Organisation religieuse',
-                'description' => 'EntitÃ© liÃ©e Ã  des activitÃ©s religieuses ou confessionnelles.',
+                'description' => 'Entité liée à des activités religieuses ou confessionnelles.',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
 
-            // Types spÃ©cifiques d'autoritÃ©s selon le contexte archivistique
+            // Types spécifiques d'autorités selon le contexte archivistique
             [
                 'name' => 'Producteur d\'archives',
-                'description' => 'EntitÃ© responsable de la crÃ©ation, accumulation et/ou conservation des documents dans l\'exercice de ses activitÃ©s.',
+                'description' => 'Entité responsable de la création, accumulation et/ou conservation des documents dans l\'exercice de ses activités.',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -83,14 +83,14 @@ class AuthorTypeSeeder extends Seeder
                 'updated_at' => Carbon::now(),
             ],
             [
-                'name' => 'DÃ©tenteur de droits',
-                'description' => 'EntitÃ© dÃ©tenant des droits de propriÃ©tÃ© intellectuelle ou autres droits sur les documents.',
+                'name' => 'Détenteur de droits',
+                'description' => 'Entité détenant des droits de propriété intellectuelle ou autres droits sur les documents.',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
             [
-                'name' => 'Autre entitÃ©',
-                'description' => 'Autre type d\'auteur ne correspondant pas aux catÃ©gories dÃ©finies dans ISAAR(CPF).',
+                'name' => 'Autre entité',
+                'description' => 'Autre type d\'auteur ne correspondant pas aux catégories définies dans ISAAR(CPF).',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],

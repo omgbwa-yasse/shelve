@@ -24,8 +24,8 @@ class ContainerStatusSeeder extends Seeder
                 'creator_id' => $userId,
             ],
             [
-                'name' => 'ArchivÃ©',
-                'description' => 'Contenant archivÃ© et non modifiable',
+                'name' => 'Archivé',
+                'description' => 'Contenant archivé et non modifiable',
                 'creator_id' => $userId,
             ],
             [
@@ -39,8 +39,8 @@ class ContainerStatusSeeder extends Seeder
                 'creator_id' => $userId,
             ],
             [
-                'name' => 'DÃ©truit',
-                'description' => 'Contenant dÃ©truit selon les rÃ¨gles de conservation',
+                'name' => 'Détruit',
+                'description' => 'Contenant détruit selon les règles de conservation',
                 'creator_id' => $userId,
             ],
         ];

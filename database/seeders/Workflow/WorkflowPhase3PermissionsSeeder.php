@@ -11,73 +11,73 @@ class WorkflowPhase3PermissionsSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     * Ajoute les permissions spÃ©cifiques au workflow Phase 3 des documents numÃ©riques
+     * Ajoute les permissions spécifiques au workflow Phase 3 des documents numériques
      *
      * @return void
      */
     public function run()
     {
-        $this->command->info('ðŸ” CrÃ©ation des permissions Workflow Phase 3...');
+        $this->command->info('🔐 Création des permissions Workflow Phase 3...');
 
-        // Permissions pour le workflow des documents numÃ©riques
+        // Permissions pour le workflow des documents numériques
         $this->createDigitalDocumentWorkflowPermissions();
 
         // Assigner automatiquement toutes les nouvelles permissions au superadmin
         $this->assignPermissionsToSuperAdmin();
 
-        $this->command->info('âœ… Permissions Workflow Phase 3 crÃ©Ã©es et attribuÃ©es au superadmin!');
+        $this->command->info('✅ Permissions Workflow Phase 3 créées et attribuées au superadmin!');
     }
 
     /**
-     * CrÃ©er les permissions pour le workflow des documents numÃ©riques
+     * Créer les permissions pour le workflow des documents numériques
      */
     private function createDigitalDocumentWorkflowPermissions()
     {
         $permissions = [
-            // Checkout/Checkin (RÃ©servation documents)
+            // Checkout/Checkin (Réservation documents)
             [
                 'name' => 'digital_records.checkout',
                 'category' => 'digital_records',
-                'description' => 'RÃ©server un document numÃ©rique pour Ã©dition'
+                'description' => 'Réserver un document numérique pour édition'
             ],
             [
                 'name' => 'digital_records.checkin',
                 'category' => 'digital_records',
-                'description' => 'DÃ©poser une nouvelle version d\'un document rÃ©servÃ©'
+                'description' => 'Déposer une nouvelle version d\'un document réservé'
             ],
             [
                 'name' => 'digital_records.cancel_checkout',
                 'category' => 'digital_records',
-                'description' => 'Annuler la rÃ©servation d\'un document'
+                'description' => 'Annuler la réservation d\'un document'
             ],
 
-            // Signature Ã©lectronique
+            // Signature électronique
             [
                 'name' => 'digital_records.sign',
                 'category' => 'digital_records',
-                'description' => 'Signer Ã©lectroniquement un document'
+                'description' => 'Signer électroniquement un document'
             ],
             [
                 'name' => 'digital_records.verify_signature',
                 'category' => 'digital_records',
-                'description' => 'VÃ©rifier l\'intÃ©gritÃ© d\'une signature Ã©lectronique'
+                'description' => 'Vérifier l\'intégrité d\'une signature électronique'
             ],
             [
                 'name' => 'digital_records.revoke_signature',
                 'category' => 'digital_records',
-                'description' => 'RÃ©voquer une signature Ã©lectronique'
+                'description' => 'Révoquer une signature électronique'
             ],
 
             // Gestion des versions
             [
                 'name' => 'digital_records.restore',
                 'category' => 'digital_records',
-                'description' => 'Restaurer une version antÃ©rieure d\'un document'
+                'description' => 'Restaurer une version antérieure d\'un document'
             ],
             [
                 'name' => 'digital_records.download',
                 'category' => 'digital_records',
-                'description' => 'TÃ©lÃ©charger un document ou une version'
+                'description' => 'Télécharger un document ou une version'
             ],
             [
                 'name' => 'digital_records.view_versions',
@@ -89,7 +89,7 @@ class WorkflowPhase3PermissionsSeeder extends Seeder
             [
                 'name' => 'digital_records.approve',
                 'category' => 'digital_records',
-                'description' => 'Approuver un document nÃ©cessitant validation'
+                'description' => 'Approuver un document nécessitant validation'
             ],
             [
                 'name' => 'digital_records.reject',
@@ -101,61 +101,61 @@ class WorkflowPhase3PermissionsSeeder extends Seeder
             [
                 'name' => 'digital_records.workflow.admin',
                 'category' => 'digital_records',
-                'description' => 'Administration complÃ¨te du workflow (bypass toutes restrictions)'
+                'description' => 'Administration complète du workflow (bypass toutes restrictions)'
             ],
             [
                 'name' => 'digital_records.force_unlock',
                 'category' => 'digital_records',
-                'description' => 'Forcer le dÃ©verrouillage d\'un document rÃ©servÃ© par un autre utilisateur'
+                'description' => 'Forcer le déverrouillage d\'un document réservé par un autre utilisateur'
             ],
             [
                 'name' => 'digital_records.force_revoke_signature',
                 'category' => 'digital_records',
-                'description' => 'RÃ©voquer la signature d\'un autre utilisateur (admin)'
+                'description' => 'Révoquer la signature d\'un autre utilisateur (admin)'
             ],
 
-            // Permissions de base documents numÃ©riques (si pas dÃ©jÃ  crÃ©Ã©es)
+            // Permissions de base documents numériques (si pas déjà créées)
             [
                 'name' => 'digital_records.view',
                 'category' => 'digital_records',
-                'description' => 'Voir les documents numÃ©riques'
+                'description' => 'Voir les documents numériques'
             ],
             [
                 'name' => 'digital_records.create',
                 'category' => 'digital_records',
-                'description' => 'CrÃ©er des documents numÃ©riques'
+                'description' => 'Créer des documents numériques'
             ],
             [
                 'name' => 'digital_records.edit',
                 'category' => 'digital_records',
-                'description' => 'Modifier des documents numÃ©riques'
+                'description' => 'Modifier des documents numériques'
             ],
             [
                 'name' => 'digital_records.delete',
                 'category' => 'digital_records',
-                'description' => 'Supprimer des documents numÃ©riques'
+                'description' => 'Supprimer des documents numériques'
             ],
 
-            // Permissions dossiers numÃ©riques
+            // Permissions dossiers numériques
             [
                 'name' => 'digital_folders.view',
                 'category' => 'digital_records',
-                'description' => 'Voir les dossiers numÃ©riques'
+                'description' => 'Voir les dossiers numériques'
             ],
             [
                 'name' => 'digital_folders.create',
                 'category' => 'digital_records',
-                'description' => 'CrÃ©er des dossiers numÃ©riques'
+                'description' => 'Créer des dossiers numériques'
             ],
             [
                 'name' => 'digital_folders.edit',
                 'category' => 'digital_records',
-                'description' => 'Modifier des dossiers numÃ©riques'
+                'description' => 'Modifier des dossiers numériques'
             ],
             [
                 'name' => 'digital_folders.delete',
                 'category' => 'digital_records',
-                'description' => 'Supprimer des dossiers numÃ©riques'
+                'description' => 'Supprimer des dossiers numériques'
             ],
 
             // Permissions archives physiques
@@ -167,7 +167,7 @@ class WorkflowPhase3PermissionsSeeder extends Seeder
             [
                 'name' => 'physical_records.create',
                 'category' => 'records',
-                'description' => 'CrÃ©er des archives physiques'
+                'description' => 'Créer des archives physiques'
             ],
             [
                 'name' => 'physical_records.edit',
@@ -183,11 +183,11 @@ class WorkflowPhase3PermissionsSeeder extends Seeder
 
         $this->insertPermissions($permissions);
 
-        $this->command->info('âœ… ' . count($permissions) . ' permissions Workflow Phase 3 crÃ©Ã©es');
+        $this->command->info('✅ ' . count($permissions) . ' permissions Workflow Phase 3 créées');
     }
 
     /**
-     * InsÃ©rer les permissions dans la base de donnÃ©es
+     * Insérer les permissions dans la base de données
      */
     private function insertPermissions(array $permissions)
     {
@@ -203,60 +203,60 @@ class WorkflowPhase3PermissionsSeeder extends Seeder
     }
 
     /**
-     * Assigner toutes les permissions au rÃ´le superadmin
+     * Assigner toutes les permissions au rôle superadmin
      */
     private function assignPermissionsToSuperAdmin()
     {
-        $this->command->info('ðŸ”‘ Attribution des permissions au superadmin...');
+        $this->command->info('🔑 Attribution des permissions au superadmin...');
 
-        // RÃ©cupÃ©rer le rÃ´le superadmin
+        // Récupérer le rôle superadmin
         $superadminRole = Role::where('name', 'superadmin')->first();
 
         if (!$superadminRole) {
-            $this->command->error('âŒ RÃ´le superadmin non trouvÃ©. ExÃ©cutez SuperadminSeeder en premier.');
+            $this->command->error('❌ Rôle superadmin non trouvé. Exécutez SuperadminSeeder en premier.');
             return;
         }
 
-        // RÃ©cupÃ©rer toutes les permissions
+        // Récupérer toutes les permissions
         $allPermissions = Permission::all();
         $permissionIds = $allPermissions->pluck('id')->toArray();
 
-        // Synchroniser toutes les permissions avec le rÃ´le
+        // Synchroniser toutes les permissions avec le rôle
         $superadminRole->permissions()->sync($permissionIds);
 
         $assignedCount = $superadminRole->permissions()->count();
 
-        $this->command->info('âœ… Toutes les permissions (' . $assignedCount . ') attribuÃ©es au superadmin');
+        $this->command->info('✅ Toutes les permissions (' . $assignedCount . ') attribuées au superadmin');
 
-        // Afficher les catÃ©gories
+        // Afficher les catégories
         $this->displayPermissionsByCategory($allPermissions);
     }
 
     /**
-     * Afficher les permissions par catÃ©gorie
+     * Afficher les permissions par catégorie
      */
     private function displayPermissionsByCategory($allPermissions)
     {
         $this->command->info('');
-        $this->command->info('ðŸ“Š RÃ©partition des permissions par catÃ©gorie :');
+        $this->command->info('📊 Répartition des permissions par catégorie :');
 
         $categories = $allPermissions->groupBy('category');
         $categoryStats = [];
 
         foreach ($categories as $category => $permissions) {
-            $categoryName = $category ?: 'Non catÃ©gorisÃ©e';
+            $categoryName = $category ?: 'Non catégorisée';
             $categoryStats[$categoryName] = $permissions->count();
         }
 
-        // Trier par nombre de permissions dÃ©croissant
+        // Trier par nombre de permissions décroissant
         arsort($categoryStats);
 
         foreach ($categoryStats as $categoryName => $count) {
-            $this->command->line('   â€¢ ' . ucfirst($categoryName) . ': ' . $count . ' permissions');
+            $this->command->line('   • ' . ucfirst($categoryName) . ': ' . $count . ' permissions');
         }
 
         $this->command->info('');
-        $this->command->line('Total: ' . $allPermissions->count() . ' permissions dans le systÃ¨me');
+        $this->command->line('Total: ' . $allPermissions->count() . ' permissions dans le système');
         $this->command->info('');
     }
 }

@@ -18,19 +18,19 @@ class SlipStatusSeeder extends Seeder
         $statuses = [
             [
                 'name' => 'Projects',
-                'description' => 'Bordereau en projet, non encore finalisÃ©',
+                'description' => 'Bordereau en projet, non encore finalisé',
             ],
             [
                 'name' => 'Received',
-                'description' => 'Bordereau reÃ§u par l\'organisme destinataire',
+                'description' => 'Bordereau reçu par l\'organisme destinataire',
             ],
             [
                 'name' => 'Approved',
-                'description' => 'Bordereau approuvÃ©',
+                'description' => 'Bordereau approuvé',
             ],
             [
                 'name' => 'Integrated',
-                'description' => 'Bordereau intÃ©grÃ© dans le systÃ¨me d\'archivage',
+                'description' => 'Bordereau intégré dans le système d\'archivage',
             ],
         ];
 
@@ -38,7 +38,7 @@ class SlipStatusSeeder extends Seeder
             SlipStatus::create($status);
         }
 
-        $this->command->info('âœ“ ' . count($statuses) . ' statuts de bordereaux crÃ©Ã©s avec succÃ¨s');
+        $this->command->info('✓ ' . count($statuses) . ' statuts de bordereaux créés avec succès');
     }
 }
 

@@ -11,11 +11,18 @@ use App\Models\Role;
 use App\Models\Permission;
 
 /**
- * Crée les rôles métier hiérarchiques (DG, directeur, responsable, agent) et
- * quelques utilisateurs de démonstration rattachés aux directions via le pivot
- * user_organisation_role (role_id contextuel), prérequis du workflow courrier.
+ * Rôles métier hiérarchiques et utilisateurs de démonstration du circuit courrier.
+ *
+ * Circuit incarné par ces comptes :
+ *   1. Courrier entrant : déposé à l'accueil (accueil@example.com, Service Courrier
+ *      de la DAG) → secrétariat du DG (secretariat@example.com) → coté par le DG
+ *      (dg@example.com) vers une direction → réception validée par le directeur.
+ *   2. Courrier sortant : initié par un agent (agent.*) → validé par son N+1
+ *      (le directeur de sa direction) → signé par le DG. Un directeur peut initier
+ *      sans validation intermédiaire.
  *
  * Idempotent : rejouable sans dupliquer (firstOrCreate + attach conditionnel).
+ * Mot de passe commun : « password ».
  */
 class RoleHierarchySeeder extends Seeder
 {
@@ -23,12 +30,40 @@ class RoleHierarchySeeder extends Seeder
     {
         $now = Carbon::now();
 
-        // 1. Rôles métier + permissions courrier associées.
+        // 1. Rôles métier : permissions courrier + accès aux modules + permissions
+        //    granulaires de consultation des modules exposés.
+        //    IMPORTANT : `module_*_access` contrôle seulement l'affichage du menu ;
+        //    les pages vérifient en plus des permissions fines (ex. RecordController
+        //    exige `records_view`). Il faut donc accorder les deux, sinon la page
+        //    renvoie « 403 This action is unauthorized ».
+        //    Les accès sont volontairement différenciés par rôle : le DG voit large,
+        //    l'agent se limite au courrier.
         $rolePermissions = [
-            'DG'          => ['mail_viewAny', 'mail_view', 'mail_create', 'mail_update', 'mail_delete'],
-            'directeur'   => ['mail_viewAny', 'mail_view', 'mail_create', 'mail_update'],
-            'responsable' => ['mail_viewAny', 'mail_view', 'mail_create', 'mail_update'],
-            'agent'       => ['mail_viewAny', 'mail_view', 'mail_create'],
+            'DG' => [
+                // Courrier (écriture complète)
+                'mail_viewAny', 'mail_view', 'mail_create', 'mail_update', 'mail_delete', 'mail_config',
+                // Accès aux modules (menu)
+                'module_mails_access', 'module_repositories_access', 'module_communications_access',
+                'module_tools_access', 'module_deposits_access', 'module_workflow_access',
+                // Consultation fine des modules exposés
+                'records_view', 'records_create', 'records_edit', 'records_search', 'records_export', 'authors_view',
+                'communications_view', 'communications_create',
+            ],
+            'directeur' => [
+                'mail_viewAny', 'mail_view', 'mail_create', 'mail_update',
+                'module_mails_access', 'module_repositories_access', 'module_communications_access',
+                'records_view', 'records_create', 'records_edit', 'records_search', 'authors_view',
+                'communications_view',
+            ],
+            'responsable' => [
+                'mail_viewAny', 'mail_view', 'mail_create', 'mail_update',
+                'module_mails_access', 'module_repositories_access',
+                'records_view', 'records_search', 'authors_view',
+            ],
+            'agent' => [
+                'mail_viewAny', 'mail_view', 'mail_create',
+                'module_mails_access',
+            ],
         ];
 
         $roles = [];
@@ -46,34 +81,49 @@ class RoleHierarchySeeder extends Seeder
 
         $this->command->info('Rôles métier créés : ' . implode(', ', array_keys($roles)));
 
-        // 2. Organisations de référence.
-        //    Pour la DG, on retient l'organisation racine effective (celle qui porte
-        //    des sous-directions), afin d'être robuste à d'éventuels doublons de code.
+        // 2. Organisations de référence (robuste à d'éventuels doublons de code :
+        //    pour la DG on retient la racine effective, celle qui porte les directions).
         $dg = Organisation::where('code', 'DG')
             ->withCount('children')
             ->orderByDesc('children_count')
             ->first();
-        $df   = Organisation::where('code', 'DF')->first();
-        $drh  = Organisation::where('code', 'DRH')->first();
 
         if (!$dg) {
             $this->command->warn('Organisation DG absente : lancez d\'abord OrganisationSeeder.');
             return;
         }
 
-        // 3. Utilisateurs de démonstration (rôle global + rôle contextuel par organisation).
-        //    [email, nom, prénom, organisation, rôle]
+        $dsi     = Organisation::where('code', 'DSI')->first();
+        $drh     = Organisation::where('code', 'DRH')->first();
+        $dag     = Organisation::where('code', 'DAG')->first();
+        $accueil = Organisation::where('code', 'DAG-COUR')->first(); // Service Courrier & Accueil
+
+        // 3. Utilisateurs de démonstration : [email, nom, prénom, organisation, rôle]
         $demoUsers = [
-            ['dg.demo@example.com',   'Général',   'Directeur',  $dg,  'DG'],
-            ['dir.df@example.com',    'Finances',  'Directeur',  $df,  'directeur'],
-            ['resp.df@example.com',   'Compta',    'Responsable', $df, 'responsable'],
-            ['agent.df@example.com',  'Dupont',    'Agent',      $df,  'agent'],
-            ['dir.drh@example.com',   'RH',        'Directeur',  $drh, 'directeur'],
-            ['agent.drh@example.com', 'Martin',    'Agent',      $drh, 'agent'],
+            // Direction Générale : le DG signe tout courrier sortant et cote l'entrant.
+            ['dg@example.com',          'Directeur',   'Général',     $dg,      'DG'],
+            ['secretariat@example.com', 'Secrétariat', 'DG',          $dg,      'agent'],
+
+            // Accueil : point de dépôt obligatoire du courrier externe entrant.
+            ['accueil@example.com',     'Agent',       'Accueil',     $accueil, 'responsable'],
+
+            // Direction des Systèmes d'Information
+            ['dir.dsi@example.com',     'Directeur',   'DSI',         $dsi,     'directeur'],
+            ['agent.dsi@example.com',   'Agent',       'DSI',         $dsi,     'agent'],
+
+            // Direction des Ressources Humaines
+            ['dir.drh@example.com',     'Directeur',   'DRH',         $drh,     'directeur'],
+            ['agent.drh@example.com',   'Agent',       'DRH',         $drh,     'agent'],
+
+            // Direction des Affaires Générales
+            ['dir.dag@example.com',     'Directeur',   'DAG',         $dag,     'directeur'],
+            ['agent.dag@example.com',   'Agent',       'DAG',         $dag,     'agent'],
         ];
 
+        $created = 0;
         foreach ($demoUsers as [$email, $name, $surname, $org, $roleName]) {
             if (!$org) {
+                $this->command->warn("Organisation absente pour {$email} : utilisateur ignoré.");
                 continue;
             }
 
@@ -90,7 +140,7 @@ class RoleHierarchySeeder extends Seeder
                 ]
             );
 
-            // Rôle global (pour les permissions courrier via le système natif).
+            // Rôle global (permissions courrier via le système natif).
             $user->assignRole($roleName);
 
             // Rôle contextuel dans l'organisation (pivot user_organisation_role).
@@ -100,8 +150,33 @@ class RoleHierarchySeeder extends Seeder
                     'creator_id' => $user->id,
                 ]);
             }
+
+            // La DSI (service informatique) a accès à presque tous les modules :
+            // on complète ses utilisateurs par des permissions directes d'accès module.
+            if (in_array($email, ['dir.dsi@example.com', 'agent.dsi@example.com'], true)) {
+                $this->grantDsiBroadAccess($user);
+            }
+
+            $created++;
         }
 
-        $this->command->info('Utilisateurs de démonstration hiérarchiques créés : ' . count($demoUsers));
+        $this->command->info("Utilisateurs de démonstration hiérarchiques créés : {$created} (mot de passe : password)");
+    }
+
+    /**
+     * Accorde à un utilisateur DSI un accès large (presque tous les modules),
+     * cohérent avec le rôle transverse du service informatique.
+     */
+    private function grantDsiBroadAccess(User $user): void
+    {
+        $moduleAccess = Permission::where('name', 'like', 'module_%_access')->pluck('id');
+        // Permissions de consultation transverses pour éviter les 403 sur les index.
+        $views = Permission::whereIn('name', [
+            'records_view', 'records_create', 'records_edit', 'records_search', 'records_export', 'authors_view',
+            'communications_view', 'communications_create',
+            'dashboard_view',
+        ])->pluck('id');
+
+        $user->permissions()->syncWithoutDetaching($moduleAccess->merge($views)->unique());
     }
 }

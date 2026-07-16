@@ -19,7 +19,12 @@ use Illuminate\Support\Facades\Schema;
 class OrganisationSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Structure organisationnelle réelle de la structure :
+     *
+     *   Direction Générale (DG)  ← racine, valide et signe tout courrier sortant
+     *     ├── DSI  — Direction des Systèmes d'Information
+     *     ├── DRH  — Direction des Ressources Humaines
+     *     └── DAG  — Direction des Affaires Générales
      */
     public function run(): void
     {
@@ -28,7 +33,7 @@ class OrganisationSeeder extends Seeder
 
         try {
             // Supprimer toute l'infrastructure physique existante
-            $this->command->info('ðŸ—‘ï¸ Suppression de l\'infrastructure physique existante...');
+            $this->command->info('Suppression de l\'infrastructure physique existante...');
             Container::query()->delete();
             Shelf::query()->delete();
             Room::query()->delete();
@@ -37,30 +42,29 @@ class OrganisationSeeder extends Seeder
             ContainerProperty::query()->delete();
 
             // Supprimer tous les contacts et liaisons existants
-            $this->command->info('ðŸ—‘ï¸ Suppression des contacts existants...');
+            $this->command->info('Suppression des contacts existants...');
             Contact::query()->delete();
 
             // Supprimer toutes les organisations existantes
-            $this->command->info('ðŸ—‘ï¸ Suppression des organisations existantes...');
+            $this->command->info('Suppression des organisations existantes...');
             Organisation::query()->delete();
 
-            // CrÃ©er la nouvelle structure organisationnelle
-            $this->command->info('ðŸ¢ CrÃ©ation de la nouvelle structure organisationnelle...');
+            $this->command->info('Création de la structure organisationnelle...');
 
-            // Direction GÃ©nÃ©rale (DG) - Organisation racine
+            // Direction Générale (DG) — organisation racine
             $directionGenerale = Organisation::create([
                 'code' => 'DG',
-                'name' => 'Direction GÃ©nÃ©rale',
-                'description' => 'Direction gÃ©nÃ©rale de l\'organisation',
-                'parent_id' => null
+                'name' => 'Direction Générale',
+                'description' => 'Direction générale de la structure',
+                'parent_id' => null,
             ]);
 
-            // Direction des Finances (DF)
-            $directionFinances = Organisation::create([
-                'code' => 'DF',
-                'name' => 'Direction des Finances',
-                'description' => 'Direction responsable de la gestion financiÃ¨re',
-                'parent_id' => $directionGenerale->id
+            // Direction des Systèmes d'Information (DSI)
+            $directionSI = Organisation::create([
+                'code' => 'DSI',
+                'name' => "Direction des Systèmes d'Information",
+                'description' => "Direction responsable des systèmes d'information et du numérique",
+                'parent_id' => $directionGenerale->id,
             ]);
 
             // Direction des Ressources Humaines (DRH)
@@ -68,33 +72,33 @@ class OrganisationSeeder extends Seeder
                 'code' => 'DRH',
                 'name' => 'Direction des Ressources Humaines',
                 'description' => 'Direction responsable de la gestion des ressources humaines',
-                'parent_id' => $directionGenerale->id
+                'parent_id' => $directionGenerale->id,
             ]);
 
-            // Direction des Archives et Documents Administratifs (DADA)
-            $directionArchives = Organisation::create([
-                'code' => 'DADA',
-                'name' => 'Direction des Archives et Documents Administratifs',
-                'description' => 'Direction responsable de la gestion des archives et documents administratifs',
-                'parent_id' => $directionGenerale->id
+            // Direction des Affaires Générales (DAG)
+            $directionAG = Organisation::create([
+                'code' => 'DAG',
+                'name' => 'Direction des Affaires Générales',
+                'description' => 'Direction responsable des affaires générales et des moyens',
+                'parent_id' => $directionGenerale->id,
             ]);
 
-            $this->command->info('âœ… Structure organisationnelle crÃ©Ã©e');
+            $this->command->info('Structure organisationnelle créée : DG > DSI, DRH, DAG');
 
-            // Associer des contacts par dÃ©faut Ã  chaque organisation
-            foreach ([$directionGenerale, $directionFinances, $directionRH, $directionArchives] as $org) {
+            // Associer des contacts par défaut à chaque organisation
+            foreach ([$directionGenerale, $directionSI, $directionRH, $directionAG] as $org) {
                 $this->addDefaultContacts($org);
             }
 
-            // CrÃ©er l'infrastructure physique
-            $this->createPhysicalInfrastructure($directionFinances, $directionRH, $directionArchives);
+            // Créer l'infrastructure physique
+            $this->createPhysicalInfrastructure($directionSI, $directionRH, $directionAG);
 
             DB::commit();
-            $this->command->info('âœ… Infrastructure organisationnelle et physique crÃ©Ã©e avec succÃ¨s');
+            $this->command->info('Infrastructure organisationnelle et physique créée avec succès');
 
         } catch (\Exception $e) {
             DB::rollback();
-            $this->command->error('âŒ Erreur lors de la crÃ©ation: ' . $e->getMessage());
+            $this->command->error('Erreur lors de la création: ' . $e->getMessage());
             Schema::enableForeignKeyConstraints();
             throw $e;
         }
@@ -103,48 +107,48 @@ class OrganisationSeeder extends Seeder
     }
 
     /**
-     * CrÃ©er l'infrastructure physique
+     * Créer l'infrastructure physique (bâtiment, étages, salles, étagères, boîtes)
      */
-    private function createPhysicalInfrastructure($directionFinances, $directionRH, $directionArchives)
+    private function createPhysicalInfrastructure($directionSI, $directionRH, $directionAG)
     {
-        $this->command->info('ðŸ—ï¸ CrÃ©ation de l\'infrastructure physique...');
+        $this->command->info('Création de l\'infrastructure physique...');
 
-        // CrÃ©er une propriÃ©tÃ© de boÃ®te par dÃ©faut
+        // Créer une propriété de boîte par défaut
         $defaultProperty = ContainerProperty::firstOrCreate(
-            ['name' => 'BoÃ®te Archive Standard'],
+            ['name' => 'Boîte Archive Standard'],
             [
-                'name' => 'BoÃ®te Archive Standard',
+                'name' => 'Boîte Archive Standard',
                 'width' => 35.0,  // 35 cm
                 'length' => 25.0, // 25 cm
                 'depth' => 12.0,  // 12 cm
-                'creator_id' => 999999 // Valeur temporaire, sera mise Ã  jour par SuperAdminSeeder
+                'creator_id' => 999999, // Valeur temporaire, mise à jour par SuperAdminSeeder
             ]
         );
 
-        // CrÃ©er le bÃ¢timent principal
+        // Créer le bâtiment principal
         $building = Building::create([
-            'name' => 'BÃ¢timent Principal Archives',
-            'description' => 'BÃ¢timent principal pour le stockage des archives administratives',
+            'name' => 'Bâtiment Principal Archives',
+            'description' => 'Bâtiment principal pour le stockage des archives administratives',
             'visibility' => 'public',
-            'creator_id' => 999999 // Valeur temporaire, sera mise Ã  jour par SuperAdminSeeder
+            'creator_id' => 999999,
         ]);
 
         $directions = [
-            ['org' => $directionFinances, 'floor_num' => 1, 'room_code' => 'SALLE-DF'],
+            ['org' => $directionSI, 'floor_num' => 1, 'room_code' => 'SALLE-DSI'],
             ['org' => $directionRH, 'floor_num' => 2, 'room_code' => 'SALLE-DRH'],
-            ['org' => $directionArchives, 'floor_num' => 3, 'room_code' => 'SALLE-DADA']
+            ['org' => $directionAG, 'floor_num' => 3, 'room_code' => 'SALLE-DAG'],
         ];
 
         foreach ($directions as $directionData) {
-            // CrÃ©er l'Ã©tage
+            // Créer l'étage
             $floor = Floor::create([
-                'name' => 'Ã‰tage ' . $directionData['floor_num'],
-                'description' => 'Ã‰tage dÃ©diÃ© Ã  la ' . $directionData['org']->name,
+                'name' => 'Étage ' . $directionData['floor_num'],
+                'description' => 'Étage dédié à la ' . $directionData['org']->name,
                 'building_id' => $building->id,
-                'creator_id' => 999999
+                'creator_id' => 999999,
             ]);
 
-            // CrÃ©er la salle
+            // Créer la salle
             $room = Room::create([
                 'code' => $directionData['room_code'],
                 'name' => 'Salle ' . $directionData['org']->code,
@@ -152,47 +156,46 @@ class OrganisationSeeder extends Seeder
                 'visibility' => 'public',
                 'type' => 'archives',
                 'floor_id' => $floor->id,
-                'creator_id' => 999999
+                'creator_id' => 999999,
             ]);
 
-            // Associer la salle Ã  l'organisation
+            // Associer la salle à l'organisation
             $room->organisations()->attach($directionData['org']->id);
 
-            // CrÃ©er 10 Ã©tagÃ¨res dans la salle
+            // Créer 10 étagères dans la salle
             for ($shelfNum = 1; $shelfNum <= 10; $shelfNum++) {
                 $shelf = Shelf::create([
                     'code' => $directionData['room_code'] . '-ET' . str_pad($shelfNum, 2, '0', STR_PAD_LEFT),
-                    'observation' => 'Ã‰tagÃ¨re ' . $shelfNum . ' de la salle ' . $directionData['org']->code,
-                    'face' => 1, // Face numÃ©rique au lieu de 'A'
+                    'observation' => 'Étagère ' . $shelfNum . ' de la salle ' . $directionData['org']->code,
+                    'face' => 1,
                     'ear' => 1,
                     'shelf' => $shelfNum,
-                    'shelf_length' => 200, // 2 mÃ¨tres
+                    'shelf_length' => 200, // 2 mètres
                     'room_id' => $room->id,
-                    'creator_id' => 999999
+                    'creator_id' => 999999,
                 ]);
 
-                // CrÃ©er 10 boÃ®tes d'archives sur chaque Ã©tagÃ¨re
+                // Créer 10 boîtes d'archives sur chaque étagère
                 for ($boxNum = 1; $boxNum <= 10; $boxNum++) {
                     Container::create([
                         'code' => $shelf->code . '-B' . str_pad($boxNum, 2, '0', STR_PAD_LEFT),
                         'shelve_id' => $shelf->id,
-                        'status_id' => 1, // Statut par dÃ©faut
-                        'property_id' => $defaultProperty->id, // Utiliser la propriÃ©tÃ© par dÃ©faut
+                        'status_id' => 1,
+                        'property_id' => $defaultProperty->id,
                         'creator_id' => 999999,
-                        'creator_organisation_id' => $directionData['org']->id
+                        'creator_organisation_id' => $directionData['org']->id,
                     ]);
                 }
             }
 
-            $this->command->info('âœ… Infrastructure crÃ©Ã©e pour ' . $directionData['org']->name . ' (Ã‰tage ' . $directionData['floor_num'] . ')');
+            $this->command->info('Infrastructure créée pour ' . $directionData['org']->name . ' (Étage ' . $directionData['floor_num'] . ')');
         }
 
-        $this->command->info('âœ… Infrastructure physique complÃ¨te crÃ©Ã©e');
-        $this->command->info('ðŸ“Š RÃ©sumÃ©: 1 bÃ¢timent, 3 Ã©tages, 3 salles, 30 Ã©tagÃ¨res, 300 boÃ®tes d\'archives');
+        $this->command->info('Résumé : 1 bâtiment, 3 étages, 3 salles, 30 étagères, 300 boîtes d\'archives');
     }
 
     /**
-     * Ajouter des contacts par dÃ©faut Ã  une organisation
+     * Ajouter des contacts par défaut à une organisation
      */
     private function addDefaultContacts(Organisation $org): void
     {
@@ -214,7 +217,7 @@ class OrganisationSeeder extends Seeder
             [
                 'type' => 'adresse',
                 'value' => 'Adresse de la ' . $org->name,
-                'label' => 'SiÃ¨ge',
+                'label' => 'Siège',
                 'notes' => null,
             ],
             [
@@ -231,4 +234,3 @@ class OrganisationSeeder extends Seeder
         }
     }
 }
-

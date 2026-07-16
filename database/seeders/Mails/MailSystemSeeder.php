@@ -22,13 +22,13 @@ class MailSystemSeeder extends Seeder
     }
 
     /**
-     * CrÃ©er les prioritÃ©s de courrier
+     * Créer les priorités de courrier
      */
     private function seedMailPriorities()
     {
         $priorities = [
             [
-                'name' => 'TrÃ¨s urgent',
+                'name' => 'Très urgent',
                 'duration' => 1 // 1 jour
             ],
             [
@@ -50,17 +50,17 @@ class MailSystemSeeder extends Seeder
         ];
 
         foreach ($priorities as $priority) {
-            MailPriority::firstOrCreate(
+            MailPriority::updateOrCreate(
                 ['name' => $priority['name']],
                 $priority
             );
         }
 
-        $this->command->info('PrioritÃ©s de courrier crÃ©Ã©es: ' . count($priorities));
+        $this->command->info('Priorités de courrier créées: ' . count($priorities));
     }
 
     /**
-     * CrÃ©er les actions de courrier
+     * Créer les actions de courrier
      */
     private function seedMailActions()
     {
@@ -69,7 +69,7 @@ class MailSystemSeeder extends Seeder
                 'name' => 'Pour information',
                 'duration' => 0,
                 'to_return' => false,
-                'description' => 'Courrier transmis Ã  titre informatif uniquement'
+                'description' => 'Courrier transmis à titre informatif uniquement'
             ],
             [
                 'name' => 'Pour avis',
@@ -78,34 +78,34 @@ class MailSystemSeeder extends Seeder
                 'description' => 'Demande d\'avis ou de consultation'
             ],
             [
-                'name' => 'Pour dÃ©cision',
+                'name' => 'Pour décision',
                 'duration' => 7,
                 'to_return' => true,
-                'description' => 'NÃ©cessite une prise de dÃ©cision'
+                'description' => 'Nécessite une prise de décision'
             ],
             [
                 'name' => 'Pour signature',
                 'duration' => 3,
                 'to_return' => true,
-                'description' => 'Document Ã  signer'
+                'description' => 'Document à signer'
             ],
             [
                 'name' => 'Pour validation',
                 'duration' => 5,
                 'to_return' => true,
-                'description' => 'Document Ã  valider ou approuver'
+                'description' => 'Document à valider ou approuver'
             ],
             [
                 'name' => 'Pour traitement',
                 'duration' => 10,
                 'to_return' => true,
-                'description' => 'Dossier nÃ©cessitant un traitement complet'
+                'description' => 'Dossier nécessitant un traitement complet'
             ],
             [
                 'name' => 'Pour suivi',
                 'duration' => 15,
                 'to_return' => false,
-                'description' => 'Dossier Ã  suivre rÃ©guliÃ¨rement'
+                'description' => 'Dossier à suivre régulièrement'
             ],
             [
                 'name' => 'Pour archivage',
@@ -141,27 +141,27 @@ class MailSystemSeeder extends Seeder
         ];
 
         foreach ($actions as $action) {
-            MailAction::firstOrCreate(
+            MailAction::updateOrCreate(
                 ['name' => $action['name']],
                 $action
             );
         }
 
-        $this->command->info('Actions de courrier crÃ©Ã©es: ' . count($actions));
+        $this->command->info('Actions de courrier créées: ' . count($actions));
     }
 
     /**
-     * CrÃ©er les typologies de courrier
+     * Créer les typologies de courrier
      */
     private function seedMailTypologies()
     {
-        // VÃ©rifier s'il y a des activitÃ©s, sinon crÃ©er une activitÃ© par dÃ©faut
+        // Vérifier s'il y a des activités, sinon créer une activité par défaut
         $defaultActivity = Activity::first();
         if (!$defaultActivity) {
             $defaultActivity = Activity::create([
                 'code' => 'ADM',
-                'name' => 'Administration gÃ©nÃ©rale',
-                'observation' => 'ActivitÃ© par dÃ©faut pour les courriers'
+                'name' => 'Administration générale',
+                'observation' => 'Activité par défaut pour les courriers'
             ]);
         }
 
@@ -169,8 +169,8 @@ class MailSystemSeeder extends Seeder
             // Correspondance administrative
             [
                 'code' => 'CORR',
-                'name' => 'Correspondance gÃ©nÃ©rale',
-                'description' => 'Courrier de correspondance gÃ©nÃ©rale',
+                'name' => 'Correspondance générale',
+                'description' => 'Courrier de correspondance générale',
                 'activity_id' => $defaultActivity->id
             ],
             [
@@ -182,11 +182,11 @@ class MailSystemSeeder extends Seeder
             [
                 'code' => 'CONV',
                 'name' => 'Convocation',
-                'description' => 'Convocation Ã  une rÃ©union ou Ã©vÃ©nement',
+                'description' => 'Convocation à une réunion ou événement',
                 'activity_id' => $defaultActivity->id
             ],
 
-            // Demandes et rÃ©clamations
+            // Demandes et réclamations
             [
                 'code' => 'DSTG',
                 'name' => 'Demande de stage',
@@ -196,7 +196,7 @@ class MailSystemSeeder extends Seeder
             [
                 'code' => 'DAID',
                 'name' => 'Demande d\'aide',
-                'description' => 'Demande d\'aide financiÃ¨re ou matÃ©rielle',
+                'description' => 'Demande d\'aide financière ou matérielle',
                 'activity_id' => $defaultActivity->id
             ],
             [
@@ -207,8 +207,8 @@ class MailSystemSeeder extends Seeder
             ],
             [
                 'code' => 'RECL',
-                'name' => 'RÃ©clamation',
-                'description' => 'RÃ©clamation ou plainte',
+                'name' => 'Réclamation',
+                'description' => 'Réclamation ou plainte',
                 'activity_id' => $defaultActivity->id
             ],
 
@@ -221,8 +221,8 @@ class MailSystemSeeder extends Seeder
             ],
             [
                 'code' => 'DECL',
-                'name' => 'DÃ©claration',
-                'description' => 'DÃ©claration officielle',
+                'name' => 'Déclaration',
+                'description' => 'Déclaration officielle',
                 'activity_id' => $defaultActivity->id
             ],
             [
@@ -235,8 +235,8 @@ class MailSystemSeeder extends Seeder
             // Aspects financiers
             [
                 'code' => 'CRED',
-                'name' => 'CrÃ©dit/Financement',
-                'description' => 'Demande de crÃ©dit ou financement',
+                'name' => 'Crédit/Financement',
+                'description' => 'Demande de crédit ou financement',
                 'activity_id' => $defaultActivity->id
             ],
             [
@@ -248,7 +248,7 @@ class MailSystemSeeder extends Seeder
             [
                 'code' => 'BUDG',
                 'name' => 'Budget',
-                'description' => 'Document budgÃ©taire',
+                'description' => 'Document budgétaire',
                 'activity_id' => $defaultActivity->id
             ],
 
@@ -256,7 +256,7 @@ class MailSystemSeeder extends Seeder
             [
                 'code' => 'CAND',
                 'name' => 'Candidature',
-                'description' => 'Candidature spontanÃ©e ou rÃ©ponse Ã  offre',
+                'description' => 'Candidature spontanée ou réponse à offre',
                 'activity_id' => $defaultActivity->id
             ],
             [
@@ -267,8 +267,8 @@ class MailSystemSeeder extends Seeder
             ],
             [
                 'code' => 'EVAL',
-                'name' => 'Ã‰valuation',
-                'description' => 'Ã‰valuation de personnel ou de service',
+                'name' => 'Évaluation',
+                'description' => 'Évaluation de personnel ou de service',
                 'activity_id' => $defaultActivity->id
             ],
 
@@ -296,7 +296,7 @@ class MailSystemSeeder extends Seeder
             [
                 'code' => 'PRES',
                 'name' => 'Presse',
-                'description' => 'CommuniquÃ© de presse ou relation presse',
+                'description' => 'Communiqué de presse ou relation presse',
                 'activity_id' => $defaultActivity->id
             ],
             [
@@ -310,13 +310,13 @@ class MailSystemSeeder extends Seeder
             [
                 'code' => 'TECH',
                 'name' => 'Technique',
-                'description' => 'Document technique ou spÃ©cification',
+                'description' => 'Document technique ou spécification',
                 'activity_id' => $defaultActivity->id
             ],
             [
                 'code' => 'MAIN',
                 'name' => 'Maintenance',
-                'description' => 'Demande de maintenance ou rÃ©paration',
+                'description' => 'Demande de maintenance ou réparation',
                 'activity_id' => $defaultActivity->id
             ],
 
@@ -324,19 +324,19 @@ class MailSystemSeeder extends Seeder
             [
                 'code' => 'INVT',
                 'name' => 'Invitation',
-                'description' => 'Invitation Ã  un Ã©vÃ©nement',
+                'description' => 'Invitation à un événement',
                 'activity_id' => $defaultActivity->id
             ],
             [
                 'code' => 'RAPP',
                 'name' => 'Rapport',
-                'description' => 'Rapport d\'activitÃ© ou d\'Ã©tude',
+                'description' => 'Rapport d\'activité ou d\'étude',
                 'activity_id' => $defaultActivity->id
             ],
             [
                 'code' => 'DIRS',
                 'name' => 'Divers',
-                'description' => 'Courrier divers non classÃ©',
+                'description' => 'Courrier divers non classé',
                 'activity_id' => $defaultActivity->id
             ],
             [
@@ -347,14 +347,16 @@ class MailSystemSeeder extends Seeder
             ]
         ];
 
+        // updateOrCreate (et non firstOrCreate) : rejouer le seeder répare les libellés
+        // existants — notamment ceux enregistrés avec un encodage erroné.
         foreach ($typologies as $typology) {
-            MailTypology::firstOrCreate(
+            MailTypology::updateOrCreate(
                 ['code' => $typology['code']],
                 $typology
             );
         }
 
-        $this->command->info('Typologies de courrier crÃ©Ã©es: ' . count($typologies));
+        $this->command->info('Typologies de courrier créées: ' . count($typologies));
     }
 }
 

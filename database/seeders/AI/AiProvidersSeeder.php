@@ -14,27 +14,27 @@ class AiProvidersSeeder extends Seeder
      */
     public function run(): void
     {
-        // CrÃ©er ou rÃ©cupÃ©rer la catÃ©gorie IA
+        // Créer ou récupérer la catégorie IA
         $aiCategory = SettingCategory::firstOrCreate(
             ['name' => 'Intelligence Artificielle'],
-            ['description' => 'ParamÃ¨tres des services d\'IA et des providers']
+            ['description' => 'Paramètres des services d\'IA et des providers']
         );
 
-        // Sous-catÃ©gories pour l'IA
+        // Sous-catégories pour l'IA
         $aiProvidersCategory = SettingCategory::firstOrCreate(
             [ 'name' => 'Providers', 'parent_id' => $aiCategory->id ],
             ['description' => 'Configuration des providers d\'IA']
         );
 
         $aiModelsCategory = SettingCategory::firstOrCreate(
-            [ 'name' => 'ModÃ¨les', 'parent_id' => $aiCategory->id ],
-            ['description' => 'Configuration des modÃ¨les d\'IA']
+            [ 'name' => 'Modèles', 'parent_id' => $aiCategory->id ],
+            ['description' => 'Configuration des modèles d\'IA']
         );
 
-    // ParamÃ¨tres gÃ©nÃ©raux pour l'IA
+    // Paramètres généraux pour l'IA
     $aiSettings = $this->buildSettings($aiCategory->id, $aiProvidersCategory->id, $aiModelsCategory->id);
 
-        // Upsert pour mettre Ã  jour les valeurs par dÃ©faut si dÃ©jÃ  existantes
+        // Upsert pour mettre à jour les valeurs par défaut si déjà existantes
         foreach ($aiSettings as $settingData) {
             Setting::updateOrCreate(
                 ['name' => $settingData['name']],
@@ -42,7 +42,7 @@ class AiProvidersSeeder extends Seeder
             );
         }
 
-        $this->command->info('ParamÃ¨tres des providers IA crÃ©Ã©s avec succÃ¨s.');
+        $this->command->info('Paramètres des providers IA créés avec succès.');
     }
 
     private function buildSettings(int $aiCategoryId, int $aiProvidersCategoryId, int $aiModelsCategoryId): array
@@ -62,7 +62,7 @@ class AiProvidersSeeder extends Seeder
                 'name' => 'ai_default_provider',
                 'type' => 'string',
                 'default_value' => json_encode('ollama'),
-                'description' => 'Provider d\'IA par dÃ©faut',
+                'description' => 'Provider d\'IA par défaut',
                 'is_system' => true,
                 'constraints' => json_encode(['options' => [
                     'ollama',
@@ -80,7 +80,7 @@ class AiProvidersSeeder extends Seeder
                 'name' => 'ai_default_model',
                 'type' => 'string',
                 'default_value' => json_encode(self::DEFAULT_MODEL),
-                'description' => 'ModÃ¨le d\'IA par dÃ©faut',
+                'description' => 'Modèle d\'IA par défaut',
                 'is_system' => true,
             ],
             [
@@ -88,7 +88,7 @@ class AiProvidersSeeder extends Seeder
                 'name' => 'ai_request_timeout',
                 'type' => 'integer',
                 'default_value' => json_encode(120),
-                'description' => 'Timeout des requÃªtes IA (en secondes)',
+                'description' => 'Timeout des requêtes IA (en secondes)',
                 'is_system' => true,
                 'constraints' => json_encode(['min' => 30, 'max' => 300]),
             ],
@@ -137,7 +137,7 @@ class AiProvidersSeeder extends Seeder
                 'name' => 'lmstudio_api_key',
                 'type' => 'string',
                 'default_value' => json_encode(''),
-                'description' => 'ClÃ© API pour LM Studio (optionnelle)',
+                'description' => 'Clé API pour LM Studio (optionnelle)',
                 'is_system' => true,
             ],
             // Configuration AnythingLLM
@@ -162,7 +162,7 @@ class AiProvidersSeeder extends Seeder
                 'name' => 'anythingllm_api_key',
                 'type' => 'string',
                 'default_value' => json_encode(''),
-                'description' => 'ClÃ© API pour AnythingLLM',
+                'description' => 'Clé API pour AnythingLLM',
                 'is_system' => true,
             ],
             // Configuration OpenAI
@@ -179,7 +179,7 @@ class AiProvidersSeeder extends Seeder
                 'name' => 'openai_api_key',
                 'type' => 'string',
                 'default_value' => json_encode(''),
-                'description' => 'ClÃ© API pour OpenAI',
+                'description' => 'Clé API pour OpenAI',
                 'is_system' => true,
             ],
             [
@@ -196,13 +196,13 @@ class AiProvidersSeeder extends Seeder
     private function modelSettings(int $aiModelsCategoryId): array
     {
         return [
-            // Configuration des modÃ¨les par dÃ©faut
+            // Configuration des modèles par défaut
             [
                 'category_id' => $aiModelsCategoryId,
                 'name' => 'model_summary',
                 'type' => 'string',
                 'default_value' => json_encode(self::DEFAULT_MODEL),
-                'description' => 'ModÃ¨le pour la gÃ©nÃ©ration de rÃ©sumÃ©s',
+                'description' => 'Modèle pour la génération de résumés',
                 'is_system' => true,
             ],
             [
@@ -210,7 +210,7 @@ class AiProvidersSeeder extends Seeder
                 'name' => 'model_keywords',
                 'type' => 'string',
                 'default_value' => json_encode(self::DEFAULT_MODEL),
-                'description' => 'ModÃ¨le pour l\'extraction de mots-clÃ©s',
+                'description' => 'Modèle pour l\'extraction de mots-clés',
                 'is_system' => true,
             ],
             [
@@ -218,7 +218,7 @@ class AiProvidersSeeder extends Seeder
                 'name' => 'model_analysis',
                 'type' => 'string',
                 'default_value' => json_encode(self::DEFAULT_MODEL),
-                'description' => 'ModÃ¨le pour l\'analyse de texte',
+                'description' => 'Modèle pour l\'analyse de texte',
                 'is_system' => true,
             ],
         ];

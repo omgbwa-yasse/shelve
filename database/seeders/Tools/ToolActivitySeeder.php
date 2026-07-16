@@ -8,41 +8,38 @@ use App\Models\Organisation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Plan de classement (activités) par direction : DSI, DRH, DAG.
+ */
 class ToolActivitySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         Schema::disableForeignKeyConstraints();
         DB::beginTransaction();
 
         try {
-            // Supprimer toutes les activitÃ©s existantes
-            $this->command->info('ðŸ—‘ï¸ Suppression des activitÃ©s existantes...');
+            $this->command->info('Suppression des activités existantes...');
             Activity::query()->delete();
 
-            // RÃ©cupÃ©rer les organisations
-            $organisations = Organisation::whereIn('code', ['DF', 'DRH', 'DADA'])->get()->keyBy('code');
+            $organisations = Organisation::whereIn('code', ['DSI', 'DRH', 'DAG'])->get()->keyBy('code');
 
             if ($organisations->count() != 3) {
-                $this->command->error('Les organisations DF, DRH et DADA doivent Ãªtre crÃ©Ã©es avant ce seeder');
+                $this->command->error('Les organisations DSI, DRH et DAG doivent être créées avant ce seeder');
                 Schema::enableForeignKeyConstraints();
                 return;
             }
 
-            // CrÃ©er les activitÃ©s pour chaque direction
-            $this->createFinanceActivities($organisations['DF']);
+            $this->createSIActivities($organisations['DSI']);
             $this->createHRActivities($organisations['DRH']);
-            $this->createArchivesActivities($organisations['DADA']);
+            $this->createAGActivities($organisations['DAG']);
 
             DB::commit();
-            $this->command->info('âœ… ActivitÃ©s crÃ©Ã©es avec succÃ¨s pour toutes les directions');
+            $this->command->info('Activités créées avec succès pour toutes les directions');
 
         } catch (\Exception $e) {
             DB::rollback();
-            $this->command->error('âŒ Erreur lors de la crÃ©ation des activitÃ©s: ' . $e->getMessage());
+            $this->command->error('Erreur lors de la création des activités: ' . $e->getMessage());
             Schema::enableForeignKeyConstraints();
             throw $e;
         }
@@ -51,84 +48,83 @@ class ToolActivitySeeder extends Seeder
     }
 
     /**
-     * CrÃ©er les activitÃ©s pour la Direction des Finances
+     * Activités de la Direction des Systèmes d'Information
      */
-    private function createFinanceActivities($organisation)
+    private function createSIActivities($organisation): void
     {
-        $this->command->info('ðŸ’° CrÃ©ation des activitÃ©s pour la Direction des Finances...');
+        $this->command->info('Création des activités pour la DSI...');
 
         $activities = [
             [
-                'code' => 'DF-01000',
-                'name' => 'GESTION BUDGÃ‰TAIRE',
+                'code' => 'DSI-01000',
+                'name' => 'GESTION DES INFRASTRUCTURES',
                 'children' => [
                     [
-                        'code' => 'DF-01100',
-                        'name' => 'PRÃ‰PARATION DU BUDGET',
+                        'code' => 'DSI-01100',
+                        'name' => 'RÉSEAUX ET TÉLÉCOMMUNICATIONS',
                         'children' => [
-                            ['code' => 'DF-01110', 'name' => 'COLLECTE DES PRÃ‰VISIONS BUDGÃ‰TAIRES'],
-                            ['code' => 'DF-01120', 'name' => 'ANALYSE DES BESOINS FINANCIERS'],
-                            ['code' => 'DF-01130', 'name' => 'Ã‰LABORATION DU BUDGET PRIMITIF']
-                        ]
+                            ['code' => 'DSI-01110', 'name' => 'ADMINISTRATION DU RÉSEAU'],
+                            ['code' => 'DSI-01120', 'name' => 'SUPERVISION ET MÉTROLOGIE'],
+                            ['code' => 'DSI-01130', 'name' => 'SÉCURITÉ DES ACCÈS'],
+                        ],
                     ],
                     [
-                        'code' => 'DF-01200',
-                        'name' => 'EXÃ‰CUTION BUDGÃ‰TAIRE',
+                        'code' => 'DSI-01200',
+                        'name' => 'SERVEURS ET STOCKAGE',
                         'children' => [
-                            ['code' => 'DF-01210', 'name' => 'SUIVI DES ENGAGEMENTS'],
-                            ['code' => 'DF-01220', 'name' => 'CONTRÃ”LE DES DÃ‰PENSES'],
-                            ['code' => 'DF-01230', 'name' => 'GESTION DES RECETTES']
-                        ]
-                    ]
-                ]
+                            ['code' => 'DSI-01210', 'name' => 'EXPLOITATION DES SERVEURS'],
+                            ['code' => 'DSI-01220', 'name' => 'SAUVEGARDE ET RESTAURATION'],
+                        ],
+                    ],
+                ],
             ],
             [
-                'code' => 'DF-02000',
-                'name' => 'COMPTABILITÃ‰ GÃ‰NÃ‰RALE',
+                'code' => 'DSI-02000',
+                'name' => 'APPLICATIONS MÉTIER',
                 'children' => [
                     [
-                        'code' => 'DF-02100',
-                        'name' => 'TENUE DES COMPTES',
+                        'code' => 'DSI-02100',
+                        'name' => 'DÉVELOPPEMENT ET INTÉGRATION',
                         'children' => [
-                            ['code' => 'DF-02110', 'name' => 'SAISIE DES Ã‰CRITURES COMPTABLES'],
-                            ['code' => 'DF-02120', 'name' => 'RAPPROCHEMENTS BANCAIRES']
-                        ]
+                            ['code' => 'DSI-02110', 'name' => 'EXPRESSION DES BESOINS'],
+                            ['code' => 'DSI-02120', 'name' => 'RECETTE ET MISE EN PRODUCTION'],
+                        ],
                     ],
                     [
-                        'code' => 'DF-02200',
-                        'name' => 'Ã‰TATS FINANCIERS',
+                        'code' => 'DSI-02200',
+                        'name' => 'MAINTENANCE APPLICATIVE',
                         'children' => [
-                            ['code' => 'DF-02210', 'name' => 'BILAN COMPTABLE'],
-                            ['code' => 'DF-02220', 'name' => 'COMPTE DE RÃ‰SULTAT']
-                        ]
-                    ]
-                ]
+                            ['code' => 'DSI-02210', 'name' => 'CORRECTION DES ANOMALIES'],
+                            ['code' => 'DSI-02220', 'name' => 'ÉVOLUTIONS FONCTIONNELLES'],
+                        ],
+                    ],
+                ],
             ],
             [
-                'code' => 'DF-03000',
-                'name' => 'MARCHÃ‰S PUBLICS',
+                'code' => 'DSI-03000',
+                'name' => 'SUPPORT AUX UTILISATEURS',
                 'children' => [
                     [
-                        'code' => 'DF-03100',
-                        'name' => 'PROCÃ‰DURES D\'APPEL D\'OFFRES',
+                        'code' => 'DSI-03100',
+                        'name' => 'ASSISTANCE ET INCIDENTS',
                         'children' => [
-                            ['code' => 'DF-03110', 'name' => 'PUBLICATION DES AVIS'],
-                            ['code' => 'DF-03120', 'name' => 'Ã‰VALUATION DES OFFRES']
-                        ]
-                    ]
-                ]
-            ]
+                            ['code' => 'DSI-03110', 'name' => 'TRAITEMENT DES DEMANDES'],
+                            ['code' => 'DSI-03120', 'name' => 'GESTION DU PARC INFORMATIQUE'],
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         $this->createActivitiesRecursive($activities, null, $organisation);
     }
 
     /**
-     * CrÃ©er les activitÃ©s pour la Direction des Ressources Humaines
+     * Activités de la Direction des Ressources Humaines
      */
-    private function createHRActivities($organisation)
+    private function createHRActivities($organisation): void
     {
-        $this->command->info('ðŸ‘¥ CrÃ©ation des activitÃ©s pour la Direction des Ressources Humaines...');
+        $this->command->info('Création des activités pour la DRH...');
 
         $activities = [
             [
@@ -139,21 +135,21 @@ class ToolActivitySeeder extends Seeder
                         'code' => 'DRH-01100',
                         'name' => 'RECRUTEMENT',
                         'children' => [
-                            ['code' => 'DRH-01110', 'name' => 'DÃ‰FINITION DES POSTES'],
-                            ['code' => 'DRH-01120', 'name' => 'SÃ‰LECTION DES CANDIDATS'],
-                            ['code' => 'DRH-01130', 'name' => 'INTÃ‰GRATION DES NOUVEAUX EMPLOYÃ‰S']
-                        ]
+                            ['code' => 'DRH-01110', 'name' => 'DÉFINITION DES POSTES'],
+                            ['code' => 'DRH-01120', 'name' => 'SÉLECTION DES CANDIDATS'],
+                            ['code' => 'DRH-01130', 'name' => 'INTÉGRATION DES NOUVEAUX EMPLOYÉS'],
+                        ],
                     ],
                     [
                         'code' => 'DRH-01200',
-                        'name' => 'GESTION DES CARRIÃˆRES',
+                        'name' => 'GESTION DES CARRIÈRES',
                         'children' => [
-                            ['code' => 'DRH-01210', 'name' => 'Ã‰VALUATIONS PROFESSIONNELLES'],
+                            ['code' => 'DRH-01210', 'name' => 'ÉVALUATIONS PROFESSIONNELLES'],
                             ['code' => 'DRH-01220', 'name' => 'PROMOTIONS ET MUTATIONS'],
-                            ['code' => 'DRH-01230', 'name' => 'GESTION DES COMPÃ‰TENCES']
-                        ]
-                    ]
-                ]
+                            ['code' => 'DRH-01230', 'name' => 'GESTION DES COMPÉTENCES'],
+                        ],
+                    ],
+                ],
             ],
             [
                 'code' => 'DRH-02000',
@@ -164,124 +160,134 @@ class ToolActivitySeeder extends Seeder
                         'name' => 'DOSSIERS INDIVIDUELS',
                         'children' => [
                             ['code' => 'DRH-02110', 'name' => 'CONSTITUTION DES DOSSIERS'],
-                            ['code' => 'DRH-02120', 'name' => 'MISE Ã€ JOUR DES INFORMATIONS']
-                        ]
+                            ['code' => 'DRH-02120', 'name' => 'MISE À JOUR DES INFORMATIONS'],
+                        ],
                     ],
                     [
                         'code' => 'DRH-02200',
                         'name' => 'PAIE ET AVANTAGES',
                         'children' => [
                             ['code' => 'DRH-02210', 'name' => 'CALCUL DES SALAIRES'],
-                            ['code' => 'DRH-02220', 'name' => 'GESTION DES AVANTAGES SOCIAUX']
-                        ]
-                    ]
-                ]
+                            ['code' => 'DRH-02220', 'name' => 'GESTION DES AVANTAGES SOCIAUX'],
+                        ],
+                    ],
+                ],
             ],
             [
                 'code' => 'DRH-03000',
-                'name' => 'FORMATION ET DÃ‰VELOPPEMENT',
+                'name' => 'FORMATION ET DÉVELOPPEMENT',
                 'children' => [
                     [
                         'code' => 'DRH-03100',
                         'name' => 'PLANIFICATION DES FORMATIONS',
                         'children' => [
                             ['code' => 'DRH-03110', 'name' => 'IDENTIFICATION DES BESOINS'],
-                            ['code' => 'DRH-03120', 'name' => 'ORGANISATION DES SESSIONS']
-                        ]
-                    ]
-                ]
-            ]
+                            ['code' => 'DRH-03120', 'name' => 'ORGANISATION DES SESSIONS'],
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         $this->createActivitiesRecursive($activities, null, $organisation);
     }
 
     /**
-     * CrÃ©er les activitÃ©s pour la Direction des Archives et Documents Administratifs
+     * Activités de la Direction des Affaires Générales
+     * (courrier, archives, logistique et patrimoine)
      */
-    private function createArchivesActivities($organisation)
+    private function createAGActivities($organisation): void
     {
-        $this->command->info('ðŸ“š CrÃ©ation des activitÃ©s pour la Direction des Archives et Documents Administratifs...');
+        $this->command->info('Création des activités pour la DAG...');
 
         $activities = [
             [
-                'code' => 'DADA-01000',
-                'name' => 'GESTION DOCUMENTAIRE',
+                'code' => 'DAG-01000',
+                'name' => 'GESTION DU COURRIER',
                 'children' => [
                     [
-                        'code' => 'DADA-01100',
-                        'name' => 'COLLECTE ET RÃ‰CEPTION',
+                        'code' => 'DAG-01100',
+                        'name' => 'COURRIER ENTRANT',
                         'children' => [
-                            ['code' => 'DADA-01110', 'name' => 'RÃ‰CEPTION DES VERSEMENTS'],
-                            ['code' => 'DADA-01120', 'name' => 'CONTRÃ”LE DE CONFORMITÃ‰'],
-                            ['code' => 'DADA-01130', 'name' => 'ENREGISTREMENT DES ENTRÃ‰ES']
-                        ]
+                            ['code' => 'DAG-01110', 'name' => "DÉPÔT ET ENREGISTREMENT À L'ACCUEIL"],
+                            ['code' => 'DAG-01120', 'name' => 'TRANSMISSION AU SECRÉTARIAT DU DG'],
+                            ['code' => 'DAG-01130', 'name' => 'COTATION ET AFFECTATION'],
+                        ],
                     ],
                     [
-                        'code' => 'DADA-01200',
-                        'name' => 'TRAITEMENT DOCUMENTAIRE',
+                        'code' => 'DAG-01200',
+                        'name' => 'COURRIER SORTANT',
                         'children' => [
-                            ['code' => 'DADA-01210', 'name' => 'CLASSEMENT ET INDEXATION'],
-                            ['code' => 'DADA-01220', 'name' => 'DESCRIPTION ARCHIVISTIQUE'],
-                            ['code' => 'DADA-01230', 'name' => 'NUMÃ‰RISATION']
-                        ]
-                    ]
-                ]
+                            ['code' => 'DAG-01210', 'name' => 'VALIDATION HIÉRARCHIQUE'],
+                            ['code' => 'DAG-01220', 'name' => 'SIGNATURE DU DIRECTEUR GÉNÉRAL'],
+                            ['code' => 'DAG-01230', 'name' => 'EXPÉDITION ET SUIVI'],
+                        ],
+                    ],
+                ],
             ],
             [
-                'code' => 'DADA-02000',
-                'name' => 'CONSERVATION',
+                'code' => 'DAG-02000',
+                'name' => 'GESTION DOCUMENTAIRE ET ARCHIVES',
                 'children' => [
                     [
-                        'code' => 'DADA-02100',
-                        'name' => 'PRÃ‰SERVATION PHYSIQUE',
+                        'code' => 'DAG-02100',
+                        'name' => 'COLLECTE ET RÉCEPTION',
                         'children' => [
-                            ['code' => 'DADA-02110', 'name' => 'CONDITIONNEMENT'],
-                            ['code' => 'DADA-02120', 'name' => 'CONTRÃ”LE CLIMATIQUE']
-                        ]
+                            ['code' => 'DAG-02110', 'name' => 'RÉCEPTION DES VERSEMENTS'],
+                            ['code' => 'DAG-02120', 'name' => 'CONTRÔLE DE CONFORMITÉ'],
+                            ['code' => 'DAG-02130', 'name' => 'ENREGISTREMENT DES ENTRÉES'],
+                        ],
                     ],
                     [
-                        'code' => 'DADA-02200',
-                        'name' => 'PRÃ‰SERVATION NUMÃ‰RIQUE',
+                        'code' => 'DAG-02200',
+                        'name' => 'TRAITEMENT ET CONSERVATION',
                         'children' => [
-                            ['code' => 'DADA-02210', 'name' => 'MIGRATION DES FORMATS'],
-                            ['code' => 'DADA-02220', 'name' => 'SAUVEGARDE DES DONNÃ‰ES']
-                        ]
-                    ]
-                ]
+                            ['code' => 'DAG-02210', 'name' => 'CLASSEMENT ET INDEXATION'],
+                            ['code' => 'DAG-02220', 'name' => 'DESCRIPTION ARCHIVISTIQUE'],
+                            ['code' => 'DAG-02230', 'name' => 'NUMÉRISATION'],
+                        ],
+                    ],
+                    [
+                        'code' => 'DAG-02300',
+                        'name' => 'COMMUNICATION ET ACCÈS',
+                        'children' => [
+                            ['code' => 'DAG-02310', 'name' => 'PRÊT ET BORDEREAUX DE COMMUNICATION'],
+                            ['code' => 'DAG-02320', 'name' => 'AIDE À LA RECHERCHE'],
+                        ],
+                    ],
+                ],
             ],
             [
-                'code' => 'DADA-03000',
-                'name' => 'COMMUNICATION ET ACCÃˆS',
+                'code' => 'DAG-03000',
+                'name' => 'LOGISTIQUE ET PATRIMOINE',
                 'children' => [
                     [
-                        'code' => 'DADA-03100',
-                        'name' => 'RECHERCHE ET CONSULTATION',
+                        'code' => 'DAG-03100',
+                        'name' => 'MOYENS GÉNÉRAUX',
                         'children' => [
-                            ['code' => 'DADA-03110', 'name' => 'ACCUEIL DES CHERCHEURS'],
-                            ['code' => 'DADA-03120', 'name' => 'AIDE Ã€ LA RECHERCHE']
-                        ]
-                    ]
-                ]
-            ]
+                            ['code' => 'DAG-03110', 'name' => 'GESTION DES FOURNITURES'],
+                            ['code' => 'DAG-03120', 'name' => 'ENTRETIEN DES LOCAUX'],
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         $this->createActivitiesRecursive($activities, null, $organisation);
     }
 
     /**
-     * CrÃ©er les activitÃ©s de maniÃ¨re rÃ©cursive et les associer Ã  l'organisation via la table pivot
+     * Créer les activités récursivement et les associer à l'organisation via la table pivot
      */
-    private function createActivitiesRecursive($activities, $parentId = null, $organisation = null)
+    private function createActivitiesRecursive($activities, $parentId = null, $organisation = null): void
     {
         foreach ($activities as $activityData) {
             $activity = Activity::create([
                 'code' => $activityData['code'],
                 'name' => $activityData['name'],
-                'parent_id' => $parentId
+                'parent_id' => $parentId,
             ]);
 
-            // Associer l'activitÃ© Ã  l'organisation via la table pivot
             if ($organisation) {
                 $activity->organisations()->attach($organisation->id, ['creator_id' => 999999]);
             }
@@ -292,4 +298,3 @@ class ToolActivitySeeder extends Seeder
         }
     }
 }
-

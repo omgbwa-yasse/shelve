@@ -30,7 +30,7 @@ class PermissionCategorySeeder extends Seeder
         $this->createMuseumPermissions();
         $this->createPublicPermissions();
 
-        $this->command->info('Permissions avec catÃ©gories crÃ©Ã©es avec succÃ¨s!');
+        $this->command->info('Permissions avec catégories créées avec succès!');
     }
 
     private function createModulePermissions()
@@ -40,62 +40,62 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'module_mails_access',
                 'category' => 'system',
-                'description' => 'AccÃ¨s au module Courriers'
+                'description' => 'Accès au module Courriers'
             ],
             [
                 'name' => 'module_repositories_access',
                 'category' => 'system',
-                'description' => 'AccÃ¨s au module DÃ©pÃ´ts'
+                'description' => 'Accès au module Dépôts'
             ],
             [
                 'name' => 'module_communications_access',
                 'category' => 'system',
-                'description' => 'AccÃ¨s au module Communications'
+                'description' => 'Accès au module Communications'
             ],
             [
                 'name' => 'module_transferrings_access',
                 'category' => 'system',
-                'description' => 'AccÃ¨s au module Transferts'
+                'description' => 'Accès au module Transferts'
             ],
             [
                 'name' => 'module_deposits_access',
                 'category' => 'system',
-                'description' => 'AccÃ¨s au module DÃ©pÃ´ts physiques'
+                'description' => 'Accès au module Dépôts physiques'
             ],
             [
                 'name' => 'module_tools_access',
                 'category' => 'system',
-                'description' => 'AccÃ¨s au module Outils'
+                'description' => 'Accès au module Outils'
             ],
             [
                 'name' => 'module_dollies_access',
                 'category' => 'system',
-                'description' => 'AccÃ¨s au module Chariots'
+                'description' => 'Accès au module Chariots'
             ],
             [
                 'name' => 'module_ai_access',
                 'category' => 'system',
-                'description' => 'AccÃ¨s au module Intelligence Artificielle'
+                'description' => 'Accès au module Intelligence Artificielle'
             ],
             [
                 'name' => 'module_public_access',
                 'category' => 'system',
-                'description' => 'AccÃ¨s au module Public'
+                'description' => 'Accès au module Public'
             ],
             [
                 'name' => 'module_settings_access',
                 'category' => 'system',
-                'description' => 'AccÃ¨s au module ParamÃ¨tres'
+                'description' => 'Accès au module Paramètres'
             ],
             [
                 'name' => 'module_workflow_access',
                 'category' => 'system',
-                'description' => 'AccÃ¨s au module Workflow'
+                'description' => 'Accès au module Workflow'
             ],
             [
                 'name' => 'module_workplace_access',
                 'category' => 'system',
-                'description' => 'AccÃ¨s au module WorkPlace (Espaces de travail)'
+                'description' => 'Accès au module WorkPlace (Espaces de travail)'
             ],
         ];
 
@@ -113,7 +113,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'dashboard_manage',
                 'category' => 'dashboard',
-                'description' => 'GÃ©rer le tableau de bord'
+                'description' => 'Gérer le tableau de bord'
             ],
         ];
 
@@ -136,7 +136,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'mail_create',
                 'category' => 'mail',
-                'description' => 'CrÃ©er des courriers'
+                'description' => 'Créer des courriers'
             ],
             [
                 'name' => 'mail_update',
@@ -161,7 +161,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'mail_config',
                 'category' => 'mail',
-                'description' => 'Configurer les paramÃ¨tres courrier'
+                'description' => 'Configurer les paramètres courrier'
             ],
         ];
 
@@ -179,7 +179,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'records_create',
                 'category' => 'records',
-                'description' => 'CrÃ©er des dossiers'
+                'description' => 'Créer des dossiers'
             ],
             [
                 'name' => 'records_edit',
@@ -209,7 +209,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'records_lifecycle',
                 'category' => 'records',
-                'description' => 'GÃ©rer le cycle de vie des dossiers'
+                'description' => 'Gérer le cycle de vie des dossiers'
             ],
             [
                 'name' => 'authors_view',
@@ -219,12 +219,12 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'authors_create',
                 'category' => 'records',
-                'description' => 'CrÃ©er des producteurs'
+                'description' => 'Créer des producteurs'
             ],
             [
                 'name' => 'mcp_features',
                 'category' => 'records',
-                'description' => 'Utiliser les fonctionnalitÃ©s MCP/IA'
+                'description' => 'Utiliser les fonctionnalités MCP/IA'
             ],
         ];
 
@@ -242,7 +242,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'communications_create',
                 'category' => 'communications',
-                'description' => 'CrÃ©er des communications'
+                'description' => 'Créer des communications'
             ],
             [
                 'name' => 'communications_edit',
@@ -270,27 +270,27 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'reservations_view',
                 'category' => 'reservations',
-                'description' => 'Voir les rÃ©servations'
+                'description' => 'Voir les réservations'
             ],
             [
                 'name' => 'reservations_create',
                 'category' => 'reservations',
-                'description' => 'CrÃ©er des rÃ©servations'
+                'description' => 'Créer des réservations'
             ],
             [
                 'name' => 'reservations_edit',
                 'category' => 'reservations',
-                'description' => 'Modifier des rÃ©servations'
+                'description' => 'Modifier des réservations'
             ],
             [
                 'name' => 'reservations_delete',
                 'category' => 'reservations',
-                'description' => 'Supprimer des rÃ©servations'
+                'description' => 'Supprimer des réservations'
             ],
             [
                 'name' => 'reservations_manage',
                 'category' => 'reservations',
-                'description' => 'GÃ©rer les rÃ©servations'
+                'description' => 'Gérer les réservations'
             ],
         ];
 
@@ -308,7 +308,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'users_create',
                 'category' => 'users',
-                'description' => 'CrÃ©er des utilisateurs'
+                'description' => 'Créer des utilisateurs'
             ],
             [
                 'name' => 'users_edit',
@@ -323,7 +323,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'users_manage',
                 'category' => 'users',
-                'description' => 'GÃ©rer les utilisateurs'
+                'description' => 'Gérer les utilisateurs'
             ],
         ];
 
@@ -336,22 +336,22 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'settings_view',
                 'category' => 'settings',
-                'description' => 'Voir les paramÃ¨tres'
+                'description' => 'Voir les paramètres'
             ],
             [
                 'name' => 'settings_edit',
                 'category' => 'settings',
-                'description' => 'Modifier les paramÃ¨tres'
+                'description' => 'Modifier les paramètres'
             ],
             [
                 'name' => 'settings_manage',
                 'category' => 'settings',
-                'description' => 'GÃ©rer les paramÃ¨tres systÃ¨me'
+                'description' => 'Gérer les paramètres système'
             ],
             [
                 'name' => 'settings_roles',
                 'category' => 'settings',
-                'description' => 'GÃ©rer les rÃ´les et permissions'
+                'description' => 'Gérer les rôles et permissions'
             ],
         ];
 
@@ -364,32 +364,32 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'system_logs',
                 'category' => 'system',
-                'description' => 'Voir les logs systÃ¨me'
+                'description' => 'Voir les logs système'
             ],
             [
                 'name' => 'system_maintenance',
                 'category' => 'system',
-                'description' => 'Effectuer la maintenance systÃ¨me'
+                'description' => 'Effectuer la maintenance système'
             ],
             [
                 'name' => 'system_monitoring',
                 'category' => 'system',
-                'description' => 'Surveiller le systÃ¨me'
+                'description' => 'Surveiller le système'
             ],
             [
                 'name' => 'system_updates_view',
                 'category' => 'system',
-                'description' => 'Voir les mises Ã  jour systÃ¨me'
+                'description' => 'Voir les mises à jour système'
             ],
             [
                 'name' => 'system_updates_check',
                 'category' => 'system',
-                'description' => 'VÃ©rifier les mises Ã  jour disponibles'
+                'description' => 'Vérifier les mises à jour disponibles'
             ],
             [
                 'name' => 'system_updates_install',
                 'category' => 'system',
-                'description' => 'Installer les mises Ã  jour systÃ¨me'
+                'description' => 'Installer les mises à jour système'
             ],
             [
                 'name' => 'system_updates_rollback',
@@ -399,7 +399,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'system_updates_manage',
                 'category' => 'system',
-                'description' => 'GÃ©rer complÃ¨tement les mises Ã  jour systÃ¨me'
+                'description' => 'Gérer complètement les mises à jour système'
             ],
         ];
 
@@ -417,7 +417,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'backups_create',
                 'category' => 'backups',
-                'description' => 'CrÃ©er des sauvegardes'
+                'description' => 'Créer des sauvegardes'
             ],
             [
                 'name' => 'backups_delete',
@@ -446,7 +446,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'organisations_create',
                 'category' => 'organizations',
-                'description' => 'CrÃ©er des organisations'
+                'description' => 'Créer des organisations'
             ],
             [
                 'name' => 'organisations_update',
@@ -461,7 +461,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'organisations_force_delete',
                 'category' => 'organizations',
-                'description' => 'Supprimer dÃ©finitivement des organisations'
+                'description' => 'Supprimer définitivement des organisations'
             ],
             // Additional record permissions
             [
@@ -472,7 +472,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'records_force_delete',
                 'category' => 'records',
-                'description' => 'Supprimer dÃ©finitivement des dossiers'
+                'description' => 'Supprimer définitivement des dossiers'
             ],
             [
                 'name' => 'records_archive',
@@ -493,7 +493,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'users_force_delete',
                 'category' => 'users',
-                'description' => 'Supprimer dÃ©finitivement des utilisateurs'
+                'description' => 'Supprimer définitivement des utilisateurs'
             ],
         ];
 
@@ -505,75 +505,75 @@ class PermissionCategorySeeder extends Seeder
     private function createWorkflowPermissions()
     {
         $permissions = [
-            // AccÃ¨s au tableau de bord workflow
+            // Accès au tableau de bord workflow
             [
                 'name' => 'workflow_dashboard',
                 'category' => 'workflow',
-                'description' => 'AccÃ¨s au tableau de bord des workflows'
+                'description' => 'Accès au tableau de bord des workflows'
             ],
 
-            // Permissions pour les modÃ¨les de workflow
+            // Permissions pour les modèles de workflow
             [
                 'name' => 'workflow_template_viewAny',
                 'category' => 'workflow',
-                'description' => 'Voir tous les modÃ¨les de workflow'
+                'description' => 'Voir tous les modèles de workflow'
             ],
             [
                 'name' => 'workflow_template_view',
                 'category' => 'workflow',
-                'description' => 'Voir un modÃ¨le de workflow'
+                'description' => 'Voir un modèle de workflow'
             ],
             [
                 'name' => 'workflow_template_create',
                 'category' => 'workflow',
-                'description' => 'CrÃ©er des modÃ¨les de workflow'
+                'description' => 'Créer des modèles de workflow'
             ],
             [
                 'name' => 'workflow_template_update',
                 'category' => 'workflow',
-                'description' => 'Modifier des modÃ¨les de workflow'
+                'description' => 'Modifier des modèles de workflow'
             ],
             [
                 'name' => 'workflow_template_delete',
                 'category' => 'workflow',
-                'description' => 'Supprimer des modÃ¨les de workflow'
+                'description' => 'Supprimer des modèles de workflow'
             ],
             [
                 'name' => 'workflow_template_duplicate',
                 'category' => 'workflow',
-                'description' => 'Dupliquer des modÃ¨les de workflow'
+                'description' => 'Dupliquer des modèles de workflow'
             ],
 
-            // Permissions pour les Ã©tapes de workflow
+            // Permissions pour les étapes de workflow
             [
                 'name' => 'workflow_step_viewAny',
                 'category' => 'workflow',
-                'description' => 'Voir toutes les Ã©tapes de workflow'
+                'description' => 'Voir toutes les étapes de workflow'
             ],
             [
                 'name' => 'workflow_step_view',
                 'category' => 'workflow',
-                'description' => 'Voir une Ã©tape de workflow'
+                'description' => 'Voir une étape de workflow'
             ],
             [
                 'name' => 'workflow_step_create',
                 'category' => 'workflow',
-                'description' => 'CrÃ©er des Ã©tapes de workflow'
+                'description' => 'Créer des étapes de workflow'
             ],
             [
                 'name' => 'workflow_step_update',
                 'category' => 'workflow',
-                'description' => 'Modifier des Ã©tapes de workflow'
+                'description' => 'Modifier des étapes de workflow'
             ],
             [
                 'name' => 'workflow_step_delete',
                 'category' => 'workflow',
-                'description' => 'Supprimer des Ã©tapes de workflow'
+                'description' => 'Supprimer des étapes de workflow'
             ],
             [
                 'name' => 'workflow_step_reorder',
                 'category' => 'workflow',
-                'description' => 'RÃ©organiser les Ã©tapes de workflow'
+                'description' => 'Réorganiser les étapes de workflow'
             ],
 
             // Permissions pour les instances de workflow
@@ -590,7 +590,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'workflow_instance_create',
                 'category' => 'workflow',
-                'description' => 'CrÃ©er des instances de workflow'
+                'description' => 'Créer des instances de workflow'
             ],
             [
                 'name' => 'workflow_instance_update',
@@ -605,7 +605,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'workflow_instance_start',
                 'category' => 'workflow',
-                'description' => 'DÃ©marrer une instance de workflow'
+                'description' => 'Démarrer une instance de workflow'
             ],
             [
                 'name' => 'workflow_instance_cancel',
@@ -623,112 +623,112 @@ class PermissionCategorySeeder extends Seeder
                 'description' => 'Reprendre une instance de workflow en pause'
             ],
 
-            // Permissions pour les instances d'Ã©tapes de workflow
+            // Permissions pour les instances d'étapes de workflow
             [
                 'name' => 'workflow_step_instance_view',
                 'category' => 'workflow',
-                'description' => 'Voir une instance d\'Ã©tape de workflow'
+                'description' => 'Voir une instance d\'étape de workflow'
             ],
             [
                 'name' => 'workflow_step_instance_update',
                 'category' => 'workflow',
-                'description' => 'Mettre Ã  jour une instance d\'Ã©tape de workflow'
+                'description' => 'Mettre à jour une instance d\'étape de workflow'
             ],
             [
                 'name' => 'workflow_step_instance_complete',
                 'category' => 'workflow',
-                'description' => 'Marquer une Ã©tape comme complÃ©tÃ©e'
+                'description' => 'Marquer une étape comme complétée'
             ],
             [
                 'name' => 'workflow_step_instance_reject',
                 'category' => 'workflow',
-                'description' => 'Rejeter une Ã©tape de workflow'
+                'description' => 'Rejeter une étape de workflow'
             ],
             [
                 'name' => 'workflow_step_instance_reassign',
                 'category' => 'workflow',
-                'description' => 'RÃ©assigner une Ã©tape de workflow'
+                'description' => 'Réassigner une étape de workflow'
             ],
 
-            // Permissions pour les tÃ¢ches
+            // Permissions pour les tâches
             [
                 'name' => 'task_viewAny',
                 'category' => 'workflow',
-                'description' => 'Voir toutes les tÃ¢ches'
+                'description' => 'Voir toutes les tâches'
             ],
             [
                 'name' => 'task_view',
                 'category' => 'workflow',
-                'description' => 'Voir une tÃ¢che'
+                'description' => 'Voir une tâche'
             ],
             [
                 'name' => 'task_viewOwn',
                 'category' => 'workflow',
-                'description' => 'Voir ses propres tÃ¢ches'
+                'description' => 'Voir ses propres tâches'
             ],
             [
                 'name' => 'task_create',
                 'category' => 'workflow',
-                'description' => 'CrÃ©er des tÃ¢ches'
+                'description' => 'Créer des tâches'
             ],
             [
                 'name' => 'task_update',
                 'category' => 'workflow',
-                'description' => 'Modifier des tÃ¢ches'
+                'description' => 'Modifier des tâches'
             ],
             [
                 'name' => 'task_delete',
                 'category' => 'workflow',
-                'description' => 'Supprimer des tÃ¢ches'
+                'description' => 'Supprimer des tâches'
             ],
             [
                 'name' => 'task_complete',
                 'category' => 'workflow',
-                'description' => 'Marquer une tÃ¢che comme terminÃ©e'
+                'description' => 'Marquer une tâche comme terminée'
             ],
 
-            // Permissions pour les commentaires de tÃ¢ches
+            // Permissions pour les commentaires de tâches
             [
                 'name' => 'task_comment_viewAny',
                 'category' => 'workflow',
-                'description' => 'Voir tous les commentaires de tÃ¢ches'
+                'description' => 'Voir tous les commentaires de tâches'
             ],
             [
                 'name' => 'task_comment_create',
                 'category' => 'workflow',
-                'description' => 'Ajouter un commentaire Ã  une tÃ¢che'
+                'description' => 'Ajouter un commentaire à une tâche'
             ],
             [
                 'name' => 'task_comment_update',
                 'category' => 'workflow',
-                'description' => 'Modifier un commentaire de tÃ¢che'
+                'description' => 'Modifier un commentaire de tâche'
             ],
             [
                 'name' => 'task_comment_delete',
                 'category' => 'workflow',
-                'description' => 'Supprimer un commentaire de tÃ¢che'
+                'description' => 'Supprimer un commentaire de tâche'
             ],
 
-            // Permissions pour les assignations de tÃ¢ches
+            // Permissions pour les assignations de tâches
             [
                 'name' => 'task_assignment_viewAny',
                 'category' => 'workflow',
-                'description' => 'Voir toutes les assignations de tÃ¢ches'
+                'description' => 'Voir toutes les assignations de tâches'
             ],
             [
                 'name' => 'task_assignment_create',
                 'category' => 'workflow',
-                'description' => 'Assigner une tÃ¢che'
+                'description' => 'Assigner une tâche'
             ],
             [
                 'name' => 'task_assignment_update',
                 'category' => 'workflow',
-                'description' => 'Modifier une assignation de tÃ¢che'
+                'description' => 'Modifier une assignation de tâche'
             ],
             [
                 'name' => 'task_assignment_delete',
                 'category' => 'workflow',
-                'description' => 'Supprimer une assignation de tÃ¢che'
+                'description' => 'Supprimer une assignation de tâche'
             ],
 
             // Permissions pour les notifications
@@ -758,31 +758,31 @@ class PermissionCategorySeeder extends Seeder
                 'description' => 'Supprimer une notification'
             ],
 
-            // Permissions pour les notifications systÃ¨me
+            // Permissions pour les notifications système
             [
                 'name' => 'systemNotification_viewAny',
                 'category' => 'workflow',
-                'description' => 'Voir toutes les notifications systÃ¨me'
+                'description' => 'Voir toutes les notifications système'
             ],
             [
                 'name' => 'systemNotification_view',
                 'category' => 'workflow',
-                'description' => 'Voir une notification systÃ¨me'
+                'description' => 'Voir une notification système'
             ],
             [
                 'name' => 'systemNotification_create',
                 'category' => 'workflow',
-                'description' => 'CrÃ©er une notification systÃ¨me'
+                'description' => 'Créer une notification système'
             ],
             [
                 'name' => 'systemNotification_update',
                 'category' => 'workflow',
-                'description' => 'Modifier une notification systÃ¨me'
+                'description' => 'Modifier une notification système'
             ],
             [
                 'name' => 'systemNotification_delete',
                 'category' => 'workflow',
-                'description' => 'Supprimer une notification systÃ¨me'
+                'description' => 'Supprimer une notification système'
             ],
         ];
 
@@ -796,7 +796,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'workplace_access',
                 'category' => 'workplace',
-                'description' => 'AccÃ¨s au module WorkPlace'
+                'description' => 'Accès au module WorkPlace'
             ],
 
             // WorkPlace CRUD Permissions
@@ -813,7 +813,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'workplace_create',
                 'category' => 'workplace',
-                'description' => 'CrÃ©er des espaces de travail'
+                'description' => 'Créer des espaces de travail'
             ],
             [
                 'name' => 'workplace_update',
@@ -833,34 +833,34 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'workplace_settings',
                 'category' => 'workplace',
-                'description' => 'GÃ©rer les paramÃ¨tres d\'un espace de travail'
+                'description' => 'Gérer les paramètres d\'un espace de travail'
             ],
 
             // WorkPlace Category Permissions
             [
                 'name' => 'workplace_category_viewAny',
                 'category' => 'workplace',
-                'description' => 'Voir toutes les catÃ©gories de workplaces'
+                'description' => 'Voir toutes les catégories de workplaces'
             ],
             [
                 'name' => 'workplace_category_view',
                 'category' => 'workplace',
-                'description' => 'Voir une catÃ©gorie de workplace'
+                'description' => 'Voir une catégorie de workplace'
             ],
             [
                 'name' => 'workplace_category_create',
                 'category' => 'workplace',
-                'description' => 'CrÃ©er des catÃ©gories de workplaces'
+                'description' => 'Créer des catégories de workplaces'
             ],
             [
                 'name' => 'workplace_category_update',
                 'category' => 'workplace',
-                'description' => 'Modifier des catÃ©gories de workplaces'
+                'description' => 'Modifier des catégories de workplaces'
             ],
             [
                 'name' => 'workplace_category_delete',
                 'category' => 'workplace',
-                'description' => 'Supprimer des catÃ©gories de workplaces'
+                'description' => 'Supprimer des catégories de workplaces'
             ],
 
             // WorkPlace Member Permissions
@@ -877,12 +877,12 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'workplace_member_add',
                 'category' => 'workplace',
-                'description' => 'Ajouter des membres Ã  un workplace'
+                'description' => 'Ajouter des membres à un workplace'
             ],
             [
                 'name' => 'workplace_member_update',
                 'category' => 'workplace',
-                'description' => 'Modifier le rÃ´le/permissions d\'un membre'
+                'description' => 'Modifier le rôle/permissions d\'un membre'
             ],
             [
                 'name' => 'workplace_member_remove',
@@ -897,7 +897,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'workplace_member_updateNotifications',
                 'category' => 'workplace',
-                'description' => 'Modifier les prÃ©fÃ©rences de notification d\'un membre'
+                'description' => 'Modifier les préférences de notification d\'un membre'
             ],
 
             // WorkPlace Invitation Permissions
@@ -909,7 +909,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'workplace_invitation_create',
                 'category' => 'workplace',
-                'description' => 'CrÃ©er des invitations'
+                'description' => 'Créer des invitations'
             ],
             [
                 'name' => 'workplace_invitation_cancel',
@@ -926,7 +926,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'workplace_folder_viewAny',
                 'category' => 'workplace',
-                'description' => 'Voir tous les dossiers partagÃ©s'
+                'description' => 'Voir tous les dossiers partagés'
             ],
             [
                 'name' => 'workplace_folder_share',
@@ -941,12 +941,12 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'workplace_folder_pin',
                 'category' => 'workplace',
-                'description' => 'Ã‰pingler/dÃ©sÃ©pingler des dossiers'
+                'description' => 'Épingler/désépingler des dossiers'
             ],
             [
                 'name' => 'workplace_document_viewAny',
                 'category' => 'workplace',
-                'description' => 'Voir tous les documents partagÃ©s'
+                'description' => 'Voir tous les documents partagés'
             ],
             [
                 'name' => 'workplace_document_share',
@@ -968,12 +968,12 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'workplace_activity_viewAny',
                 'category' => 'workplace',
-                'description' => 'Voir toutes les activitÃ©s d\'un workplace'
+                'description' => 'Voir toutes les activités d\'un workplace'
             ],
             [
                 'name' => 'workplace_activity_view',
                 'category' => 'workplace',
-                'description' => 'Voir une activitÃ© spÃ©cifique'
+                'description' => 'Voir une activité spécifique'
             ],
 
             // WorkPlace Bookmark Permissions
@@ -985,7 +985,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'workplace_bookmark_create',
                 'category' => 'workplace',
-                'description' => 'CrÃ©er des favoris'
+                'description' => 'Créer des favoris'
             ],
             [
                 'name' => 'workplace_bookmark_delete',
@@ -997,27 +997,27 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'workplace_template_viewAny',
                 'category' => 'workplace',
-                'description' => 'Voir tous les modÃ¨les de workplaces'
+                'description' => 'Voir tous les modèles de workplaces'
             ],
             [
                 'name' => 'workplace_template_view',
                 'category' => 'workplace',
-                'description' => 'Voir un modÃ¨le de workplace'
+                'description' => 'Voir un modèle de workplace'
             ],
             [
                 'name' => 'workplace_template_create',
                 'category' => 'workplace',
-                'description' => 'CrÃ©er des modÃ¨les de workplaces'
+                'description' => 'Créer des modèles de workplaces'
             ],
             [
                 'name' => 'workplace_template_update',
                 'category' => 'workplace',
-                'description' => 'Modifier des modÃ¨les de workplaces'
+                'description' => 'Modifier des modèles de workplaces'
             ],
             [
                 'name' => 'workplace_template_delete',
                 'category' => 'workplace',
-                'description' => 'Supprimer des modÃ¨les de workplaces'
+                'description' => 'Supprimer des modèles de workplaces'
             ],
         ];
 
@@ -1044,7 +1044,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'library_access',
                 'category' => 'library',
-                'description' => 'AccÃ¨s au module Library'
+                'description' => 'Accès au module Library'
             ],
 
             // Books Permissions
@@ -1056,7 +1056,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'books_create',
                 'category' => 'library',
-                'description' => 'CrÃ©er des livres'
+                'description' => 'Créer des livres'
             ],
             [
                 'name' => 'books_update',
@@ -1093,7 +1093,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'book_copies_create',
                 'category' => 'library',
-                'description' => 'CrÃ©er des exemplaires de livres'
+                'description' => 'Créer des exemplaires de livres'
             ],
             [
                 'name' => 'book_copies_update',
@@ -1108,176 +1108,176 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'book_copies_manage',
                 'category' => 'library',
-                'description' => 'GÃ©rer tous les exemplaires'
+                'description' => 'Gérer tous les exemplaires'
             ],
 
             // Book Loans Permissions
             [
                 'name' => 'book_loans_view',
                 'category' => 'library',
-                'description' => 'Voir les prÃªts de livres'
+                'description' => 'Voir les prêts de livres'
             ],
             [
                 'name' => 'book_loans_create',
                 'category' => 'library',
-                'description' => 'CrÃ©er des prÃªts de livres'
+                'description' => 'Créer des prêts de livres'
             ],
             [
                 'name' => 'book_loans_update',
                 'category' => 'library',
-                'description' => 'Modifier des prÃªts de livres'
+                'description' => 'Modifier des prêts de livres'
             ],
             [
                 'name' => 'book_loans_delete',
                 'category' => 'library',
-                'description' => 'Supprimer des prÃªts de livres'
+                'description' => 'Supprimer des prêts de livres'
             ],
             [
                 'name' => 'book_loans_manage',
                 'category' => 'library',
-                'description' => 'GÃ©rer tous les prÃªts'
+                'description' => 'Gérer tous les prêts'
             ],
             [
                 'name' => 'book_loans_renew',
                 'category' => 'library',
-                'description' => 'Renouveler des prÃªts'
+                'description' => 'Renouveler des prêts'
             ],
             [
                 'name' => 'book_loans_return',
                 'category' => 'library',
-                'description' => 'Enregistrer les retours de prÃªts'
+                'description' => 'Enregistrer les retours de prêts'
             ],
 
             // Book Reservations Permissions
             [
                 'name' => 'book_reservations_view',
                 'category' => 'library',
-                'description' => 'Voir les rÃ©servations de livres'
+                'description' => 'Voir les réservations de livres'
             ],
             [
                 'name' => 'book_reservations_create',
                 'category' => 'library',
-                'description' => 'CrÃ©er des rÃ©servations de livres'
+                'description' => 'Créer des réservations de livres'
             ],
             [
                 'name' => 'book_reservations_update',
                 'category' => 'library',
-                'description' => 'Modifier des rÃ©servations de livres'
+                'description' => 'Modifier des réservations de livres'
             ],
             [
                 'name' => 'book_reservations_delete',
                 'category' => 'library',
-                'description' => 'Supprimer des rÃ©servations de livres'
+                'description' => 'Supprimer des réservations de livres'
             ],
             [
                 'name' => 'book_reservations_manage',
                 'category' => 'library',
-                'description' => 'GÃ©rer toutes les rÃ©servations'
+                'description' => 'Gérer toutes les réservations'
             ],
             [
                 'name' => 'book_reservations_fulfill',
                 'category' => 'library',
-                'description' => 'Honorer des rÃ©servations'
+                'description' => 'Honorer des réservations'
             ],
 
             // Periodicals Permissions
             [
                 'name' => 'periodics_view',
                 'category' => 'library',
-                'description' => 'Voir les publications pÃ©riodiques'
+                'description' => 'Voir les publications périodiques'
             ],
             [
                 'name' => 'periodics_create',
                 'category' => 'library',
-                'description' => 'CrÃ©er des publications pÃ©riodiques'
+                'description' => 'Créer des publications périodiques'
             ],
             [
                 'name' => 'periodics_update',
                 'category' => 'library',
-                'description' => 'Modifier des publications pÃ©riodiques'
+                'description' => 'Modifier des publications périodiques'
             ],
             [
                 'name' => 'periodics_delete',
                 'category' => 'library',
-                'description' => 'Supprimer des publications pÃ©riodiques'
+                'description' => 'Supprimer des publications périodiques'
             ],
 
             // Periodic Issues Permissions
             [
                 'name' => 'periodic_issues_view',
                 'category' => 'library',
-                'description' => 'Voir les numÃ©ros de pÃ©riodiques'
+                'description' => 'Voir les numéros de périodiques'
             ],
             [
                 'name' => 'periodic_issues_create',
                 'category' => 'library',
-                'description' => 'CrÃ©er des numÃ©ros de pÃ©riodiques'
+                'description' => 'Créer des numéros de périodiques'
             ],
             [
                 'name' => 'periodic_issues_update',
                 'category' => 'library',
-                'description' => 'Modifier des numÃ©ros de pÃ©riodiques'
+                'description' => 'Modifier des numéros de périodiques'
             ],
             [
                 'name' => 'periodic_issues_delete',
                 'category' => 'library',
-                'description' => 'Supprimer des numÃ©ros de pÃ©riodiques'
+                'description' => 'Supprimer des numéros de périodiques'
             ],
 
             // Periodic Articles Permissions
             [
                 'name' => 'periodic_articles_view',
                 'category' => 'library',
-                'description' => 'Voir les articles de pÃ©riodiques'
+                'description' => 'Voir les articles de périodiques'
             ],
             [
                 'name' => 'periodic_articles_create',
                 'category' => 'library',
-                'description' => 'CrÃ©er des articles de pÃ©riodiques'
+                'description' => 'Créer des articles de périodiques'
             ],
             [
                 'name' => 'periodic_articles_update',
                 'category' => 'library',
-                'description' => 'Modifier des articles de pÃ©riodiques'
+                'description' => 'Modifier des articles de périodiques'
             ],
             [
                 'name' => 'periodic_articles_delete',
                 'category' => 'library',
-                'description' => 'Supprimer des articles de pÃ©riodiques'
+                'description' => 'Supprimer des articles de périodiques'
             ],
 
             // Periodic Subscriptions Permissions
             [
                 'name' => 'periodic_subscriptions_view',
                 'category' => 'library',
-                'description' => 'Voir les abonnements aux pÃ©riodiques'
+                'description' => 'Voir les abonnements aux périodiques'
             ],
             [
                 'name' => 'periodic_subscriptions_create',
                 'category' => 'library',
-                'description' => 'CrÃ©er des abonnements aux pÃ©riodiques'
+                'description' => 'Créer des abonnements aux périodiques'
             ],
             [
                 'name' => 'periodic_subscriptions_update',
                 'category' => 'library',
-                'description' => 'Modifier des abonnements aux pÃ©riodiques'
+                'description' => 'Modifier des abonnements aux périodiques'
             ],
             [
                 'name' => 'periodic_subscriptions_delete',
                 'category' => 'library',
-                'description' => 'Supprimer des abonnements aux pÃ©riodiques'
+                'description' => 'Supprimer des abonnements aux périodiques'
             ],
 
             // Library Reports & Statistics
             [
                 'name' => 'library_reports_view',
                 'category' => 'library',
-                'description' => 'Voir les rapports de bibliothÃ¨que'
+                'description' => 'Voir les rapports de bibliothèque'
             ],
             [
                 'name' => 'library_statistics_view',
                 'category' => 'library',
-                'description' => 'Voir les statistiques de bibliothÃ¨que'
+                'description' => 'Voir les statistiques de bibliothèque'
             ],
         ];
 
@@ -1291,44 +1291,44 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'museum_access',
                 'category' => 'museum',
-                'description' => 'AccÃ¨s au module Museum'
+                'description' => 'Accès au module Museum'
             ],
 
             // Artifacts Permissions
             [
                 'name' => 'artifacts_view',
                 'category' => 'museum',
-                'description' => 'Voir les objets de musÃ©e'
+                'description' => 'Voir les objets de musée'
             ],
             [
                 'name' => 'artifacts_create',
                 'category' => 'museum',
-                'description' => 'CrÃ©er des objets de musÃ©e'
+                'description' => 'Créer des objets de musée'
             ],
             [
                 'name' => 'artifacts_update',
                 'category' => 'museum',
-                'description' => 'Modifier des objets de musÃ©e'
+                'description' => 'Modifier des objets de musée'
             ],
             [
                 'name' => 'artifacts_delete',
                 'category' => 'museum',
-                'description' => 'Supprimer des objets de musÃ©e'
+                'description' => 'Supprimer des objets de musée'
             ],
             [
                 'name' => 'artifacts_search',
                 'category' => 'museum',
-                'description' => 'Rechercher des objets de musÃ©e'
+                'description' => 'Rechercher des objets de musée'
             ],
             [
                 'name' => 'artifacts_import',
                 'category' => 'museum',
-                'description' => 'Importer des objets de musÃ©e'
+                'description' => 'Importer des objets de musée'
             ],
             [
                 'name' => 'artifacts_export',
                 'category' => 'museum',
-                'description' => 'Exporter des objets de musÃ©e'
+                'description' => 'Exporter des objets de musée'
             ],
 
             // Artifact Exhibitions Permissions
@@ -1340,7 +1340,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'artifact_exhibitions_create',
                 'category' => 'museum',
-                'description' => 'CrÃ©er des expositions'
+                'description' => 'Créer des expositions'
             ],
             [
                 'name' => 'artifact_exhibitions_update',
@@ -1355,39 +1355,39 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'artifact_exhibitions_manage',
                 'category' => 'museum',
-                'description' => 'GÃ©rer toutes les expositions'
+                'description' => 'Gérer toutes les expositions'
             ],
 
             // Artifact Loans Permissions
             [
                 'name' => 'artifact_loans_view',
                 'category' => 'museum',
-                'description' => 'Voir les prÃªts d\'objets'
+                'description' => 'Voir les prêts d\'objets'
             ],
             [
                 'name' => 'artifact_loans_create',
                 'category' => 'museum',
-                'description' => 'CrÃ©er des prÃªts d\'objets'
+                'description' => 'Créer des prêts d\'objets'
             ],
             [
                 'name' => 'artifact_loans_update',
                 'category' => 'museum',
-                'description' => 'Modifier des prÃªts d\'objets'
+                'description' => 'Modifier des prêts d\'objets'
             ],
             [
                 'name' => 'artifact_loans_delete',
                 'category' => 'museum',
-                'description' => 'Supprimer des prÃªts d\'objets'
+                'description' => 'Supprimer des prêts d\'objets'
             ],
             [
                 'name' => 'artifact_loans_manage',
                 'category' => 'museum',
-                'description' => 'GÃ©rer tous les prÃªts d\'objets'
+                'description' => 'Gérer tous les prêts d\'objets'
             ],
             [
                 'name' => 'artifact_loans_return',
                 'category' => 'museum',
-                'description' => 'Enregistrer les retours de prÃªts'
+                'description' => 'Enregistrer les retours de prêts'
             ],
 
             // Artifact Condition Reports Permissions
@@ -1399,7 +1399,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'artifact_condition_reports_create',
                 'category' => 'museum',
-                'description' => 'CrÃ©er des rapports de conservation'
+                'description' => 'Créer des rapports de conservation'
             ],
             [
                 'name' => 'artifact_condition_reports_update',
@@ -1414,7 +1414,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'artifact_condition_reports_manage',
                 'category' => 'museum',
-                'description' => 'GÃ©rer tous les rapports de conservation'
+                'description' => 'Gérer tous les rapports de conservation'
             ],
 
             // Artifact Status Management
@@ -1431,24 +1431,24 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'artifacts_restoration',
                 'category' => 'museum',
-                'description' => 'GÃ©rer la restauration des objets'
+                'description' => 'Gérer la restauration des objets'
             ],
 
             // Museum Reports & Statistics
             [
                 'name' => 'museum_reports_view',
                 'category' => 'museum',
-                'description' => 'Voir les rapports du musÃ©e'
+                'description' => 'Voir les rapports du musée'
             ],
             [
                 'name' => 'museum_statistics_view',
                 'category' => 'museum',
-                'description' => 'Voir les statistiques du musÃ©e'
+                'description' => 'Voir les statistiques du musée'
             ],
             [
                 'name' => 'museum_inventory',
                 'category' => 'museum',
-                'description' => 'GÃ©rer l\'inventaire du musÃ©e'
+                'description' => 'Gérer l\'inventaire du musée'
             ],
         ];
 
@@ -1461,7 +1461,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.access',
                 'category' => 'public',
-                'description' => 'AccÃ¨s au module public/OPAC'
+                'description' => 'Accès au module public/OPAC'
             ],
         ];
 
@@ -1479,7 +1479,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.pages.create',
                 'category' => 'public',
-                'description' => 'CrÃ©er des pages publiques'
+                'description' => 'Créer des pages publiques'
             ],
             [
                 'name' => 'public.pages.edit',
@@ -1494,7 +1494,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.pages.manage',
                 'category' => 'public',
-                'description' => 'GÃ©rer toutes les pages publiques'
+                'description' => 'Gérer toutes les pages publiques'
             ],
             [
                 'name' => 'public.pages.bulk_action',
@@ -1504,7 +1504,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.pages.reorder',
                 'category' => 'public',
-                'description' => 'RÃ©organiser l\'ordre des pages publiques'
+                'description' => 'Réorganiser l\'ordre des pages publiques'
             ],
         ];
 
@@ -1517,32 +1517,32 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.news.view',
                 'category' => 'public',
-                'description' => 'Voir les actualitÃ©s publiques'
+                'description' => 'Voir les actualités publiques'
             ],
             [
                 'name' => 'public.news.create',
                 'category' => 'public',
-                'description' => 'CrÃ©er des actualitÃ©s publiques'
+                'description' => 'Créer des actualités publiques'
             ],
             [
                 'name' => 'public.news.edit',
                 'category' => 'public',
-                'description' => 'Modifier des actualitÃ©s publiques'
+                'description' => 'Modifier des actualités publiques'
             ],
             [
                 'name' => 'public.news.delete',
                 'category' => 'public',
-                'description' => 'Supprimer des actualitÃ©s publiques'
+                'description' => 'Supprimer des actualités publiques'
             ],
             [
                 'name' => 'public.news.manage',
                 'category' => 'public',
-                'description' => 'GÃ©rer toutes les actualitÃ©s publiques'
+                'description' => 'Gérer toutes les actualités publiques'
             ],
             [
                 'name' => 'public.news.publish',
                 'category' => 'public',
-                'description' => 'Publier/DÃ©publier des actualitÃ©s'
+                'description' => 'Publier/Dépublier des actualités'
             ],
         ];
 
@@ -1555,37 +1555,37 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.events.view',
                 'category' => 'public',
-                'description' => 'Voir les Ã©vÃ©nements publics'
+                'description' => 'Voir les événements publics'
             ],
             [
                 'name' => 'public.events.create',
                 'category' => 'public',
-                'description' => 'CrÃ©er des Ã©vÃ©nements publics'
+                'description' => 'Créer des événements publics'
             ],
             [
                 'name' => 'public.events.edit',
                 'category' => 'public',
-                'description' => 'Modifier des Ã©vÃ©nements publics'
+                'description' => 'Modifier des événements publics'
             ],
             [
                 'name' => 'public.events.delete',
                 'category' => 'public',
-                'description' => 'Supprimer des Ã©vÃ©nements publics'
+                'description' => 'Supprimer des événements publics'
             ],
             [
                 'name' => 'public.events.manage',
                 'category' => 'public',
-                'description' => 'GÃ©rer tous les Ã©vÃ©nements publics'
+                'description' => 'Gérer tous les événements publics'
             ],
             [
                 'name' => 'public.events.registrations',
                 'category' => 'public',
-                'description' => 'GÃ©rer les inscriptions aux Ã©vÃ©nements'
+                'description' => 'Gérer les inscriptions aux événements'
             ],
             [
                 'name' => 'public.events.bulk_action',
                 'category' => 'public',
-                'description' => 'Actions en lot sur les Ã©vÃ©nements'
+                'description' => 'Actions en lot sur les événements'
             ],
         ];
 
@@ -1603,7 +1603,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.users.create',
                 'category' => 'public',
-                'description' => 'CrÃ©er des utilisateurs publics'
+                'description' => 'Créer des utilisateurs publics'
             ],
             [
                 'name' => 'public.users.edit',
@@ -1618,12 +1618,12 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.users.manage',
                 'category' => 'public',
-                'description' => 'GÃ©rer tous les utilisateurs publics'
+                'description' => 'Gérer tous les utilisateurs publics'
             ],
             [
                 'name' => 'public.users.activate',
                 'category' => 'public',
-                'description' => 'Activer/DÃ©sactiver des utilisateurs publics'
+                'description' => 'Activer/Désactiver des utilisateurs publics'
             ],
         ];
 
@@ -1641,7 +1641,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.templates.create',
                 'category' => 'public',
-                'description' => 'CrÃ©er des templates OPAC'
+                'description' => 'Créer des templates OPAC'
             ],
             [
                 'name' => 'public.templates.edit',
@@ -1656,12 +1656,12 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.templates.manage',
                 'category' => 'public',
-                'description' => 'GÃ©rer tous les templates OPAC'
+                'description' => 'Gérer tous les templates OPAC'
             ],
             [
                 'name' => 'public.templates.preview',
                 'category' => 'public',
-                'description' => 'PrÃ©visualiser les templates OPAC'
+                'description' => 'Prévisualiser les templates OPAC'
             ],
             [
                 'name' => 'public.templates.duplicate',
@@ -1695,7 +1695,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.document_requests.create',
                 'category' => 'public',
-                'description' => 'CrÃ©er des demandes de documents'
+                'description' => 'Créer des demandes de documents'
             ],
             [
                 'name' => 'public.document_requests.edit',
@@ -1710,7 +1710,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.document_requests.manage',
                 'category' => 'public',
-                'description' => 'GÃ©rer toutes les demandes de documents'
+                'description' => 'Gérer toutes les demandes de documents'
             ],
             // Records
             [
@@ -1721,7 +1721,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.records.create',
                 'category' => 'public',
-                'description' => 'CrÃ©er des documents publics'
+                'description' => 'Créer des documents publics'
             ],
             [
                 'name' => 'public.records.edit',
@@ -1736,64 +1736,64 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.records.manage',
                 'category' => 'public',
-                'description' => 'GÃ©rer tous les documents publics'
+                'description' => 'Gérer tous les documents publics'
             ],
             [
                 'name' => 'public.records.autocomplete',
                 'category' => 'public',
-                'description' => 'AccÃ¨s Ã  l\'autocomplÃ©tion des documents'
+                'description' => 'Accès à l\'autocomplétion des documents'
             ],
             // Responses
             [
                 'name' => 'public.responses.view',
                 'category' => 'public',
-                'description' => 'Voir les rÃ©ponses publiques'
+                'description' => 'Voir les réponses publiques'
             ],
             [
                 'name' => 'public.responses.create',
                 'category' => 'public',
-                'description' => 'CrÃ©er des rÃ©ponses publiques'
+                'description' => 'Créer des réponses publiques'
             ],
             [
                 'name' => 'public.responses.edit',
                 'category' => 'public',
-                'description' => 'Modifier des rÃ©ponses publiques'
+                'description' => 'Modifier des réponses publiques'
             ],
             [
                 'name' => 'public.responses.delete',
                 'category' => 'public',
-                'description' => 'Supprimer des rÃ©ponses publiques'
+                'description' => 'Supprimer des réponses publiques'
             ],
             [
                 'name' => 'public.responses.manage',
                 'category' => 'public',
-                'description' => 'GÃ©rer toutes les rÃ©ponses publiques'
+                'description' => 'Gérer toutes les réponses publiques'
             ],
             // Response Attachments
             [
                 'name' => 'public.response_attachments.view',
                 'category' => 'public',
-                'description' => 'Voir les piÃ¨ces jointes des rÃ©ponses'
+                'description' => 'Voir les pièces jointes des réponses'
             ],
             [
                 'name' => 'public.response_attachments.create',
                 'category' => 'public',
-                'description' => 'CrÃ©er des piÃ¨ces jointes des rÃ©ponses'
+                'description' => 'Créer des pièces jointes des réponses'
             ],
             [
                 'name' => 'public.response_attachments.edit',
                 'category' => 'public',
-                'description' => 'Modifier des piÃ¨ces jointes des rÃ©ponses'
+                'description' => 'Modifier des pièces jointes des réponses'
             ],
             [
                 'name' => 'public.response_attachments.delete',
                 'category' => 'public',
-                'description' => 'Supprimer des piÃ¨ces jointes des rÃ©ponses'
+                'description' => 'Supprimer des pièces jointes des réponses'
             ],
             [
                 'name' => 'public.response_attachments.manage',
                 'category' => 'public',
-                'description' => 'GÃ©rer toutes les piÃ¨ces jointes des rÃ©ponses'
+                'description' => 'Gérer toutes les pièces jointes des réponses'
             ],
         ];
 
@@ -1812,7 +1812,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.chats.create',
                 'category' => 'public',
-                'description' => 'CrÃ©er des discussions publiques'
+                'description' => 'Créer des discussions publiques'
             ],
             [
                 'name' => 'public.chats.edit',
@@ -1827,7 +1827,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.chats.manage',
                 'category' => 'public',
-                'description' => 'GÃ©rer toutes les discussions publiques'
+                'description' => 'Gérer toutes les discussions publiques'
             ],
             // Chat Messages
             [
@@ -1838,7 +1838,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.chat_messages.create',
                 'category' => 'public',
-                'description' => 'CrÃ©er des messages de discussion'
+                'description' => 'Créer des messages de discussion'
             ],
             [
                 'name' => 'public.chat_messages.edit',
@@ -1853,7 +1853,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.chat_messages.manage',
                 'category' => 'public',
-                'description' => 'GÃ©rer tous les messages de discussion'
+                'description' => 'Gérer tous les messages de discussion'
             ],
             // Chat Participants
             [
@@ -1879,7 +1879,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.chat_participants.manage',
                 'category' => 'public',
-                'description' => 'GÃ©rer tous les participants des discussions'
+                'description' => 'Gérer tous les participants des discussions'
             ],
         ];
 
@@ -1902,7 +1902,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.opac.config.manage',
                 'category' => 'public',
-                'description' => 'GÃ©rer complÃ¨tement la configuration OPAC'
+                'description' => 'Gérer complètement la configuration OPAC'
             ],
             [
                 'name' => 'public.opac.config.export',
@@ -1917,7 +1917,7 @@ class PermissionCategorySeeder extends Seeder
             [
                 'name' => 'public.opac.config.reset',
                 'category' => 'public',
-                'description' => 'RÃ©initialiser la configuration OPAC'
+                'description' => 'Réinitialiser la configuration OPAC'
             ],
         ];
 

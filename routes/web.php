@@ -241,6 +241,8 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('incoming', [MailController::class, 'indexIncoming'])->name('mails.incoming.index');
     Route::get('incoming/create', [MailController::class, 'createIncoming'])->name('mails.incoming.create');
     Route::get('count-unread', [MailController::class, 'countUnread'])->name('mails.count-unread');
+        // Compteurs des bulles de notification (non lus + actions à faire selon le rôle)
+        Route::get('badge-counts', [MailController::class, 'badgeCounts'])->name('mails.badge-counts');
         Route::post('incoming', [MailController::class, 'storeIncoming'])->name('mails.incoming.store');
         // show() attend ($type, $id) : on fixe le type correspondant au courrier entrant.
         Route::get('incoming/{id}', fn ($id) => app(MailController::class)->show('received', $id))->name('mails.incoming.show');
@@ -276,9 +278,13 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('workflow/{mail}/cote', [\App\Http\Controllers\MailWorkflowController::class, 'coteForm'])->name('mails.workflow.cote-form');
         Route::post('workflow/{mail}/cote', [\App\Http\Controllers\MailWorkflowController::class, 'cote'])->name('mails.workflow.cote');
         Route::post('workflow/{mail}/confirm-reception', [\App\Http\Controllers\MailWorkflowController::class, 'confirmReception'])->name('mails.workflow.confirm-reception');
+        Route::post('workflow/{mail}/assign-user', [\App\Http\Controllers\MailWorkflowController::class, 'assignToUser'])->name('mails.workflow.assign-user');
         Route::post('workflow/{mail}/submit', [\App\Http\Controllers\MailWorkflowController::class, 'submit'])->name('mails.workflow.submit');
+        Route::post('workflow/{mail}/validate-n1', [\App\Http\Controllers\MailWorkflowController::class, 'validateByN1'])->name('mails.workflow.validate-n1');
         Route::post('workflow/{mail}/sign', [\App\Http\Controllers\MailWorkflowController::class, 'sign'])->name('mails.workflow.sign');
         Route::post('workflow/{mail}/reject', [\App\Http\Controllers\MailWorkflowController::class, 'reject'])->name('mails.workflow.reject');
+        Route::post('workflow/{mail}/return-for-revision', [\App\Http\Controllers\MailWorkflowController::class, 'returnForRevision'])->name('mails.workflow.return-for-revision');
+        Route::post('workflow/{mail}/resubmit', [\App\Http\Controllers\MailWorkflowController::class, 'resubmit'])->name('mails.workflow.resubmit');
 
         // Route pour les courriers retournés
         Route::get('returned', [MailReceivedController::class, 'returned'])->name('mail-received.returned');
@@ -800,6 +806,13 @@ Route::group(['middleware' => 'auth'], function () {
         // Routes pour la gestion des organisations dans tools
         Route::get('organisations/export/excel', [OrganisationController::class, 'exportExcel'])->name('organisations.export.excel');
         Route::get('organisations/export/pdf', [OrganisationController::class, 'exportPdf'])->name('organisations.export.pdf');
+        // Intérims des responsables de service (routage du courrier vers l'intérimaire)
+        Route::get('organisation-interims', [\App\Http\Controllers\OrganisationInterimController::class, 'index'])->name('organisation-interims.index');
+        Route::get('organisation-interims/create', [\App\Http\Controllers\OrganisationInterimController::class, 'create'])->name('organisation-interims.create');
+        Route::post('organisation-interims', [\App\Http\Controllers\OrganisationInterimController::class, 'store'])->name('organisation-interims.store');
+        Route::patch('organisation-interims/{interim}/deactivate', [\App\Http\Controllers\OrganisationInterimController::class, 'deactivate'])->name('organisation-interims.deactivate');
+        Route::delete('organisation-interims/{interim}', [\App\Http\Controllers\OrganisationInterimController::class, 'destroy'])->name('organisation-interims.destroy');
+
         Route::resource('organisations', OrganisationController::class);
 
         Route::resource('access', ContainerStatusController::class);
@@ -859,7 +872,10 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     // Routes pour les rapports
-    Route::prefix('dashboard')->group(function () {
+    // NB : préfixe 'reports' et non 'dashboard' — ce groupe redéfinissait /dashboard
+    // (la dernière route enregistrée l'emporte) et masquait la page d'accueil
+    // générale servie par DashboardController. Les noms de routes sont inchangés.
+    Route::prefix('reports')->group(function () {
         Route::get('/', [ReportController::class, 'dashboard'])->name('report.dashboard');
         Route::get('mails', [ReportController::class, 'statisticsMails'])->name('report.statistics.mails');
         Route::get('repositories', [ReportController::class, 'statisticsRepositories'])->name('report.statistics.repositories');

@@ -12,17 +12,17 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
      */
     public function run(): void
     {
-        // Encapsulation de toutes les opÃ©rations dans une transaction
+        // Encapsulation de toutes les opérations dans une transaction
         DB::beginTransaction();
 
         try {
-            // VÃ©rifier si le thÃ©saurus existe dÃ©jÃ 
+            // Vérifier si le thésaurus existe déjà
             $existingScheme = DB::table('thesaurus_schemes')
                 ->where('uri', 'https://archives.gouv.fr/thesaurus/actions-administratives')
                 ->first();
 
             if ($existingScheme) {
-                $this->command->info('Le thÃ©saurus des actions administratives existe dÃ©jÃ . Seeder ignorÃ©.');
+                $this->command->info('Le thésaurus des actions administratives existe déjà. Seeder ignoré.');
                 return;
             }
 
@@ -34,10 +34,10 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
             $this->addScopeNotes($conceptIds);
 
             DB::commit();
-            $this->command->info('ThÃ©saurus des actions administratives importÃ© avec succÃ¨s.');
+            $this->command->info('Thésaurus des actions administratives importé avec succès.');
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->command->error('Erreur lors de l\'import du thÃ©saurus: ' . $e->getMessage());
+            $this->command->error('Erreur lors de l\'import du thésaurus: ' . $e->getMessage());
         }
     }
 
@@ -51,8 +51,8 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
         return DB::table('thesaurus_schemes')->insertGetId([
             'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives',
             'identifier' => 'SIAF-ACTIONS-2011',
-            'title' => 'ThÃ©saurus pour la description et l\'indexation des archives locales anciennes, modernes et contemporaines - Liste d\'autoritÃ© Actions',
-            'description' => 'ThÃ©saurus officiel du Service InterministÃ©riel des Archives de France pour l\'indexation des actions administratives dans les archives publiques',
+            'title' => 'Thésaurus pour la description et l\'indexation des archives locales anciennes, modernes et contemporaines - Liste d\'autorité Actions',
+            'description' => 'Thésaurus officiel du Service Interministériel des Archives de France pour l\'indexation des actions administratives dans les archives publiques',
             'language' => 'fr-fr',
             'created_at' => now(),
             'updated_at' => now(),
@@ -93,44 +93,44 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/abstention',
                 'notation' => 'A002',
                 'prefLabel' => 'ABSTENTION',
-                'definition' => 'Action de s\'abstenir de participer Ã  un vote ou une dÃ©cision'
+                'definition' => 'Action de s\'abstenir de participer à un vote ou une décision'
             ],
 
             'ACQUISITION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/acquisition',
                 'notation' => 'A003',
                 'prefLabel' => 'ACQUISITION',
-                'definition' => 'Action d\'acquÃ©rir un bien, un droit ou une propriÃ©tÃ©'
+                'definition' => 'Action d\'acquérir un bien, un droit ou une propriété'
             ],
 
             'ADHESION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/adhesion',
                 'notation' => 'A004',
-                'prefLabel' => 'ADHÃ‰SION',
-                'definition' => 'Action d\'adhÃ©rer Ã  une organisation ou un accord'
+                'prefLabel' => 'ADHÉSION',
+                'definition' => 'Action d\'adhérer à une organisation ou un accord'
             ],
 
             'ADJUDICATION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/adjudication',
                 'notation' => 'A005',
                 'prefLabel' => 'ADJUDICATION',
-                'definition' => 'ProcÃ©dure d\'attribution d\'un marchÃ© public au plus offrant'
+                'definition' => 'Procédure d\'attribution d\'un marché public au plus offrant'
             ],
 
             'AGREMENT' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/agrement',
                 'notation' => 'A006',
-                'prefLabel' => 'AGRÃ‰MENT',
-                'definition' => 'Autorisation administrative accordÃ©e aprÃ¨s vÃ©rification de conditions',
+                'prefLabel' => 'AGRÉMENT',
+                'definition' => 'Autorisation administrative accordée après vérification de conditions',
                 'altLabels' => ['approbation', 'habilitation', 'homologation', 'labellisation']
             ],
 
             'AMENAGEMENT' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/amenagement',
                 'notation' => 'A007',
-                'prefLabel' => 'AMÃ‰NAGEMENT',
-                'definition' => 'Action de modifier, d\'adapter un espace ou une rÃ©glementation',
-                'altLabels' => ['extension', 'rÃ©novation'],
+                'prefLabel' => 'AMÉNAGEMENT',
+                'definition' => 'Action de modifier, d\'adapter un espace ou une réglementation',
+                'altLabels' => ['extension', 'rénovation'],
                 'related' => ['CONSTRUCTION']
             ],
 
@@ -138,15 +138,15 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/appel-offres',
                 'notation' => 'A008',
                 'prefLabel' => 'APPEL D\'OFFRES',
-                'definition' => 'ProcÃ©dure de mise en concurrence pour l\'attribution d\'un marchÃ© public'
+                'definition' => 'Procédure de mise en concurrence pour l\'attribution d\'un marché public'
             ],
 
             'AUTORISATION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/autorisation',
                 'notation' => 'A009',
                 'prefLabel' => 'AUTORISATION',
-                'definition' => 'Permission accordÃ©e par l\'administration pour exercer une activitÃ©',
-                'altLabels' => ['dÃ©rogation', 'dispense', 'interdiction']
+                'definition' => 'Permission accordée par l\'administration pour exercer une activité',
+                'altLabels' => ['dérogation', 'dispense', 'interdiction']
             ],
 
             // Groupe C
@@ -154,21 +154,21 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/caution',
                 'notation' => 'C001',
                 'prefLabel' => 'CAUTION',
-                'definition' => 'Garantie financiÃ¨re exigÃ©e dans certaines procÃ©dures administratives'
+                'definition' => 'Garantie financière exigée dans certaines procédures administratives'
             ],
 
             'CESSION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/cession',
                 'notation' => 'C002',
                 'prefLabel' => 'CESSION',
-                'definition' => 'Action de cÃ©der, de transfÃ©rer un bien ou un droit'
+                'definition' => 'Action de céder, de transférer un bien ou un droit'
             ],
 
             'CLASSEMENT' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/classement',
                 'notation' => 'C003',
                 'prefLabel' => 'CLASSEMENT',
-                'definition' => 'Action de classer selon des critÃ¨res rÃ©glementaires (installations, Ã©tablissements)'
+                'definition' => 'Action de classer selon des critères réglementaires (installations, établissements)'
             ],
 
             'COMMISSIONNEMENT' => [
@@ -182,7 +182,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/communication',
                 'notation' => 'C005',
                 'prefLabel' => 'COMMUNICATION',
-                'definition' => 'Action de transmettre des informations au public ou aux administrÃ©s',
+                'definition' => 'Action de transmettre des informations au public ou aux administrés',
                 'altLabels' => ['information']
             ],
 
@@ -190,74 +190,74 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/concession',
                 'notation' => 'C006',
                 'prefLabel' => 'CONCESSION',
-                'definition' => 'Convention par laquelle une collectivitÃ© confie Ã  un tiers la gestion d\'un service'
+                'definition' => 'Convention par laquelle une collectivité confie à un tiers la gestion d\'un service'
             ],
 
             'CONCILIATION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/conciliation',
                 'notation' => 'C007',
                 'prefLabel' => 'CONCILIATION',
-                'definition' => 'ProcÃ©dure amiable de rÃ¨glement des diffÃ©rends',
-                'altLabels' => ['arbitrage', 'mÃ©diation']
+                'definition' => 'Procédure amiable de règlement des différends',
+                'altLabels' => ['arbitrage', 'médiation']
             ],
 
             'CONSTRUCTION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/construction',
                 'notation' => 'C008',
                 'prefLabel' => 'CONSTRUCTION',
-                'definition' => 'Action de construire un bÃ¢timent ou une infrastructure publique',
+                'definition' => 'Action de construire un bâtiment ou une infrastructure publique',
                 'related' => ['AMENAGEMENT']
             ],
 
             'CONTROLE' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/controle',
                 'notation' => 'C009',
-                'prefLabel' => 'CONTRÃ”LE',
-                'definition' => 'Action de vÃ©rifier la conformitÃ© Ã  des rÃ¨gles ou normes',
+                'prefLabel' => 'CONTRÔLE',
+                'definition' => 'Action de vérifier la conformité à des règles ou normes',
                 'narrower' => ['CONTROLE_BUDGETAIRE', 'CONTROLE_GESTION', 'CONTROLE_LEGALITE', 'CONTROLE_SECURITE', 'CONTROLE_FISCAL', 'CONTROLE_SANITAIRE']
             ],
 
             'COOPERATION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/cooperation',
                 'notation' => 'C010',
-                'prefLabel' => 'COOPÃ‰RATION',
-                'definition' => 'Action de collaborer entre collectivitÃ©s ou organismes'
+                'prefLabel' => 'COOPÉRATION',
+                'definition' => 'Action de collaborer entre collectivités ou organismes'
             ],
 
             'COORDINATION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/coordination',
                 'notation' => 'C011',
                 'prefLabel' => 'COORDINATION',
-                'definition' => 'Action d\'organiser la cohÃ©rence entre diffÃ©rentes actions ou services'
+                'definition' => 'Action d\'organiser la cohérence entre différentes actions ou services'
             ],
 
             // Groupe D-E
             'DELEGATION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/delegation',
                 'notation' => 'D001',
-                'prefLabel' => 'DÃ‰LÃ‰GATION',
-                'definition' => 'DÃ©lÃ©gation de service public confiÃ©e Ã  un tiers'
+                'prefLabel' => 'DÉLÉGATION',
+                'definition' => 'Délégation de service public confiée à un tiers'
             ],
 
             'DENOMINATION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/denomination',
                 'notation' => 'D002',
-                'prefLabel' => 'DÃ‰NOMINATION',
-                'definition' => 'Action de donner un nom Ã  une rue, place, bÃ¢timent public'
+                'prefLabel' => 'DÉNOMINATION',
+                'definition' => 'Action de donner un nom à une rue, place, bâtiment public'
             ],
 
             'DESIGNATION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/designation',
                 'notation' => 'D003',
-                'prefLabel' => 'DÃ‰SIGNATION',
-                'definition' => 'Action de dÃ©signer les membres d\'un organisme consultatif ou dÃ©libÃ©rant'
+                'prefLabel' => 'DÉSIGNATION',
+                'definition' => 'Action de désigner les membres d\'un organisme consultatif ou délibérant'
             ],
 
             'DESTRUCTION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/destruction',
                 'notation' => 'D004',
                 'prefLabel' => 'DESTRUCTION',
-                'definition' => 'Action de dÃ©truire un bien ou document selon une procÃ©dure administrative'
+                'definition' => 'Action de détruire un bien ou document selon une procédure administrative'
             ],
 
             'DISSOLUTION' => [
@@ -270,8 +270,8 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
             'ENQUETE' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/enquete',
                 'notation' => 'E001',
-                'prefLabel' => 'ENQUÃŠTE',
-                'definition' => 'ProcÃ©dure d\'investigation administrative',
+                'prefLabel' => 'ENQUÊTE',
+                'definition' => 'Procédure d\'investigation administrative',
                 'narrower' => ['ENQUETE_PUBLIQUE']
             ],
 
@@ -279,14 +279,14 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/entretien',
                 'notation' => 'E002',
                 'prefLabel' => 'ENTRETIEN',
-                'definition' => 'Action de maintenir en bon Ã©tat un Ã©quipement ou infrastructure'
+                'definition' => 'Action de maintenir en bon état un équipement ou infrastructure'
             ],
 
             'EQUIPEMENT_MATERIEL' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/equipement-materiel',
                 'notation' => 'E003',
-                'prefLabel' => 'Ã‰QUIPEMENT MATÃ‰RIEL',
-                'definition' => 'Action d\'Ã©quiper en matÃ©riel, armement ou habillement',
+                'prefLabel' => 'ÉQUIPEMENT MATÉRIEL',
+                'definition' => 'Action d\'équiper en matériel, armement ou habillement',
                 'altLabels' => ['armement', 'habillement'],
                 'related' => ['INFORMATISATION']
             ],
@@ -294,15 +294,15 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
             'EVACUATION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/evacuation',
                 'notation' => 'E004',
-                'prefLabel' => 'Ã‰VACUATION',
-                'definition' => 'Action administrative d\'Ã©vacuation pour raisons de sÃ©curitÃ©'
+                'prefLabel' => 'ÉVACUATION',
+                'definition' => 'Action administrative d\'évacuation pour raisons de sécurité'
             ],
 
             'EVALUATION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/evaluation',
                 'notation' => 'E005',
-                'prefLabel' => 'Ã‰VALUATION',
-                'definition' => 'Action d\'Ã©valuer la performance, la qualitÃ© ou la valeur',
+                'prefLabel' => 'ÉVALUATION',
+                'definition' => 'Action d\'évaluer la performance, la qualité ou la valeur',
                 'altLabels' => ['audit']
             ],
 
@@ -311,7 +311,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/financement',
                 'notation' => 'F001',
                 'prefLabel' => 'FINANCEMENT',
-                'definition' => 'Action de financer un projet ou une activitÃ©',
+                'definition' => 'Action de financer un projet ou une activité',
                 'altLabels' => ['dotation', 'subvention']
             ],
 
@@ -326,14 +326,14 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/garantie-emprunt',
                 'notation' => 'G001',
                 'prefLabel' => 'GARANTIE D\'EMPRUNT',
-                'definition' => 'Garantie accordÃ©e par une collectivitÃ© pour un emprunt'
+                'definition' => 'Garantie accordée par une collectivité pour un emprunt'
             ],
 
             'GESTION_COMPTABLE' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/gestion-comptable',
                 'notation' => 'G002',
                 'prefLabel' => 'GESTION COMPTABLE',
-                'definition' => 'Ensemble des opÃ©rations de gestion financiÃ¨re et comptable',
+                'definition' => 'Ensemble des opérations de gestion financière et comptable',
                 'altLabels' => ['apurement', 'engagement', 'liquidation comptable', 'mandatement', 'ordonnancement', 'paiement'],
                 'related' => ['RECOUVREMENT']
             ],
@@ -342,8 +342,8 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/gestion-personnel',
                 'notation' => 'G003',
                 'prefLabel' => 'GESTION DU PERSONNEL',
-                'definition' => 'Ensemble des actions relatives Ã  la gestion des ressources humaines',
-                'altLabels' => ['affectation', 'avancement', 'destitution', 'dÃ©tachement', 'intÃ©gration', 'licenciement', 'mise Ã  disposition', 'mise Ã  la retraite', 'mise en disponibilitÃ©', 'nomination', 'notation', 'promotion professionnelle', 'suspension', 'titularisation'],
+                'definition' => 'Ensemble des actions relatives à la gestion des ressources humaines',
+                'altLabels' => ['affectation', 'avancement', 'destitution', 'détachement', 'intégration', 'licenciement', 'mise à disposition', 'mise à la retraite', 'mise en disponibilité', 'nomination', 'notation', 'promotion professionnelle', 'suspension', 'titularisation'],
                 'related' => ['RECRUTEMENT']
             ],
 
@@ -352,7 +352,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/immatriculation',
                 'notation' => 'I001',
                 'prefLabel' => 'IMMATRICULATION',
-                'definition' => 'Action d\'inscrire sur un registre officiel (vÃ©hicules, commerce, etc.)',
+                'definition' => 'Action d\'inscrire sur un registre officiel (véhicules, commerce, etc.)',
                 'altLabels' => ['affiliation', 'francisation']
             ],
 
@@ -360,14 +360,14 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/indemnisation',
                 'notation' => 'I002',
                 'prefLabel' => 'INDEMNISATION',
-                'definition' => 'Action d\'indemniser un prÃ©judice ou des frais'
+                'definition' => 'Action d\'indemniser un préjudice ou des frais'
             ],
 
             'INFORMATISATION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/informatisation',
                 'notation' => 'I003',
                 'prefLabel' => 'INFORMATISATION',
-                'definition' => 'Action de mettre en place des systÃ¨mes informatiques',
+                'definition' => 'Action de mettre en place des systèmes informatiques',
                 'related' => ['EQUIPEMENT_MATERIEL', 'NUMERISATION']
             ],
 
@@ -375,7 +375,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/inspection',
                 'notation' => 'I004',
                 'prefLabel' => 'INSPECTION',
-                'definition' => 'Action d\'inspecter, de contrÃ´ler par un corps d\'inspection'
+                'definition' => 'Action d\'inspecter, de contrôler par un corps d\'inspection'
             ],
 
             'LOCATION' => [
@@ -389,8 +389,8 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
             'NUMERISATION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/numerisation',
                 'notation' => 'N001',
-                'prefLabel' => 'NUMÃ‰RISATION',
-                'definition' => 'Action de numÃ©riser des documents ou processus'
+                'prefLabel' => 'NUMÉRISATION',
+                'definition' => 'Action de numériser des documents ou processus'
             ],
 
             'ORGANISATION' => [
@@ -398,7 +398,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'notation' => 'O001',
                 'prefLabel' => 'ORGANISATION',
                 'definition' => 'Action d\'organiser, de restructurer une administration',
-                'altLabels' => ['modernisation', 'rÃ©forme administrative']
+                'altLabels' => ['modernisation', 'réforme administrative']
             ],
 
             // Groupe P
@@ -406,42 +406,42 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/placement',
                 'notation' => 'P001',
                 'prefLabel' => 'PLACEMENT',
-                'definition' => 'Action de placer (emploi, aide sociale, personnes vulnÃ©rables)'
+                'definition' => 'Action de placer (emploi, aide sociale, personnes vulnérables)'
             ],
 
             'PREPARATION_BUDGETAIRE' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/preparation-budgetaire',
                 'notation' => 'P002',
-                'prefLabel' => 'PRÃ‰PARATION BUDGÃ‰TAIRE',
-                'definition' => 'Action de prÃ©parer le budget annuel'
+                'prefLabel' => 'PRÉPARATION BUDGÉTAIRE',
+                'definition' => 'Action de préparer le budget annuel'
             ],
 
             'PREVENTION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/prevention',
                 'notation' => 'P003',
-                'prefLabel' => 'PRÃ‰VENTION',
-                'definition' => 'Actions de prÃ©vention des risques ou de la dÃ©linquance'
+                'prefLabel' => 'PRÉVENTION',
+                'definition' => 'Actions de prévention des risques ou de la délinquance'
             ],
 
             'PROGRAMMATION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/programmation',
                 'notation' => 'P004',
                 'prefLabel' => 'PROGRAMMATION',
-                'definition' => 'Action de programmer des activitÃ©s ou investissements'
+                'definition' => 'Action de programmer des activités ou investissements'
             ],
 
             'PROMOTION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/promotion',
                 'notation' => 'P005',
                 'prefLabel' => 'PROMOTION',
-                'definition' => 'Action de promouvoir une activitÃ©, un territoire, un produit'
+                'definition' => 'Action de promouvoir une activité, un territoire, un produit'
             ],
 
             'PROTECTION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/protection',
                 'notation' => 'P006',
                 'prefLabel' => 'PROTECTION',
-                'definition' => 'Protection du patrimoine (sites, monuments, archives, secteurs sauvegardÃ©s)'
+                'definition' => 'Protection du patrimoine (sites, monuments, archives, secteurs sauvegardés)'
             ],
 
             // Groupe R
@@ -449,21 +449,21 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/recensement',
                 'notation' => 'R001',
                 'prefLabel' => 'RECENSEMENT',
-                'definition' => 'OpÃ©ration de comptage et dÃ©nombrement administratif'
+                'definition' => 'Opération de comptage et dénombrement administratif'
             ],
 
             'RECOURS_HIERARCHIQUE' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/recours-hierarchique',
                 'notation' => 'R002',
-                'prefLabel' => 'RECOURS HIÃ‰RARCHIQUE',
-                'definition' => 'ProcÃ©dure de contestation dans un contexte administratif'
+                'prefLabel' => 'RECOURS HIÉRARCHIQUE',
+                'definition' => 'Procédure de contestation dans un contexte administratif'
             ],
 
             'RECOUVREMENT' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/recouvrement',
                 'notation' => 'R003',
                 'prefLabel' => 'RECOUVREMENT',
-                'definition' => 'Action de recouvrer des crÃ©ances, impÃ´ts ou taxes',
+                'definition' => 'Action de recouvrer des créances, impôts ou taxes',
                 'related' => ['GESTION_COMPTABLE']
             ],
 
@@ -478,16 +478,16 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
             'REGLEMENTATION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/reglementation',
                 'notation' => 'R005',
-                'prefLabel' => 'RÃ‰GLEMENTATION',
-                'definition' => 'Action d\'Ã©laborer ou modifier la rÃ©glementation',
+                'prefLabel' => 'RÉGLEMENTATION',
+                'definition' => 'Action d\'élaborer ou modifier la réglementation',
                 'altLabels' => ['abrogation']
             ],
 
             'REQUISITION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/requisition',
                 'notation' => 'R006',
-                'prefLabel' => 'RÃ‰QUISITION',
-                'definition' => 'Action de rÃ©quisitionner des biens ou personnes'
+                'prefLabel' => 'RÉQUISITION',
+                'definition' => 'Action de réquisitionner des biens ou personnes'
             ],
 
             'RESTAURATION' => [
@@ -515,8 +515,8 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
             'TUTELLE_FINANCIERE' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/tutelle-financiere',
                 'notation' => 'T003',
-                'prefLabel' => 'TUTELLE FINANCIÃˆRE',
-                'definition' => 'Exercice d\'une tutelle financiÃ¨re sur un organisme'
+                'prefLabel' => 'TUTELLE FINANCIÈRE',
+                'definition' => 'Exercice d\'une tutelle financière sur un organisme'
             ]
         ];
     }
@@ -532,9 +532,9 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
     {
         $conceptIds = [];
 
-        // InsÃ©rer tous les concepts principaux
+        // Insérer tous les concepts principaux
         foreach ($concepts as $key => $concept) {
-            // InsÃ©rer si absent (clÃ©: uri)
+            // Insérer si absent (clé: uri)
             DB::table('thesaurus_concepts')->insertOrIgnore([
                 'scheme_id' => $schemeId,
                 'uri' => $concept['uri'],
@@ -543,12 +543,12 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            // RÃ©cupÃ©rer l'ID du concept
+            // Récupérer l'ID du concept
             $conceptRow = DB::table('thesaurus_concepts')->where('uri', $concept['uri'])->first();
             if (!$conceptRow) { continue; }
             $conceptIds[$key] = $conceptRow->id;
 
-            // Ajouter le label prÃ©fÃ©rÃ©
+            // Ajouter le label préféré
             DB::table('thesaurus_labels')->insertOrIgnore([
                 'concept_id' => $conceptIds[$key],
                 'type' => 'prefLabel',
@@ -558,7 +558,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'updated_at' => now(),
             ]);
 
-            // Ajouter la dÃ©finition
+            // Ajouter la définition
             if (isset($concept['definition'])) {
                 DB::table('thesaurus_concept_notes')->insertOrIgnore([
                     'concept_id' => $conceptIds[$key],
@@ -570,7 +570,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 ]);
             }
 
-            // Ajouter les labels alternatifs (EP - EmployÃ© pour)
+            // Ajouter les labels alternatifs (EP - Employé pour)
             if (isset($concept['altLabels'])) {
                 foreach ($concept['altLabels'] as $altLabel) {
                     DB::table('thesaurus_labels')->insertOrIgnore([
@@ -595,69 +595,69 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
      */
     private function createSubConcepts(int $schemeId, array $conceptIds): void
     {
-        // CrÃ©er les concepts spÃ©cialisÃ©s (sous-concepts)
+        // Créer les concepts spécialisés (sous-concepts)
         $subConcepts = [
             'abrogation' => [
                 'parent' => 'REGLEMENTATION',
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/abrogation',
                 'notation' => 'R005.01',
                 'prefLabel' => 'abrogation',
-                'definition' => 'Action d\'abroger un texte rÃ©glementaire'
+                'definition' => 'Action d\'abroger un texte réglementaire'
             ],
             'ENQUETE_PUBLIQUE' => [
                 'parent' => 'ENQUETE',
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/enquete-publique',
                 'notation' => 'E001.01',
-                'prefLabel' => 'ENQUÃŠTE PUBLIQUE',
-                'definition' => 'ProcÃ©dure de consultation du public sur un projet'
+                'prefLabel' => 'ENQUÊTE PUBLIQUE',
+                'definition' => 'Procédure de consultation du public sur un projet'
             ],
             'CONTROLE_BUDGETAIRE' => [
                 'parent' => 'CONTROLE',
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/controle-budgetaire',
                 'notation' => 'C009.01',
-                'prefLabel' => 'CONTRÃ”LE BUDGÃ‰TAIRE',
-                'definition' => 'ContrÃ´le de l\'exÃ©cution budgÃ©taire'
+                'prefLabel' => 'CONTRÔLE BUDGÉTAIRE',
+                'definition' => 'Contrôle de l\'exécution budgétaire'
             ],
             'CONTROLE_GESTION' => [
                 'parent' => 'CONTROLE',
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/controle-gestion',
                 'notation' => 'C009.02',
-                'prefLabel' => 'CONTRÃ”LE DE GESTION',
-                'definition' => 'ContrÃ´le de la gestion administrative et financiÃ¨re'
+                'prefLabel' => 'CONTRÔLE DE GESTION',
+                'definition' => 'Contrôle de la gestion administrative et financière'
             ],
             'CONTROLE_LEGALITE' => [
                 'parent' => 'CONTROLE',
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/controle-legalite',
                 'notation' => 'C009.03',
-                'prefLabel' => 'CONTRÃ”LE DE LÃ‰GALITÃ‰',
-                'definition' => 'ContrÃ´le de la conformitÃ© des actes administratifs'
+                'prefLabel' => 'CONTRÔLE DE LÉGALITÉ',
+                'definition' => 'Contrôle de la conformité des actes administratifs'
             ],
             'CONTROLE_SECURITE' => [
                 'parent' => 'CONTROLE',
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/controle-securite',
                 'notation' => 'C009.04',
-                'prefLabel' => 'CONTRÃ”LE DE SÃ‰CURITÃ‰',
-                'definition' => 'ContrÃ´le des mesures de sÃ©curitÃ©'
+                'prefLabel' => 'CONTRÔLE DE SÉCURITÉ',
+                'definition' => 'Contrôle des mesures de sécurité'
             ],
             'CONTROLE_FISCAL' => [
                 'parent' => 'CONTROLE',
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/controle-fiscal',
                 'notation' => 'C009.05',
-                'prefLabel' => 'CONTRÃ”LE FISCAL',
-                'definition' => 'ContrÃ´le de la situation fiscale'
+                'prefLabel' => 'CONTRÔLE FISCAL',
+                'definition' => 'Contrôle de la situation fiscale'
             ],
             'CONTROLE_SANITAIRE' => [
                 'parent' => 'CONTROLE',
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/controle-sanitaire',
                 'notation' => 'C009.06',
-                'prefLabel' => 'CONTRÃ”LE SANITAIRE',
-                'definition' => 'ContrÃ´le des conditions sanitaires'
+                'prefLabel' => 'CONTRÔLE SANITAIRE',
+                'definition' => 'Contrôle des conditions sanitaires'
             ]
         ];
 
-        // InsÃ©rer les sous-concepts et crÃ©er les relations hiÃ©rarchiques
+        // Insérer les sous-concepts et créer les relations hiérarchiques
         foreach ($subConcepts as $key => $subConcept) {
-            // VÃ©rifier si ce sous-concept existe dÃ©jÃ  (au cas oÃ¹)
+            // Vérifier si ce sous-concept existe déjà (au cas où)
             $existingConcept = DB::table('thesaurus_concepts')
                 ->where('uri', $subConcept['uri'])
                 ->first();
@@ -675,17 +675,17 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 ]);
             }
 
-            // S'assurer qu'il n'y a pas de collision de clÃ©s
+            // S'assurer qu'il n'y a pas de collision de clés
             if (!isset($conceptIds[$key])) {
                 $conceptIds[$key] = $subConceptId;
             } else {
-                // Si la clÃ© existe dÃ©jÃ , utiliser une clÃ© diffÃ©rente pour Ã©viter l'Ã©crasement
+                // Si la clé existe déjà, utiliser une clé différente pour éviter l'écrasement
                 $uniqueKey = $key . '_SUB';
                 $conceptIds[$uniqueKey] = $subConceptId;
             }
 
-            // Labels et dÃ©finitions
-            // VÃ©rifier si le label existe dÃ©jÃ 
+            // Labels et définitions
+            // Vérifier si le label existe déjà
             $existingLabel = DB::table('thesaurus_labels')
                 ->where('concept_id', $subConceptId)
                 ->where('type', 'prefLabel')
@@ -703,7 +703,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 ]);
             }
 
-            // VÃ©rifier si la dÃ©finition existe dÃ©jÃ 
+            // Vérifier si la définition existe déjà
             $existingNote = DB::table('thesaurus_concept_notes')
                 ->where('concept_id', $subConceptId)
                 ->where('type', 'definition')
@@ -721,14 +721,14 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 ]);
             }
 
-            // Relations hiÃ©rarchiques avec le concept parent
+            // Relations hiérarchiques avec le concept parent
             if (!isset($conceptIds[$subConcept['parent']])) {
                 throw new \Exception('Le concept parent "' . $subConcept['parent'] . '" n\'existe pas pour le sous-concept "' . $key . '"');
             }
 
             $parentId = $conceptIds[$subConcept['parent']];
 
-            // VÃ©rifier si la relation broader existe dÃ©jÃ 
+            // Vérifier si la relation broader existe déjà
             $existingBroader = DB::table('thesaurus_concept_relations')
                 ->where('concept_id', $subConceptId)
                 ->where('related_concept_id', $parentId)
@@ -746,7 +746,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 ]);
             }
 
-            // VÃ©rifier si la relation narrower existe dÃ©jÃ 
+            // Vérifier si la relation narrower existe déjà
             $existingNarrower = DB::table('thesaurus_concept_relations')
                 ->where('concept_id', $parentId)
                 ->where('related_concept_id', $subConceptId)
@@ -754,7 +754,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 ->first();
 
             if (!$existingNarrower) {
-                // Relation narrower (le concept parent a un terme plus spÃ©cifique)
+                // Relation narrower (le concept parent a un terme plus spécifique)
                 DB::table('thesaurus_concept_relations')->insertOrIgnore([
                     'concept_id' => $parentId,
                     'related_concept_id' => $subConceptId,
@@ -773,7 +773,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
      */
     private function createRelatedConcepts(array $conceptIds): void
     {
-        // CrÃ©er les relations associÃ©es (TA - Terme associÃ©) basÃ©es sur le thÃ©saurus
+        // Créer les relations associées (TA - Terme associé) basées sur le thésaurus
         $relatedConcepts = [
             ['AMENAGEMENT', 'CONSTRUCTION'],
             ['GESTION_COMPTABLE', 'RECOUVREMENT'],
@@ -784,7 +784,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
 
         foreach ($relatedConcepts as $relation) {
             if (isset($conceptIds[$relation[0]]) && isset($conceptIds[$relation[1]])) {
-                // VÃ©rifier si la relation existe dÃ©jÃ  dans un sens
+                // Vérifier si la relation existe déjà dans un sens
                 $existingRelation1 = DB::table('thesaurus_concept_relations')
                     ->where('concept_id', $conceptIds[$relation[0]])
                     ->where('related_concept_id', $conceptIds[$relation[1]])
@@ -802,7 +802,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                     ]);
                 }
 
-                // VÃ©rifier si la relation existe dÃ©jÃ  dans l'autre sens
+                // Vérifier si la relation existe déjà dans l'autre sens
                 $existingRelation2 = DB::table('thesaurus_concept_relations')
                     ->where('concept_id', $conceptIds[$relation[1]])
                     ->where('related_concept_id', $conceptIds[$relation[0]])
@@ -828,15 +828,15 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
      */
     private function createOrganizationAndNamespaces(): void
     {
-        // VÃ©rifier si l'organisation existe dÃ©jÃ 
+        // Vérifier si l'organisation existe déjà
         $existingOrg = DB::table('thesaurus_organizations')
-            ->where('name', 'Service InterministÃ©riel des Archives de France')
+            ->where('name', 'Service Interministériel des Archives de France')
             ->first();
 
         if (!$existingOrg) {
             // Ajouter l'organisation responsable si elle n'existe pas
             DB::table('thesaurus_organizations')->insertGetId([
-                'name' => 'Service InterministÃ©riel des Archives de France',
+                'name' => 'Service Interministériel des Archives de France',
                 'homepage' => 'https://archives.gouv.fr',
                 'email' => 'contact@archives.gouv.fr',
                 'created_at' => now(),
@@ -844,7 +844,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
             ]);
         }
 
-        // VÃ©rifier si les namespaces existent dÃ©jÃ 
+        // Vérifier si les namespaces existent déjà
         $skosExists = DB::table('thesaurus_namespaces')
             ->where('prefix', 'skos')
             ->exists();
@@ -874,7 +874,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
             ];
         }
 
-        // InsÃ©rer les namespaces manquants s'il y en a
+        // Insérer les namespaces manquants s'il y en a
         if (!empty($namespacesToInsert)) {
             DB::table('thesaurus_namespaces')->insertOrIgnore($namespacesToInsert);
         }
@@ -887,27 +887,27 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
      */
     private function addScopeNotes(array $conceptIds): void
     {
-        // Ajouter des notes d'application spÃ©cifiques du thÃ©saurus
+        // Ajouter des notes d'application spécifiques du thésaurus
         $scopeNotes = [
-            'CLASSEMENT' => 'S\'emploie pour les installations classÃ©es, les bÃ¢timents recevant du public, les hÃ´tels et les campings... Ne s\'emploie pas pour le patrimoine (voir PROTECTION).',
+            'CLASSEMENT' => 'S\'emploie pour les installations classées, les bâtiments recevant du public, les hôtels et les campings... Ne s\'emploie pas pour le patrimoine (voir PROTECTION).',
             'CONCESSION' => 'Voir note sur DELEGATION.',
-            'CONSTRUCTION' => 'Le terme s\'emploie quand l\'Ã‰tat, une collectivitÃ© territoriale ou un organisme public sont maÃ®tres d\'ouvrage (construction d\'un bÃ¢timent administratif ou de toute infrastructure publique).',
-            'DELEGATION' => 'S\'emploie pour dÃ©signer exclusivement les dÃ©lÃ©gations de service public. Le terme CONCESSION sera choisi pour tout autre cas de convention (ex: concession de travaux, concession d\'amÃ©nagement).',
-            'DENOMINATION' => 'S\'emploie pour la dÃ©nomination des noms de rues, de places, de bÃ¢timents...',
-            'DESIGNATION' => 'Le terme s\'emploie pour les dossiers traitant de la composition et de la reprÃ©sentation des membres d\'un organisme consultatif, d\'une association, d\'un organisme dÃ©libÃ©rant.',
-            'EVACUATION' => 'Il s\'agit bien lÃ  d\'une action rÃ©sultant d\'une dÃ©cision administrative.',
+            'CONSTRUCTION' => 'Le terme s\'emploie quand l\'État, une collectivité territoriale ou un organisme public sont maîtres d\'ouvrage (construction d\'un bâtiment administratif ou de toute infrastructure publique).',
+            'DELEGATION' => 'S\'emploie pour désigner exclusivement les délégations de service public. Le terme CONCESSION sera choisi pour tout autre cas de convention (ex: concession de travaux, concession d\'aménagement).',
+            'DENOMINATION' => 'S\'emploie pour la dénomination des noms de rues, de places, de bâtiments...',
+            'DESIGNATION' => 'Le terme s\'emploie pour les dossiers traitant de la composition et de la représentation des membres d\'un organisme consultatif, d\'une association, d\'un organisme délibérant.',
+            'EVACUATION' => 'Il s\'agit bien là d\'une action résultant d\'une décision administrative.',
             'IMMATRICULATION' => 'S\'emploie pour toute sorte d\'immatriculation : immatriculation de voiture, inscription au registre du commerce...',
-            'ORGANISATION' => 'Terme Ã  associer avec le mot objet STRUCTURE ADMINISTRATIVE pour tout ce qui touche Ã  l\'Ã©valuation, la modernisation et aux rÃ©formes des structures administratives.',
-            'PLACEMENT' => 'S\'emploie notamment Ã  propos de l\'EMPLOI, de l\'AIDE SOCIALE A L\'ENFANCE et des TRAVAILLEURS(S) HANDICAPE(S), des PERSONNES AGEES et des MALADES MENTAUX.',
-            'PROTECTION' => 'S\'emploie pour les sites naturels, les sites archÃ©ologiques, les monuments historiques, les antiquitÃ©s et objets d\'art, les archives privÃ©es, les secteurs sauvegardÃ©s, les ZPPAUP.',
-            'RECENSEMENT' => 'S\'emploie pour toute opÃ©ration permanente, rÃ©guliÃ¨re, occasionnelle, de comptage, quel que soit l\'objet du dÃ©nombrement, exception faite des recensements de population (descripteur autorisÃ© par le thesaurus).',
-            'RECOURS_HIERARCHIQUE' => 'S\'emploie quand la contestation fait l\'objet d\'un rÃ¨glement ou d\'une tentative de rÃ¨glement dans un contexte purement administratif.',
+            'ORGANISATION' => 'Terme à associer avec le mot objet STRUCTURE ADMINISTRATIVE pour tout ce qui touche à l\'évaluation, la modernisation et aux réformes des structures administratives.',
+            'PLACEMENT' => 'S\'emploie notamment à propos de l\'EMPLOI, de l\'AIDE SOCIALE A L\'ENFANCE et des TRAVAILLEURS(S) HANDICAPE(S), des PERSONNES AGEES et des MALADES MENTAUX.',
+            'PROTECTION' => 'S\'emploie pour les sites naturels, les sites archéologiques, les monuments historiques, les antiquités et objets d\'art, les archives privées, les secteurs sauvegardés, les ZPPAUP.',
+            'RECENSEMENT' => 'S\'emploie pour toute opération permanente, régulière, occasionnelle, de comptage, quel que soit l\'objet du dénombrement, exception faite des recensements de population (descripteur autorisé par le thesaurus).',
+            'RECOURS_HIERARCHIQUE' => 'S\'emploie quand la contestation fait l\'objet d\'un règlement ou d\'une tentative de règlement dans un contexte purement administratif.',
             'RESTAURATION' => 'S\'emploie pour la restauration du patrimoine mobilier et immobilier.'
         ];
 
         foreach ($scopeNotes as $conceptKey => $note) {
             if (isset($conceptIds[$conceptKey])) {
-                // VÃ©rifier si la note existe dÃ©jÃ 
+                // Vérifier si la note existe déjà
                 $existingScopeNote = DB::table('thesaurus_concept_notes')
                     ->where('concept_id', $conceptIds[$conceptKey])
                     ->where('type', 'scopeNote')

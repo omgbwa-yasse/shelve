@@ -14,7 +14,7 @@ class LibraryReferenceSeeder extends Seeder
     {
         // Languages
         $languages = [
-            ['code' => 'fr', 'name' => 'FranÃ§ais', 'name_en' => 'French', 'iso_639_1' => 'fr'],
+            ['code' => 'fr', 'name' => 'Français', 'name_en' => 'French', 'iso_639_1' => 'fr'],
             ['code' => 'en', 'name' => 'Anglais', 'name_en' => 'English', 'iso_639_1' => 'en'],
             ['code' => 'es', 'name' => 'Espagnol', 'name_en' => 'Spanish', 'iso_639_1' => 'es'],
             ['code' => 'de', 'name' => 'Allemand', 'name_en' => 'German', 'iso_639_1' => 'de'],
@@ -37,7 +37,7 @@ class LibraryReferenceSeeder extends Seeder
             ['name' => 'A4', 'name_en' => 'A4', 'category' => 'large', 'width_cm' => 21, 'height_cm' => 29.7],
             ['name' => 'A5', 'name_en' => 'A5', 'category' => 'standard', 'width_cm' => 14.8, 'height_cm' => 21],
             ['name' => 'Folio', 'name_en' => 'Folio', 'category' => 'folio', 'dimensions_range' => '> 30 cm'],
-            ['name' => 'CarrÃ©', 'name_en' => 'Square', 'category' => 'special'],
+            ['name' => 'Carré', 'name_en' => 'Square', 'category' => 'special'],
         ];
 
         foreach ($formats as $format) {
@@ -46,11 +46,11 @@ class LibraryReferenceSeeder extends Seeder
 
         // Bindings
         $bindings = [
-            ['name' => 'BrochÃ©', 'name_en' => 'Paperback', 'category' => 'soft', 'durability_rating' => 5],
-            ['name' => 'ReliÃ©', 'name_en' => 'Hardcover', 'category' => 'hard', 'durability_rating' => 9],
-            ['name' => 'CartonnÃ©', 'name_en' => 'Board Book', 'category' => 'hard', 'durability_rating' => 8],
+            ['name' => 'Broché', 'name_en' => 'Paperback', 'category' => 'soft', 'durability_rating' => 5],
+            ['name' => 'Relié', 'name_en' => 'Hardcover', 'category' => 'hard', 'durability_rating' => 9],
+            ['name' => 'Cartonné', 'name_en' => 'Board Book', 'category' => 'hard', 'durability_rating' => 8],
             ['name' => 'Spirale', 'name_en' => 'Spiral', 'category' => 'soft', 'durability_rating' => 4],
-            ['name' => 'AgrafÃ©', 'name_en' => 'Stapled', 'category' => 'soft', 'durability_rating' => 3],
+            ['name' => 'Agrafé', 'name_en' => 'Stapled', 'category' => 'soft', 'durability_rating' => 3],
             ['name' => 'Cuir', 'name_en' => 'Leather', 'category' => 'hard', 'durability_rating' => 10],
         ];
 
@@ -76,13 +76,13 @@ class LibraryReferenceSeeder extends Seeder
         $series = [
             ['publisher' => 'Gallimard', 'name' => 'Blanche'],
             ['publisher' => 'Gallimard', 'name' => 'Folio'],
-            ['publisher' => 'Gallimard', 'name' => 'La PlÃ©iade'],
-            ['publisher' => 'Gallimard', 'name' => 'SÃ©rie Noire'],
+            ['publisher' => 'Gallimard', 'name' => 'La Pléiade'],
+            ['publisher' => 'Gallimard', 'name' => 'Série Noire'],
             ['publisher' => 'Seuil', 'name' => 'Points'],
             ['publisher' => 'Actes Sud', 'name' => 'Babel'],
             ['publisher' => 'Minuit', 'name' => 'Double'],
-            ['publisher' => 'Hachette', 'name' => 'BibliothÃ¨que Rose'],
-            ['publisher' => 'Hachette', 'name' => 'BibliothÃ¨que Verte'],
+            ['publisher' => 'Hachette', 'name' => 'Bibliothèque Rose'],
+            ['publisher' => 'Hachette', 'name' => 'Bibliothèque Verte'],
         ];
 
         foreach ($series as $s) {

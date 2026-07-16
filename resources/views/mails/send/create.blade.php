@@ -106,24 +106,45 @@
                 </div>
             </div>
 
-            <div class="row" id="internal_recipient">
-                <div class="col-md-6 mb-3">
-                    <label for="recipient_organisation_id" class="form-label">Organisation de réception</label>
-                    <select name="recipient_organisation_id" id="recipient_organisation_id" class="form-select recipient-field internal-field" required>
-                        <option value="">Choisir une organisation</option>
-                        @foreach($recipientOrganisations as $organisation)
-                            <option value="{{ $organisation->id }}">{{ $organisation->name }}</option>
-                        @endforeach
-                    </select>
+            <div id="internal_recipient">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="recipient_organisation_id" class="form-label">Administration / organisation destinataire</label>
+                        <select name="recipient_organisation_id" id="recipient_organisation_id" class="form-select recipient-field internal-field" required>
+                            <option value="">Choisir une organisation</option>
+                            @foreach($recipientOrganisations as $organisation)
+                                <option value="{{ $organisation->id }}" {{ old('recipient_organisation_id') == $organisation->id ? 'selected' : '' }}>{{ $organisation->name }}</option>
+                            @endforeach
+                        </select>
+                        <small class="form-text text-muted">
+                            Par défaut, le courrier est adressé au responsable attitré de cette entité.
+                        </small>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="recipient_user_id" class="form-label">Utilisateur récepteur</label>
-                    <select name="recipient_user_id" id="recipient_user_id" class="form-select recipient-field internal-field" required>
-                        <option value="">Choisir un utilisateur</option>
-                        @foreach($users as $user)
-                            <option value="{{ $user->id }}">{{ $user->name }}</option>
-                        @endforeach
-                    </select>
+
+                <div class="row">
+                    <div class="col-12 mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="specify_person" name="specify_person" value="1"
+                                   {{ old('recipient_user_id') ? 'checked' : '' }}>
+                            <label class="form-check-label" for="specify_person">
+                                Préciser une personne en particulier
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row {{ old('recipient_user_id') ? '' : 'd-none' }}" id="specific_person_row">
+                    <div class="col-md-6 mb-3">
+                        <label for="recipient_user_id" class="form-label">Utilisateur récepteur</label>
+                        {{-- Pas de classe "internal-field" : le choix d'une personne reste facultatif. --}}
+                        <select name="recipient_user_id" id="recipient_user_id" class="form-select recipient-field">
+                            <option value="">Choisir un utilisateur</option>
+                            @foreach($users as $user)
+                                <option value="{{ $user->id }}" {{ old('recipient_user_id') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -419,8 +440,23 @@
 
                 const recipientOrganisationSelect = document.getElementById('recipient_organisation_id');
                 const recipientUserSelect = document.getElementById('recipient_user_id');
+                const specifyPersonCheckbox = document.getElementById('specify_person');
+                const specificPersonRow = document.getElementById('specific_person_row');
 
-                    recipientUserSelect.disabled = true;
+                    // Le destinataire principal est l'organisation : le choix d'une personne
+                    // n'est proposé que si l'utilisateur coche « Préciser une personne ».
+                    function toggleSpecificPerson() {
+                        if (specifyPersonCheckbox.checked) {
+                            specificPersonRow.classList.remove('d-none');
+                            recipientUserSelect.disabled = !recipientOrganisationSelect.value;
+                        } else {
+                            specificPersonRow.classList.add('d-none');
+                            recipientUserSelect.value = '';
+                        }
+                    }
+
+                    specifyPersonCheckbox.addEventListener('change', toggleSpecificPerson);
+                    toggleSpecificPerson();
 
                     recipientOrganisationSelect.addEventListener('change', function() {
                         const organisationId = this.value;

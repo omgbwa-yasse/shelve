@@ -50,6 +50,36 @@
             font-family: "bootstrap-icons" !important;
         }
 
+        /* Bulle de notification des courriers non lus, ancrée sur l'icône
+           pour rester à l'intérieur de la barre de navigation (jamais masquée
+           par le bandeau supérieur). */
+        .nav-icon-wrapper {
+            position: relative;
+            display: inline-block;
+            line-height: 1;
+        }
+
+        .nav-notification-badge {
+            position: absolute;
+            top: -6px;
+            left: 100%;
+            transform: translateX(-55%);
+            min-width: 16px;
+            height: 16px;
+            padding: 0 4px;
+            font-size: 0.62rem;
+            font-weight: 600;
+            line-height: 16px;
+            text-align: center;
+            color: #fff;
+            background-color: #dc3545;
+            border: 1px solid #fff;
+            border-radius: 999px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 5;
+        }
+
         /* Styles pour le menu latéral */
         .submenu-card {
             background-color: #f8f9fa;
@@ -807,15 +837,20 @@
                     <nav class="main-navigation">
                         @can('module_mails_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'mails' || Request::segment(1) == '') active @endif position-relative" href="{{ route('mail-received.index') }}">
-                                <i class="bi bi-envelope"></i>
+                            <a class="nav-link @if (Request::segment(1) == 'mails' || Request::segment(1) == '') active @endif" href="{{ route('mail-received.index') }}">
+                                {{-- L'icône ancre la bulle : elle reste dans la barre, pas sous le header --}}
+                                <span class="nav-icon-wrapper">
+                                    <i class="bi bi-envelope"></i>
+                                    <span id="mails-unread-badge" class="nav-notification-badge d-none" title="Courriers non lus">0</span>
+                                </span>
                                 <span>{{ __('Mails') }}</span>
                             </a>
                         </div>
                         @endcan
 
 
-                         <!-- Module Workflow -->
+                         {{-- Module Workflow désactivé temporairement --}}
+                        {{--
                         @can('module_workflow_access')
                         <div class="nav-item">
                             <a class="nav-link @if (Request::segment(1) == 'workflows' || Request::segment(1) == 'tasks') active @endif" href="{{ route('tasks.index') }}">
@@ -824,8 +859,10 @@
                             </a>
                         </div>
                         @endcan
+                        --}}
 
-                         <!-- Module WorkPlace -->
+                         {{-- Module WorkPlace désactivé temporairement --}}
+                        {{--
                         @can('module_workplace_access')
                         <div class="nav-item">
                             <a class="nav-link @if (Request::segment(1) == 'workplaces') active @endif" href="{{ route('workplaces.index') }}">
@@ -834,6 +871,7 @@
                             </a>
                         </div>
                         @endcan
+                        --}}
 
                         @can('module_repositories_access')
                         <div class="nav-item">
@@ -1166,8 +1204,34 @@
             // Fonction pour mettre à jour les badges de notifications
             function updateNotificationBadges() {
                 @can('module_mails_access')
-                // Ici vous pouvez ajouter la logique pour récupérer les notifications
-                // Pour l'instant, on laisse une fonction vide pour éviter l'erreur
+                fetch('{{ route('mails.badge-counts') }}', { headers: { 'Accept': 'application/json' } })
+                    .then(response => response.ok ? response.json() : null)
+                    .then(data => {
+                        if (!data) return;
+
+                        // Bulle du menu « Courriers » : courriers non lus.
+                        const badge = document.getElementById('mails-unread-badge');
+                        if (badge) {
+                            if (data.unread > 0) {
+                                badge.textContent = data.unread > 99 ? '99+' : data.unread;
+                                badge.classList.remove('d-none');
+                            } else {
+                                badge.classList.add('d-none');
+                            }
+                        }
+
+                        // Bulle « actions à faire » (cotation, signature, réception, reprise).
+                        const actionsBadge = document.getElementById('mails-actions-badge');
+                        if (actionsBadge) {
+                            if (data.pending_actions > 0) {
+                                actionsBadge.textContent = data.pending_actions > 99 ? '99+' : data.pending_actions;
+                                actionsBadge.classList.remove('d-none');
+                            } else {
+                                actionsBadge.classList.add('d-none');
+                            }
+                        }
+                    })
+                    .catch(() => { /* silencieux : la bulle reste dans son état précédent */ });
                 @endcan
             }
 

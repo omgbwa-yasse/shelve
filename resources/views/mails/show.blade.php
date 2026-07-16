@@ -21,8 +21,8 @@
                         <span class="me-3"><i class="bi bi-hash me-1"></i>{{ $mail->code }}</span>
                     @endif
                     @if($mail->status)
-                        <span class="badge bg-{{ $mail->status_color ?? 'secondary' }}">
-                            {{ $mail->status->value ?? $mail->status }}
+                        <span class="badge bg-{{ $mail->status->bootstrapColor() }}">
+                            {{ $mail->status->label() }}
                         </span>
                     @endif
                 </div>
@@ -387,12 +387,12 @@
                                     @endif
 
                                     {{-- Statut --}}
-                                    @if($mail->status && $mail->status->value == 'in_progress')
+                                    @if($mail->status)
                                         <div class="col">
                                             <div class="text-muted">Statut</div>
                                             <div>
-                                                <span class="badge bg-{{ $mail->status_color ?? 'secondary' }}">
-                                                    {{  'En cours d\'approbation' }}
+                                                <span class="badge bg-{{ $mail->status->bootstrapColor() }}">
+                                                    {{ $mail->status->label() }}
                                                 </span>
                                             </div>
                                         </div>
@@ -404,28 +404,23 @@
                 </div>
 
 
-                <div class="col-md-12 mt-3">
-                    @if($mail->status && (
-                        ($mail->recipient && $mail->recipient->id == auth()->id()) ||
-                        ($mail->recipientOrganisation && auth()->user()->currentOrganisation && $mail->recipientOrganisation->id == auth()->user()->currentOrganisation->id)
-                    ))
-
-
-                    @if ($mail->status && $mail->status->value == 'in_progress')
-                        <div class="btn-group" role="group" aria-label="Actions">
-                            <a href="{{ route('mail-received.approve', $mail->id)}}" target="_blank" class="btn btn-success"> Approuver</a>
-                            <a href="{{ route('mail-received.reject', $mail->id)}}" target="_blank" class="btn btn-danger "> Rejecter</a>
-                        </div>
-                    @endif
-
-                    @endif
-                </div>
+                {{-- Les actions de traitement du courrier sont gérées par le workflow ci-dessous
+                     (cotation, validation de réception, soumission, signature DG). --}}
 
                 {{-- Actions du workflow courrier « zéro papier » --}}
                 @php
                     $u = auth()->user();
                     $isDg = $u && ($u->isSuperAdmin() || $u->hasRoleInOrganisation('DG', $u->current_organisation_id));
                     $statusVal = $mail->status?->value;
+                    // L'utilisateur courant est-il le N+1 de l'initiateur ?
+                    $isN1 = false;
+                    if ($mail->sender_user_id) {
+                        $senderUser = \App\Models\User::find($mail->sender_user_id);
+                        $sup = $senderUser?->hierarchicalSuperior($mail->sender_organisation_id);
+                        $isN1 = $sup && (int) $sup->id === (int) $u->id;
+                    }
+                    $isInitiator = (int) $mail->sender_user_id === (int) $u->id
+                        || (int) $mail->sender_organisation_id === (int) $u->current_organisation_id;
                 @endphp
                 <div class="col-md-12 mt-3">
                     <div class="d-flex flex-wrap gap-2">
@@ -447,14 +442,49 @@
                             </form>
                         @endif
 
-                        {{-- Courrier SORTANT en cours : soumettre pour validation (N+1 / DG) --}}
-                        @if($mail->mail_type === 'outgoing' && in_array($statusVal, ['draft', 'in_progress']))
+                        {{-- Courrier SORTANT ou INTERNE en cours : soumettre pour validation (N+1) --}}
+                        @if(in_array($mail->mail_type, ['outgoing', 'internal']) && in_array($statusVal, ['draft', 'in_progress']) && $isInitiator && !$mail->assigned_organisation_id)
                             <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#submitModal">
                                 <i class="bi bi-send"></i> Soumettre pour validation
                             </button>
                         @endif
 
-                        {{-- Courrier SORTANT soumis : signature ou rejet par le DG --}}
+                        {{-- Courrier SORTANT / INTERNE en revue N+1 : validation / renvoi par le supérieur --}}
+                        @if(in_array($mail->mail_type, ['outgoing', 'internal']) && $statusVal === 'pending_review' && ($isN1 || $isDg))
+                            <form action="{{ route('mails.workflow.validate-n1', $mail->id) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check2-all"></i>
+                                    {{ $mail->mail_type === 'internal' ? 'Valider (N+1) et transmettre au service' : 'Valider (N+1) et transmettre au DG' }}
+                                </button>
+                            </form>
+                            <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#revisionModal">
+                                <i class="bi bi-arrow-counterclockwise"></i> Renvoyer pour révision
+                            </button>
+                        @endif
+
+                        {{-- Courrier INTERNE livré au service destinataire : le responsable affecte à un agent --}}
+                        @if($mail->mail_type === 'internal' && $mail->assigned_organisation_id
+                            && (int) $mail->assigned_organisation_id === (int) $u->current_organisation_id
+                            && !$mail->assigned_to && $statusVal !== 'completed')
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assignModal">
+                                <i class="bi bi-person-check"></i> Affecter à un agent
+                            </button>
+                        @endif
+
+                        {{-- Courrier INTERNE affecté : l'agent (ou le service) valide la réception --}}
+                        @if($mail->mail_type === 'internal' && $mail->assigned_organisation_id
+                            && (int) $mail->assigned_organisation_id === (int) $u->current_organisation_id
+                            && $mail->assigned_to && $statusVal !== 'completed')
+                            <form action="{{ route('mails.workflow.confirm-reception', $mail->id) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check2-circle"></i> Valider la réception / traitement
+                                </button>
+                            </form>
+                        @endif
+
+                        {{-- Courrier SORTANT soumis au DG : signature / renvoi / rejet --}}
                         @if($mail->mail_type === 'outgoing' && $statusVal === 'pending_approval' && $isDg)
                             <form action="{{ route('mails.workflow.sign', $mail->id) }}" method="POST">
                                 @csrf
@@ -462,12 +492,22 @@
                                     <i class="bi bi-pen"></i> Signer et transmettre
                                 </button>
                             </form>
+                            <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#revisionModal">
+                                <i class="bi bi-arrow-counterclockwise"></i> Renvoyer pour révision
+                            </button>
                             <form action="{{ route('mails.workflow.reject', $mail->id) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="btn btn-danger">
                                     <i class="bi bi-x-circle"></i> Rejeter
                                 </button>
                             </form>
+                        @endif
+
+                        {{-- Courrier SORTANT renvoyé pour révision : l'initiateur corrige et resoumet --}}
+                        @if($mail->mail_type === 'outgoing' && $statusVal === 'rejected' && $isInitiator)
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#resubmitModal">
+                                <i class="bi bi-arrow-repeat"></i> Corriger et resoumettre
+                            </button>
                         @endif
                     </div>
 
@@ -479,9 +519,15 @@
                             @if($mail->dg_signature_note) — « {{ $mail->dg_signature_note }} » @endif
                         </div>
                     @elseif($mail->dg_signature_status === 'rejected')
-                        <div class="alert alert-danger mt-3 mb-0">
-                            <i class="bi bi-x-octagon"></i>
-                            Rejeté par le DG le {{ optional($mail->dg_signed_at)->format('d/m/Y H:i') }}.
+                        @php
+                            // Distinguer un renvoi pour révision d'un rejet définitif via le dernier événement.
+                            $lastAction = isset($timeline) ? optional($timeline->first())->action : null;
+                            $isRevision = $lastAction === 'returned_for_revision';
+                        @endphp
+                        <div class="alert {{ $isRevision ? 'alert-warning' : 'alert-danger' }} mt-3 mb-0">
+                            <i class="bi {{ $isRevision ? 'bi-arrow-counterclockwise' : 'bi-x-octagon' }}"></i>
+                            {{ $isRevision ? 'Renvoyé pour révision' : 'Rejeté' }}
+                            le {{ optional($mail->dg_signed_at)->format('d/m/Y H:i') }}.
                             @if($mail->dg_signature_note) — « {{ $mail->dg_signature_note }} » @endif
                         </div>
                     @endif
@@ -497,8 +543,12 @@
                         'coted' => 'Coté par le DG',
                         'reception_confirmed' => 'Réception validée',
                         'submitted_for_approval' => 'Soumis pour validation',
+                        'n1_validated' => 'Validé par le supérieur (N+1)',
+                        'assigned_to_user' => 'Affecté à un agent',
                         'dg_signed' => 'Signé par le DG',
                         'dg_rejected' => 'Rejeté par le DG',
+                        'returned_for_revision' => 'Renvoyé pour révision',
+                        'resubmitted' => 'Corrigé et resoumis',
                         'deleted' => 'Supprimé',
                     ];
                 @endphp
@@ -536,8 +586,8 @@
 
     </div>
 
-    {{-- Modal de soumission pour validation (courrier sortant) --}}
-    @if($mail->mail_type === 'outgoing' && in_array($mail->status?->value, ['draft', 'in_progress']))
+    {{-- Modal de soumission pour validation (courrier sortant ou interne) --}}
+    @if(in_array($mail->mail_type, ['outgoing', 'internal']) && in_array($mail->status?->value, ['draft', 'in_progress']) && !$mail->assigned_organisation_id)
     <div class="modal fade" id="submitModal" tabindex="-1" aria-labelledby="submitModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -555,6 +605,112 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                         <button type="submit" class="btn btn-warning">Soumettre</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Modal de renvoi pour révision (N+1 ou DG) --}}
+    @if($mail->mail_type === 'outgoing' && in_array($mail->status?->value, ['pending_review', 'pending_approval']))
+    <div class="modal fade" id="revisionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route('mails.workflow.return-for-revision', $mail->id) }}" method="POST">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title">Renvoyer pour révision</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="revision_note" class="form-label">Modifications à apporter <span class="text-danger">*</span></label>
+                        <textarea name="note" id="revision_note" class="form-control" rows="4" required
+                                  placeholder="Précisez ce que l'initiateur doit corriger ou compléter"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-warning">Renvoyer pour révision</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Modal de resoumission après révision (initiateur, avec pièces jointes) --}}
+    @if($mail->mail_type === 'outgoing' && $mail->status?->value === 'rejected')
+    <div class="modal fade" id="resubmitModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route('mails.workflow.resubmit', $mail->id) }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title">Corriger et resoumettre</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if($mail->dg_signature_note)
+                            <div class="alert alert-warning">
+                                <strong>Modifications demandées :</strong><br>{{ $mail->dg_signature_note }}
+                            </div>
+                        @endif
+                        <label for="resubmit_note" class="form-label">Commentaire (facultatif)</label>
+                        <textarea name="note" id="resubmit_note" class="form-control mb-3" rows="3"
+                                  placeholder="Décrivez les corrections apportées"></textarea>
+                        <label for="resubmit_attachments" class="form-label">Pièces jointes correctives (facultatif)</label>
+                        <input type="file" name="attachments[]" id="resubmit_attachments" class="form-control" multiple
+                               accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Resoumettre</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Modal d'affectation interne (responsable du service destinataire) --}}
+    @if($mail->mail_type === 'internal' && $mail->assigned_organisation_id
+        && (int) $mail->assigned_organisation_id === (int) auth()->user()->current_organisation_id
+        && !$mail->assigned_to)
+    @php
+        // Agents du service destinataire à qui affecter le courrier.
+        $serviceUsers = \App\Models\Organisation::find(auth()->user()->current_organisation_id)?->users ?? collect();
+        $dgInstructions = \App\Models\MailAction::whereIn('name', ['Donner suite', "M'expliquer", 'En parler', 'Classer'])->get();
+    @endphp
+    <div class="modal fade" id="assignModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route('mails.workflow.assign-user', $mail->id) }}" method="POST">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title">Affecter à un agent</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="assign_user" class="form-label">Agent du service <span class="text-danger">*</span></label>
+                        <select name="assigned_to" id="assign_user" class="form-select mb-3" required>
+                            <option value="">Choisir un agent</option>
+                            @foreach($serviceUsers as $su)
+                                <option value="{{ $su->id }}">{{ $su->name }} {{ $su->surname }}</option>
+                            @endforeach
+                        </select>
+                        <label for="assign_action" class="form-label">Instruction (facultatif)</label>
+                        <select name="action_id" id="assign_action" class="form-select mb-3">
+                            <option value="">Aucune instruction</option>
+                            @foreach($dgInstructions as $instr)
+                                <option value="{{ $instr->id }}">{{ $instr->name }}</option>
+                            @endforeach
+                        </select>
+                        <label for="assign_instruction" class="form-label">Précisions (facultatif)</label>
+                        <textarea name="instruction" id="assign_instruction" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Affecter</button>
                     </div>
                 </form>
             </div>

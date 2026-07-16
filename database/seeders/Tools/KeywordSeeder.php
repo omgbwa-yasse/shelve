@@ -14,43 +14,43 @@ class KeywordSeeder extends Seeder
     {
         $keywords = [
             // RH
-            'RH', 'Recrutement', 'Formation', 'Paie', 'Contrat', 'Salaire', 'EmployÃ©',
-            'Candidature', 'Entretien', 'CompÃ©tences', 'Ã‰valuation', 'CarriÃ¨re',
+            'RH', 'Recrutement', 'Formation', 'Paie', 'Contrat', 'Salaire', 'Employé',
+            'Candidature', 'Entretien', 'Compétences', 'Évaluation', 'Carrière',
 
-            // ComptabilitÃ©
-            'ComptabilitÃ©', 'Facturation', 'Budget', 'DÃ©penses', 'Recettes', 'Finances',
-            'Fournisseur', 'Client', 'Paiement', 'TrÃ©sorerie', 'Bilan', 'Compte',
+            // Comptabilité
+            'Comptabilité', 'Facturation', 'Budget', 'Dépenses', 'Recettes', 'Finances',
+            'Fournisseur', 'Client', 'Paiement', 'Trésorerie', 'Bilan', 'Compte',
 
             // Projets
-            'Projet', 'Analyse', 'Ã‰tude', 'Rapport', 'Planification', 'Suivi',
-            'Livrable', 'Jalon', 'Risque', 'Budget projet', 'Ã‰quipe',
+            'Projet', 'Analyse', 'Étude', 'Rapport', 'Planification', 'Suivi',
+            'Livrable', 'Jalon', 'Risque', 'Budget projet', 'Équipe',
 
             // Documentation
-            'Documentation', 'Archive', 'NumÃ©rique', 'Digital', 'Document',
+            'Documentation', 'Archive', 'Numérique', 'Digital', 'Document',
             'Dossier', 'Classement', 'Conservation', 'Gestion documentaire',
 
-            // GÃ©nÃ©ral
-            'Transformation', 'Innovation', 'StratÃ©gie', 'Management', 'Processus',
-            'Workflow', 'QualitÃ©', 'Performance', 'AmÃ©lioration', 'Optimisation',
+            // Général
+            'Transformation', 'Innovation', 'Stratégie', 'Management', 'Processus',
+            'Workflow', 'Qualité', 'Performance', 'Amélioration', 'Optimisation',
 
-            // MÃ©thodologie
-            'MÃ©thodologie', 'ProcÃ©dure', 'Norme', 'Standard', 'RÃ©fÃ©rentiel',
+            // Méthodologie
+            'Méthodologie', 'Procédure', 'Norme', 'Standard', 'Référentiel',
             'Guide', 'Manuel', 'Instruction', 'Consigne',
 
             // Communication
             'Communication', 'Information', 'Diffusion', 'Publication', 'Notification',
-            'Annonce', 'CommuniquÃ©', 'Note de service',
+            'Annonce', 'Communiqué', 'Note de service',
 
             // Juridique
-            'Juridique', 'LÃ©gal', 'RÃ©glementaire', 'ConformitÃ©', 'Audit',
-            'ContrÃ´le', 'VÃ©rification', 'Certification',
+            'Juridique', 'Légal', 'Réglementaire', 'Conformité', 'Audit',
+            'Contrôle', 'Vérification', 'Certification',
         ];
 
         foreach ($keywords as $name) {
             Keyword::firstOrCreate(['name' => $name]);
         }
 
-        $this->command->info('âœ… ' . count($keywords) . ' mots-clÃ©s crÃ©Ã©s/vÃ©rifiÃ©s');
+        $this->command->info('✅ ' . count($keywords) . ' mots-clés créés/vérifiés');
     }
 }
 

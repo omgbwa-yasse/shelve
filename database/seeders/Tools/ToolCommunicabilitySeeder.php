@@ -49,7 +49,7 @@ class ToolCommunicabilitySeeder extends Seeder
         foreach ($this->rules as $index => $rule) {
             Communicability::create([
                 'code' => 'COMM' . str_pad($index + 1, 2, '0', STR_PAD_LEFT),
-                'name' => 'RÃ¨gle de communicabilitÃ© ' . ($index + 1) . ' - ' . $rule['years'] . ' ans',
+                'name' => 'Règle de communicabilité ' . ($index + 1) . ' - ' . $rule['years'] . ' ans',
                 'description' => $rule['description'],
                 'duration' => $rule['years'],
             ]);

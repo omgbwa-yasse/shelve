@@ -14,9 +14,9 @@ class ExternalContactsSeeder extends Seeder
      */
     public function run(): void
     {
-        // CrÃ©er quelques organisations externes (idempotent par 'name')
+        // Créer quelques organisations externes (idempotent par 'name')
         $org1 = ExternalOrganization::firstOrCreate(
-            ['name' => 'MinistÃ¨re de l\'Ã‰ducation Nationale'],
+            ['name' => 'Ministère de l\'Éducation Nationale'],
             [
                 'legal_form' => 'Administration publique',
                 'email' => 'contact@education.gouv.fr',
@@ -30,12 +30,12 @@ class ExternalContactsSeeder extends Seeder
         );
 
         $org2 = ExternalOrganization::firstOrCreate(
-            ['name' => 'UniversitÃ© Sorbonne'],
+            ['name' => 'Université Sorbonne'],
             [
-                'legal_form' => 'Ã‰tablissement public',
+                'legal_form' => 'Établissement public',
                 'email' => 'contact@sorbonne-universite.fr',
                 'phone' => '01 44 27 44 27',
-                'address' => '21 rue de l\'Ã‰cole de mÃ©decine',
+                'address' => '21 rue de l\'École de médecine',
                 'city' => 'Paris',
                 'postal_code' => '75006',
                 'country' => 'France',
@@ -51,7 +51,7 @@ class ExternalContactsSeeder extends Seeder
                 'email' => 'contact@techcorp.fr',
                 'phone' => '01 98 76 54 32',
                 'website' => 'https://www.techcorp.fr',
-                'address' => '15 Avenue des Champs-Ã‰lysÃ©es',
+                'address' => '15 Avenue des Champs-Élysées',
                 'city' => 'Paris',
                 'postal_code' => '75008',
                 'country' => 'France',
@@ -59,7 +59,7 @@ class ExternalContactsSeeder extends Seeder
             ]
         );
 
-        // CrÃ©er des contacts pour ces organisations
+        // Créer des contacts pour ces organisations
         ExternalContact::firstOrCreate(
             ['email' => 'marie.dupont@education.gouv.fr'],
             [
@@ -79,7 +79,7 @@ class ExternalContactsSeeder extends Seeder
                 'first_name' => 'Jean',
                 'last_name' => 'MARTIN',
                 'phone' => '01 23 45 67 91',
-                'position' => 'SecrÃ©taire gÃ©nÃ©ral',
+                'position' => 'Secrétaire général',
                 'external_organization_id' => $org1->id,
                 'is_primary_contact' => false,
                 'is_verified' => true,
@@ -92,7 +92,7 @@ class ExternalContactsSeeder extends Seeder
                 'first_name' => 'Sophie',
                 'last_name' => 'BERNARD',
                 'phone' => '01 44 27 44 28',
-                'position' => 'PrÃ©sidente',
+                'position' => 'Présidente',
                 'external_organization_id' => $org2->id,
                 'is_primary_contact' => true,
                 'is_verified' => true,
@@ -105,25 +105,25 @@ class ExternalContactsSeeder extends Seeder
                 'first_name' => 'Pierre',
                 'last_name' => 'ROUSSEAU',
                 'phone' => '01 98 76 54 33',
-                'position' => 'Directeur gÃ©nÃ©ral',
+                'position' => 'Directeur général',
                 'external_organization_id' => $org3->id,
                 'is_primary_contact' => true,
                 'is_verified' => false,
             ]
         );
 
-        // CrÃ©er quelques contacts sans organisation
+        // Créer quelques contacts sans organisation
         ExternalContact::firstOrCreate(
             ['email' => 'isabelle.legrand@gmail.com'],
             [
                 'first_name' => 'Isabelle',
                 'last_name' => 'LEGRAND',
                 'phone' => '06 12 34 56 78',
-                'position' => 'Consultante indÃ©pendante',
-                'address' => '25 rue de la RÃ©publique, 69000 Lyon',
+                'position' => 'Consultante indépendante',
+                'address' => '25 rue de la République, 69000 Lyon',
                 'is_primary_contact' => false,
                 'is_verified' => true,
-                'notes' => 'Contact expert en Ã©ducation numÃ©rique',
+                'notes' => 'Contact expert en éducation numérique',
             ]
         );
 
@@ -137,7 +137,7 @@ class ExternalContactsSeeder extends Seeder
                 'address' => '12 Place Bellecour, 69002 Lyon',
                 'is_primary_contact' => false,
                 'is_verified' => true,
-                'notes' => 'SpÃ©cialisÃ© en droit de l\'Ã©ducation',
+                'notes' => 'Spécialisé en droit de l\'éducation',
             ]
         );
     }

@@ -1,140 +1,199 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard')
+@section('title', 'Tableau de bord')
 
 @section('content')
-<div class="space-y-6">
-    <!-- Page Header -->
-    <div class="flex justify-between items-center">
+<div class="container-fluid py-3">
+
+    {{-- En-tête --}}
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Welcome back, {{ Auth::user()->name }}
-            </p>
+            <h1 class="h3 mb-1 text-primary">Tableau de bord</h1>
+            <p class="text-muted mb-0">Bienvenue, {{ Auth::user()->name }} {{ Auth::user()->surname }}</p>
         </div>
-        <div>
-            <span class="text-sm text-gray-500 dark:text-gray-400">
-                {{ now()->format('l, F j, Y') }}
-            </span>
-        </div>
+        <span class="text-muted small">{{ now()->translatedFormat('l j F Y') }}</span>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <!-- Folders Card -->
-        <x-stat-card
-            title="Digital Folders"
-            :value="$stats['folders']"
-            :trend="5"
-            color="blue"
-            href="{{ route('folders.index') }}">
-            <x-slot name="icon">
-                <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                </svg>
-            </x-slot>
-        </x-stat-card>
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
-        <!-- Documents Card -->
-        <x-stat-card
-            title="Documents"
-            :value="$stats['documents']"
-            :trend="12"
-            color="green"
-            href="{{ route('documents.index') }}">
-            <x-slot name="icon">
-                <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-            </x-slot>
-        </x-stat-card>
+    {{-- ===== Bulles de notification du courrier ===== --}}
+    @php
+        // Bulles affichées selon le rôle : le DG cote et signe, le service valide
+        // la réception, l'initiateur reprend ses courriers rejetés.
+        $bubbles = [
+            ['label' => 'Non lus',             'value' => $mailStats['unread'],     'color' => 'danger',  'icon' => 'bi-envelope',        'href' => route('mail-received.index'),  'show' => true],
+            ['label' => 'À coter',             'value' => $mailStats['to_cote'],    'color' => 'primary', 'icon' => 'bi-diagram-3',       'href' => route('mails.incoming.index'), 'show' => $isDg],
+            ['label' => 'À signer',            'value' => $mailStats['to_sign'],    'color' => 'warning', 'icon' => 'bi-pen',             'href' => route('mails.outgoing.index'), 'show' => $isDg],
+            ['label' => 'Réception à valider', 'value' => $mailStats['to_confirm'], 'color' => 'success', 'icon' => 'bi-check2-circle',   'href' => route('mail-received.index'),  'show' => true],
+            ['label' => 'À reprendre',         'value' => $mailStats['to_fix'],     'color' => 'secondary','icon' => 'bi-arrow-counterclockwise', 'href' => route('mail-send.index'), 'show' => true],
+        ];
+    @endphp
 
-        <!-- Periodicals Card -->
-        <x-stat-card
-            title="Periodicals"
-            :value="$stats['periodicals']"
-            :trend="-2"
-            color="orange"
-            href="{{ route('periodicals.index') }}">
-            <x-slot name="icon">
-                <svg class="h-6 w-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                </svg>
-            </x-slot>
-        </x-stat-card>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
-        <div class="p-6">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
-            <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <a href="{{ route('folders.create') }}" class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors group">
-                    <svg class="h-8 w-8 text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    <span class="text-sm font-medium text-gray-900 dark:text-white">New Folder</span>
-                </a>
-
-                <a href="{{ route('documents.create') }}" class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors group">
-                    <svg class="h-8 w-8 text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    <span class="text-sm font-medium text-gray-900 dark:text-white">Upload Document</span>
-                </a>
-
-                <a href="{{ route('search.advanced') }}" class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors group">
-                    <svg class="h-8 w-8 text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <span class="text-sm font-medium text-gray-900 dark:text-white">Advanced Search</span>
-                </a>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0"><i class="bi bi-envelope-paper"></i> Mon courrier</h5>
+                <a href="{{ route('mail-received.index') }}" class="small">Voir tous les courriers</a>
             </div>
-        </div>
-    </div>
 
-    <!-- Recent Activity -->
-    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
-        <div class="p-6">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h2>
-            <div class="flow-root">
-                <ul role="list" class="-mb-8">
-                    @forelse($recentActivities as $index => $activity)
-                        <li>
-                            <div class="relative pb-8">
-                                @if(!$loop->last)
-                                    <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200 dark:bg-gray-700" aria-hidden="true"></span>
-                                @endif
-                                <div class="relative flex space-x-3">
-                                    <div>
-                                        <span class="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center ring-8 ring-white dark:ring-gray-800">
-                                            <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                                            </svg>
-                                        </span>
-                                    </div>
-                                    <div class="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
-                                        <div>
-                                            <p class="text-sm text-gray-500 dark:text-gray-400">
-                                                {{ $activity->description }}
-                                                <a href="#" class="font-medium text-gray-900 dark:text-white">{{ $activity->subject }}</a>
-                                            </p>
-                                        </div>
-                                        <div class="whitespace-nowrap text-right text-sm text-gray-500 dark:text-gray-400">
-                                            <time datetime="{{ $activity->created_at }}">{{ $activity->created_at->diffForHumans() }}</time>
-                                        </div>
-                                    </div>
-                                </div>
+            <div class="row g-3">
+                @foreach($bubbles as $bubble)
+                    @continue(!$bubble['show'])
+                    <div class="col-6 col-md-4 col-lg">
+                        <a href="{{ $bubble['href'] }}" class="text-decoration-none">
+                            <div class="border rounded p-3 h-100 d-flex align-items-center gap-3 dashboard-bubble">
+                                <span class="badge bg-{{ $bubble['color'] }} rounded-circle d-flex align-items-center justify-content-center"
+                                      style="width:44px;height:44px;font-size:1rem;">
+                                    {{ $bubble['value'] > 99 ? '99+' : $bubble['value'] }}
+                                </span>
+                                <span class="text-body">
+                                    <i class="bi {{ $bubble['icon'] }} me-1 text-muted"></i>
+                                    {{ $bubble['label'] }}
+                                </span>
                             </div>
-                        </li>
-                    @empty
-                        <li class="text-center py-8 text-gray-500 dark:text-gray-400">
-                            No recent activity
-                        </li>
-                    @endforelse
-                </ul>
+                        </a>
+                    </div>
+                @endforeach
             </div>
         </div>
     </div>
+
+    <div class="row g-4">
+        {{-- ===== Courriers en attente d'action ===== --}}
+        <div class="col-lg-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="bi bi-list-check"></i> Courriers en attente de votre action</h5>
+
+                    <div class="list-group list-group-flush">
+                        @forelse($priorityMails as $mail)
+                            @php
+                                // Étape du circuit à laquelle se trouve ce courrier.
+                                $statusVal = $mail->status?->value;
+                                if ($mail->mail_type === 'incoming' && !$mail->assigned_organisation_id) {
+                                    $todo = ['À coter', 'bg-primary'];
+                                    $link = route('mails.workflow.cote-form', $mail->id);
+                                } elseif ($mail->mail_type === 'incoming') {
+                                    $todo = ['Réception à valider', 'bg-success'];
+                                    $link = route('mails.incoming.show', $mail->id);
+                                } elseif ($statusVal === 'pending_approval') {
+                                    $todo = ['À signer', 'bg-warning text-dark'];
+                                    $link = route('mails.outgoing.show', $mail->id);
+                                } else {
+                                    $todo = ['Rejeté — à reprendre', 'bg-secondary'];
+                                    $link = route('mails.outgoing.show', $mail->id);
+                                }
+                            @endphp
+                            <a href="{{ $link }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-3 px-0">
+                                <span class="text-truncate">
+                                    <span class="d-block text-body">{{ $mail->name }}</span>
+                                    <small class="text-muted">
+                                        {{ $mail->code }}
+                                        @if($mail->typology) — {{ $mail->typology->name }} @endif
+                                        @if($mail->assignedOrganisation) — {{ $mail->assignedOrganisation->name }} @endif
+                                    </small>
+                                </span>
+                                <span class="badge {{ $todo[1] }} flex-shrink-0">{{ $todo[0] }}</span>
+                            </a>
+                        @empty
+                            <p class="text-center text-muted py-4 mb-0">Aucun courrier en attente de votre action.</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ===== Activité récente sur le courrier ===== --}}
+        <div class="col-lg-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="bi bi-clock-history"></i> Activité récente</h5>
+
+                    <ul class="list-unstyled mb-0">
+                        @forelse($recentActivities as $activity)
+                            <li class="d-flex gap-2 pb-3 mb-3 border-bottom">
+                                <i class="bi bi-dot fs-4 text-primary lh-1"></i>
+                                <div class="small">
+                                    @if($activity->user)<strong>{{ $activity->user->name }}</strong> — @endif
+                                    {{ $activity->description ?? $activity->action }}
+                                    @if($activity->mail)
+                                        <a href="{{ route('mails.incoming.show', $activity->mail->id) }}">{{ $activity->mail->name }}</a>
+                                    @endif
+                                    <div class="text-muted">{{ $activity->created_at->diffForHumans() }}</div>
+                                </div>
+                            </li>
+                        @empty
+                            <li class="text-center text-muted py-4">Aucune activité récente.</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ===== Actions rapides + volumétrie ===== --}}
+    <div class="row g-4 mt-1">
+        <div class="col-lg-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="bi bi-lightning-charge"></i> Actions rapides</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ route('mail-send.create') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-envelope-plus"></i> Nouveau courrier
+                        </a>
+                        <a href="{{ route('mails.received.external.create') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-inbox"></i> Enregistrer un courrier reçu
+                        </a>
+                        <a href="{{ route('mails.advanced.form') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-search"></i> Recherche avancée
+                        </a>
+                        <a href="{{ route('folders.create') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-folder-plus"></i> Nouveau dossier
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="bi bi-archive"></i> Répertoire numérique</h5>
+                    <div class="row text-center">
+                        <div class="col-6 border-end">
+                            <a href="{{ route('folders.index') }}" class="text-decoration-none">
+                                <div class="h4 mb-0 text-primary">{{ $stats['folders'] }}</div>
+                                <small class="text-muted">Dossiers</small>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ route('documents.index') }}" class="text-decoration-none">
+                                <div class="h4 mb-0 text-primary">{{ $stats['documents'] }}</div>
+                                <small class="text-muted">Documents</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 @endsection
+
+@push('styles')
+<style>
+    .dashboard-bubble {
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+    .dashboard-bubble:hover {
+        border-color: var(--bs-primary) !important;
+        box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075);
+    }
+</style>
+@endpush

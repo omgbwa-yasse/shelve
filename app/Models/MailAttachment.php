@@ -19,6 +19,8 @@ class MailAttachment extends Model
         'creator_id',
         'crypt_sha512',
         'thumbnail_path',
+        'type',
+        'mime_type',
     ];
 
     public function creator()

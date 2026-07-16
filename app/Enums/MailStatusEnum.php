@@ -47,6 +47,25 @@ enum MailStatusEnum: string
         };
     }
 
+    /**
+     * Classe de couleur Bootstrap (badges) correspondant au statut.
+     */
+    public function bootstrapColor(): string
+    {
+        return match($this) {
+            self::DRAFT => 'secondary',
+            self::PENDING_REVIEW => 'warning',
+            self::IN_PROGRESS => 'primary',
+            self::PENDING_APPROVAL => 'warning',
+            self::APPROVED => 'success',
+            self::TRANSMITTED => 'info',
+            self::COMPLETED => 'success',
+            self::REJECTED => 'danger',
+            self::CANCELLED => 'secondary',
+            self::OVERDUE => 'danger',
+        };
+    }
+
     public function canTransitionTo(self $status): bool
     {
         return match($this) {

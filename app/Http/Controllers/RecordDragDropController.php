@@ -340,7 +340,7 @@ Exigeance de sortie JSON stricte (UTF-8) suivant ce modèle exact :
   "title": "...",
   "content": "...",
   "keywords": ["mot1", "mot2", "mot3"],
-            "activity_candidates": [ { "code": "DF-01110", "name": "COLLECTE DES PRÉVISIONS BUDGÉTAIRES", "confidence": 0.85 } ],
+            "activity_candidates": [ { "code": "DSI-01110", "name": "ADMINISTRATION DU RÉSEAU", "confidence": 0.85 } ],
             "authors": [ { "name": "Nom Auteur", "type_id": 1 } ]
 }
 

@@ -18,7 +18,7 @@ class OpacTemplateSeeder extends Seeder
             ['slug' => 'modern-academic'],
             [
             'name' => 'Modern Academic',
-            'description' => 'Template moderne et Ã©lÃ©gant pour les institutions acadÃ©miques',
+            'description' => 'Template moderne et élégant pour les institutions académiques',
             'type' => 'opac',
             'status' => 'active',
             'theme' => 'modern',
@@ -53,7 +53,7 @@ class OpacTemplateSeeder extends Seeder
             ['slug' => 'classic-library'],
             [
             'name' => 'Classic Library',
-            'description' => 'Template classique inspirÃ© des bibliothÃ¨ques traditionnelles',
+            'description' => 'Template classique inspiré des bibliothèques traditionnelles',
             'type' => 'opac',
             'status' => 'active',
             'theme' => 'classic',
@@ -87,7 +87,7 @@ class OpacTemplateSeeder extends Seeder
             ['slug' => 'corporate-clean'],
             [
             'name' => 'Corporate Clean',
-            'description' => 'Template Ã©purÃ© pour les environnements corporatifs',
+            'description' => 'Template épuré pour les environnements corporatifs',
             'type' => 'opac',
             'status' => 'active',
             'theme' => 'corporate',
@@ -144,7 +144,7 @@ class OpacTemplateSeeder extends Seeder
                     </div>
                     <nav class="hidden md:flex space-x-8">
                         <a href="#" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium">Accueil</a>
-                        <a href="#" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium">Recherche avancÃ©e</a>
+                        <a href="#" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium">Recherche avancée</a>
                         <a href="#" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium">Mon compte</a>
                     </nav>
                 </div>
@@ -185,14 +185,14 @@ class OpacTemplateSeeder extends Seeder
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div>
                         <h3 class="text-lg font-semibold mb-4">{{ $site_name ?? \'OPAC\' }}</h3>
-                        <p class="text-gray-300">{{ $site_description ?? \'Catalogue en ligne de la bibliothÃ¨que\' }}</p>
+                        <p class="text-gray-300">{{ $site_description ?? \'Catalogue en ligne de la bibliothèque\' }}</p>
                     </div>
                     <div>
                         <h3 class="text-lg font-semibold mb-4">Liens rapides</h3>
                         <ul class="space-y-2 text-gray-300">
                             <li><a href="#" class="hover:text-white">Aide</a></li>
                             <li><a href="#" class="hover:text-white">Contact</a></li>
-                            <li><a href="#" class="hover:text-white">Mentions lÃ©gales</a></li>
+                            <li><a href="#" class="hover:text-white">Mentions légales</a></li>
                         </ul>
                     </div>
                     <div>
@@ -319,7 +319,7 @@ document.addEventListener("DOMContentLoaded", function() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $page_title ?? \'BibliothÃ¨que - Catalogue\' }}</title>
+    <title>{{ $page_title ?? \'Bibliothèque - Catalogue\' }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="classic-theme">
@@ -328,10 +328,10 @@ document.addEventListener("DOMContentLoaded", function() {
             <div class="container">
                 <div class="header-content">
                     <div class="library-emblem">
-                        <img src="{{ $logo_url ?? \'/images/library-seal.png\' }}" alt="Sceau de la bibliothÃ¨que">
+                        <img src="{{ $logo_url ?? \'/images/library-seal.png\' }}" alt="Sceau de la bibliothèque">
                     </div>
                     <div class="header-text">
-                        <h1 class="library-name">{{ $site_name ?? \'BibliothÃ¨que Municipale\' }}</h1>
+                        <h1 class="library-name">{{ $site_name ?? \'Bibliothèque Municipale\' }}</h1>
                         <p class="library-motto">{{ $motto ?? \'Savoir et Culture pour tous\' }}</p>
                     </div>
                 </div>
@@ -367,7 +367,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         <footer class="classic-footer">
             <div class="container">
-                <p>&copy; {{ date(\'Y\') }} {{ $site_name ?? \'BibliothÃ¨que\' }}. Tous droits rÃ©servÃ©s.</p>
+                <p>&copy; {{ date(\'Y\') }} {{ $site_name ?? \'Bibliothèque\' }}. Tous droits réservés.</p>
             </div>
         </footer>
     </div>

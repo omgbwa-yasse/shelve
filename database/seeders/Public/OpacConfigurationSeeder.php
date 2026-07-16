@@ -14,16 +14,16 @@ class OpacConfigurationSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->command->info('ðŸ”§ CrÃ©ation des configurations OPAC par dÃ©faut...');
+        $this->command->info('🔧 Création des configurations OPAC par défaut...');
 
-        // RÃ©cupÃ©rer toutes les organisations
+        // Récupérer toutes les organisations
         $organisations = Organisation::all();
 
         foreach ($organisations as $organisation) {
             $this->createDefaultConfigurationsForOrganisation($organisation);
         }
 
-        $this->command->info('âœ… Configurations OPAC crÃ©Ã©es avec succÃ¨s pour ' . $organisations->count() . ' organisations');
+        $this->command->info('✅ Configurations OPAC créées avec succès pour ' . $organisations->count() . ' organisations');
     }
 
     private function createDefaultConfigurationsForOrganisation($organisation)
@@ -33,7 +33,7 @@ class OpacConfigurationSeeder extends Seeder
                 'config_key' => 'opac_title',
                 'config_value' => 'Catalogue en ligne - ' . $organisation->name,
                 'config_type' => 'string',
-                'description' => 'Titre affichÃ© sur l\'OPAC'
+                'description' => 'Titre affiché sur l\'OPAC'
             ],
             [
                 'config_key' => 'visible_organisations',
@@ -51,55 +51,55 @@ class OpacConfigurationSeeder extends Seeder
                 'config_key' => 'show_recent_records',
                 'config_value' => true,
                 'config_type' => 'boolean',
-                'description' => 'Afficher les documents rÃ©cents'
+                'description' => 'Afficher les documents récents'
             ],
             [
                 'config_key' => 'allow_downloads',
                 'config_value' => false,
                 'config_type' => 'boolean',
-                'description' => 'Autoriser le tÃ©lÃ©chargement des documents'
+                'description' => 'Autoriser le téléchargement des documents'
             ],
             [
                 'config_key' => 'records_per_page',
                 'config_value' => 15,
                 'config_type' => 'integer',
-                'description' => 'Nombre de rÃ©sultats par page'
+                'description' => 'Nombre de résultats par page'
             ],
             [
                 'config_key' => 'allowed_file_types',
                 'config_value' => ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'],
                 'config_type' => 'array',
-                'description' => 'Types de fichiers autorisÃ©s en tÃ©lÃ©chargement'
+                'description' => 'Types de fichiers autorisés en téléchargement'
             ],
             [
                 'config_key' => 'show_full_record_details',
                 'config_value' => true,
                 'config_type' => 'boolean',
-                'description' => 'Afficher tous les dÃ©tails des documents'
+                'description' => 'Afficher tous les détails des documents'
             ],
             [
                 'config_key' => 'show_attachments',
                 'config_value' => false,
                 'config_type' => 'boolean',
-                'description' => 'Afficher les piÃ¨ces jointes'
+                'description' => 'Afficher les pièces jointes'
             ],
             [
                 'config_key' => 'theme',
                 'config_value' => 'default',
                 'config_type' => 'string',
-                'description' => 'ThÃ¨me visuel de l\'OPAC'
+                'description' => 'Thème visuel de l\'OPAC'
             ],
             [
                 'config_key' => 'primary_color',
                 'config_value' => '#007bff',
                 'config_type' => 'string',
-                'description' => 'Couleur principale du thÃ¨me'
+                'description' => 'Couleur principale du thème'
             ],
             [
                 'config_key' => 'secondary_color',
                 'config_value' => '#6c757d',
                 'config_type' => 'string',
-                'description' => 'Couleur secondaire du thÃ¨me'
+                'description' => 'Couleur secondaire du thème'
             ],
             [
                 'config_key' => 'logo_url',
@@ -109,15 +109,15 @@ class OpacConfigurationSeeder extends Seeder
             ],
             [
                 'config_key' => 'footer_text',
-                'config_value' => 'SystÃ¨me de gestion documentaire - ' . $organisation->name,
+                'config_value' => 'Système de gestion documentaire - ' . $organisation->name,
                 'config_type' => 'string',
-                'description' => 'Texte affichÃ© dans le pied de page'
+                'description' => 'Texte affiché dans le pied de page'
             ],
             [
                 'config_key' => 'contact_email',
                 'config_value' => '',
                 'config_type' => 'string',
-                'description' => 'Email de contact affichÃ© sur l\'OPAC'
+                'description' => 'Email de contact affiché sur l\'OPAC'
             ],
             [
                 'config_key' => 'help_url',
@@ -142,7 +142,7 @@ class OpacConfigurationSeeder extends Seeder
             );
         }
 
-        $this->command->info("  âœ… Configurations crÃ©Ã©es pour {$organisation->name}");
+        $this->command->info("  ✅ Configurations créées pour {$organisation->name}");
     }
 }
 

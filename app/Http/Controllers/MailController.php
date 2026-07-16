@@ -645,6 +645,67 @@ class MailController extends Controller
         ]);
     }
 
+    /**
+     * Compteurs des bulles de notification du courrier, selon le rôle de
+     * l'utilisateur dans son organisation courante :
+     *  - unread       : courriers entrants reçus/affectés, pas encore traités ;
+     *  - to_cote      : courriers entrants en attente de cotation (DG) ;
+     *  - to_sign      : courriers sortants en attente de signature (DG) ;
+     *  - to_confirm   : courriers cotés à mon service, réception à valider ;
+     *  - to_fix       : mes courriers sortants rejetés, à reprendre.
+     */
+    public function badgeCounts()
+    {
+        $user = Auth::user();
+        $organisationId = $user->current_organisation_id;
+        $isDg = $user->isSuperAdmin() || $user->hasRoleInOrganisation('DG', $organisationId);
+
+        $unread = Mail::where('mail_type', Mail::TYPE_INCOMING)
+            ->where(function ($q) use ($organisationId) {
+                $q->where('recipient_organisation_id', $organisationId)
+                  ->orWhere('assigned_organisation_id', $organisationId);
+            })
+            ->whereIn('status', [MailStatusEnum::TRANSMITTED, MailStatusEnum::IN_PROGRESS])
+            ->whereNull('processed_at')
+            ->count();
+
+        // Actions réservées au DG : cotation des entrants, signature des sortants.
+        $toCote = 0;
+        $toSign = 0;
+        if ($isDg) {
+            $toCote = Mail::where('mail_type', Mail::TYPE_INCOMING)
+                ->whereNull('assigned_organisation_id')
+                ->where('status', MailStatusEnum::TRANSMITTED)
+                ->count();
+
+            $toSign = Mail::where('mail_type', Mail::TYPE_OUTGOING)
+                ->where('status', MailStatusEnum::PENDING_APPROVAL)
+                ->count();
+        }
+
+        // Réception à valider par le service auquel le courrier a été coté.
+        $toConfirm = Mail::where('mail_type', Mail::TYPE_INCOMING)
+            ->where('assigned_organisation_id', $organisationId)
+            ->whereNot('status', MailStatusEnum::COMPLETED)
+            ->count();
+
+        // Mes courriers sortants rejetés, à reprendre.
+        $toFix = Mail::where('mail_type', Mail::TYPE_OUTGOING)
+            ->where('sender_user_id', $user->id)
+            ->where('status', MailStatusEnum::REJECTED)
+            ->count();
+
+        return response()->json([
+            'unread' => $unread,
+            'to_cote' => $toCote,
+            'to_sign' => $toSign,
+            'to_confirm' => $toConfirm,
+            'to_fix' => $toFix,
+            'pending_actions' => $toCote + $toSign + $toConfirm + $toFix,
+            'status' => 'success',
+        ]);
+    }
+
     public function exportPdf(Batch $batch)
     {
         $mails = $batch->mails()->with([

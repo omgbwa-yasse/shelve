@@ -344,18 +344,147 @@ class Mail extends Model
     }
 
     /**
-     * Soumission d'un courrier sortant pour validation hiérarchique (N+1)
-     * ou proposition au DG, avec note explicative facultative.
+     * L'initiateur du courrier a-t-il besoin d'une validation N+1 avant le DG ?
+     * Un agent oui ; un responsable, un directeur ou le DG peuvent soumettre
+     * directement au DG (exception : un directeur initie sans visa intermédiaire).
+     */
+    public function senderNeedsSuperiorValidation(): bool
+    {
+        $sender = $this->sender_user_id ? User::find($this->sender_user_id) : null;
+        if (!$sender) {
+            return false;
+        }
+
+        $role = $sender->roleInOrganisation($this->sender_organisation_id);
+
+        // Sans rôle identifié, on demande une validation par prudence.
+        return !$role || $role->name === 'agent';
+    }
+
+    /**
+     * Soumission d'un courrier pour validation.
+     * - Agent : passe d'abord par la validation N+1 (PENDING_REVIEW).
+     * - Responsable / directeur / DG : pas de visa intermédiaire.
+     *   → courrier sortant : va directement au DG (PENDING_APPROVAL) ;
+     *   → courrier interne : livré directement au service destinataire.
      */
     public function submitForApproval(?string $explanatoryNote = null): self
     {
+        $needsN1 = $this->senderNeedsSuperiorValidation();
+
+        if (!$needsN1 && $this->mail_type === self::TYPE_INTERNAL) {
+            // Communication inter-services par un responsable/directeur : livraison directe.
+            $this->update([
+                'status' => MailStatusEnum::IN_PROGRESS,
+                'assigned_organisation_id' => $this->recipient_organisation_id,
+                'assigned_at' => now(),
+                'explanatory_note' => $explanatoryNote ?? $this->explanatory_note,
+            ]);
+
+            $this->logAction('submitted_for_approval', 'status', null, MailStatusEnum::IN_PROGRESS->value, 'Communication transmise au service destinataire');
+
+            return $this;
+        }
+
+        $target = $needsN1 ? MailStatusEnum::PENDING_REVIEW : MailStatusEnum::PENDING_APPROVAL;
+
         $this->update([
-            'status' => MailStatusEnum::PENDING_APPROVAL,
+            'status' => $target,
             'explanatory_note' => $explanatoryNote ?? $this->explanatory_note,
             'dg_signature_status' => 'pending',
         ]);
 
-        $this->logAction('submitted_for_approval', 'status', null, MailStatusEnum::PENDING_APPROVAL->value, 'Courrier soumis pour validation');
+        $desc = $needsN1
+            ? 'Courrier soumis à la validation du supérieur (N+1)'
+            : 'Courrier soumis directement à la signature du DG';
+
+        $this->logAction('submitted_for_approval', 'status', null, $target->value, $desc);
+
+        return $this;
+    }
+
+    /**
+     * Validation intermédiaire par le supérieur hiérarchique (N+1).
+     * - Courrier sortant : passe à la signature du DG (PENDING_APPROVAL).
+     * - Courrier interne (communication inter-services) : est livré au service
+     *   destinataire, dont le responsable pourra le coter en interne.
+     */
+    public function validateBySuperior(int $userId, ?string $note = null): self
+    {
+        if ($this->mail_type === self::TYPE_INTERNAL) {
+            // Livraison au service destinataire : il devient l'organisation assignée.
+            $this->update([
+                'status' => MailStatusEnum::IN_PROGRESS,
+                'assigned_organisation_id' => $this->recipient_organisation_id,
+                'assigned_at' => now(),
+            ]);
+
+            $this->logAction('n1_validated', 'status', null, MailStatusEnum::IN_PROGRESS->value, $note ?? 'Validé par le supérieur (N+1) et transmis au service destinataire');
+
+            return $this;
+        }
+
+        // Courrier sortant : direction du DG.
+        $this->update([
+            'status' => MailStatusEnum::PENDING_APPROVAL,
+        ]);
+
+        $this->logAction('n1_validated', 'status', null, MailStatusEnum::PENDING_APPROVAL->value, $note ?? 'Validé par le supérieur hiérarchique (N+1)');
+
+        return $this;
+    }
+
+    /**
+     * Affectation (cotation interne) d'un courrier à un agent d'un service,
+     * par le responsable de ce service, avec une instruction facultative.
+     */
+    public function assignToUser(int $userId, ?int $actionId = null, ?string $instruction = null): self
+    {
+        $this->update([
+            'assigned_to' => $userId,
+            'action_id' => $actionId ?? $this->action_id,
+            'assigned_at' => now(),
+            'status' => MailStatusEnum::IN_PROGRESS,
+        ]);
+
+        $this->logAction('assigned_to_user', 'assigned_to', null, (string) $userId, $instruction ?? 'Affecté à un agent du service');
+
+        return $this;
+    }
+
+    /**
+     * Renvoi du courrier à son initiateur pour révision (distinct d'un rejet
+     * définitif) : l'initiateur pourra corriger, ajouter des pièces jointes,
+     * puis resoumettre. Utilisable par le N+1 comme par le DG.
+     */
+    public function returnForRevision(int $userId, ?string $note = null): self
+    {
+        $this->update([
+            'status' => MailStatusEnum::REJECTED,
+            'dg_signature_status' => 'rejected',
+            'dg_signature_note' => $note,
+        ]);
+
+        $this->logAction('returned_for_revision', 'status', null, MailStatusEnum::REJECTED->value, $note ?? 'Renvoyé pour révision');
+
+        return $this;
+    }
+
+    /**
+     * Resoumission par l'initiateur après révision : le courrier repart dans le
+     * circuit (validation N+1 pour un agent, sinon signature DG).
+     */
+    public function resubmit(?string $note = null): self
+    {
+        $needsN1 = $this->senderNeedsSuperiorValidation();
+        $target = $needsN1 ? MailStatusEnum::PENDING_REVIEW : MailStatusEnum::PENDING_APPROVAL;
+
+        $this->update([
+            'status' => $target,
+            'dg_signature_status' => 'pending',
+        ]);
+
+        $this->logAction('resubmitted', 'status', null, $target->value, $note ?? 'Courrier corrigé et resoumis');
 
         return $this;
     }

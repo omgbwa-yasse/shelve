@@ -146,8 +146,9 @@ class Attachment extends Model
 
         $path = $file->storeAs($directory, $filename, 'public');
 
-        // Calculate hashes
-        $filePath = storage_path('app/' . $path);
+        // On résout le chemin réel via le disque lui-même (robuste quelle que
+        // soit la racine configurée pour le disque « public »).
+        $filePath = \Illuminate\Support\Facades\Storage::disk('public')->path($path);
         $md5Hash = md5_file($filePath);
         $sha512Hash = hash_file('sha512', $filePath);
 

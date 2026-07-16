@@ -13,45 +13,45 @@ class SettingSeeder extends Seeder
      */
     public function run(): void
     {
-        // CrÃ©er/mettre Ã  jour les catÃ©gories principales (idempotent)
+        // Créer/mettre à jour les catégories principales (idempotent)
         $generalCategory = SettingCategory::updateOrCreate(
-            ['name' => 'GÃ©nÃ©ral'],
-            ['description' => 'ParamÃ¨tres gÃ©nÃ©raux de l\'application', 'parent_id' => null]
+            ['name' => 'Général'],
+            ['description' => 'Paramètres généraux de l\'application', 'parent_id' => null]
         );
 
         $securityCategory = SettingCategory::updateOrCreate(
-            ['name' => 'SÃ©curitÃ©'],
-            ['description' => 'ParamÃ¨tres de sÃ©curitÃ© et d\'authentification', 'parent_id' => null]
+            ['name' => 'Sécurité'],
+            ['description' => 'Paramètres de sécurité et d\'authentification', 'parent_id' => null]
         );
 
         $notificationCategory = SettingCategory::updateOrCreate(
             ['name' => 'Notifications'],
-            ['description' => 'ParamÃ¨tres de notifications et d\'alertes', 'parent_id' => null]
+            ['description' => 'Paramètres de notifications et d\'alertes', 'parent_id' => null]
         );
 
         $aiCategory = SettingCategory::updateOrCreate(
             ['name' => 'Intelligence Artificielle'],
-            ['description' => 'ParamÃ¨tres des services d\'IA et des providers', 'parent_id' => null]
+            ['description' => 'Paramètres des services d\'IA et des providers', 'parent_id' => null]
         );
 
-        // Sous-catÃ©gorie pour les notifications
+        // Sous-catégorie pour les notifications
         $emailNotifCategory = SettingCategory::updateOrCreate(
             ['name' => 'Email'],
-            ['description' => 'ParamÃ¨tres de notifications par email', 'parent_id' => $notificationCategory->id]
+            ['description' => 'Paramètres de notifications par email', 'parent_id' => $notificationCategory->id]
         );
 
-        // Sous-catÃ©gories pour l'IA
+        // Sous-catégories pour l'IA
         $aiProvidersCategory = SettingCategory::updateOrCreate(
             ['name' => 'Providers'],
             ['description' => 'Configuration des providers d\'IA', 'parent_id' => $aiCategory->id]
         );
 
         $aiModelsCategory = SettingCategory::updateOrCreate(
-            ['name' => 'ModÃ¨les'],
-            ['description' => 'Configuration des modÃ¨les d\'IA', 'parent_id' => $aiCategory->id]
+            ['name' => 'Modèles'],
+            ['description' => 'Configuration des modèles d\'IA', 'parent_id' => $aiCategory->id]
         );
 
-        // CrÃ©er/mettre Ã  jour quelques paramÃ¨tres d'exemple (idempotent)
+        // Créer/mettre à jour quelques paramètres d'exemple (idempotent)
         Setting::updateOrCreate(
             ['name' => 'app_name'],
             [
@@ -70,7 +70,7 @@ class SettingSeeder extends Seeder
                 'category_id' => $generalCategory->id,
                 'type' => 'boolean',
                 'default_value' => json_encode(false),
-                'description' => 'Mode maintenance activÃ©',
+                'description' => 'Mode maintenance activé',
                 'is_system' => true,
             ]
         );
@@ -81,7 +81,7 @@ class SettingSeeder extends Seeder
                 'category_id' => $securityCategory->id,
                 'type' => 'integer',
                 'default_value' => json_encode(3600),
-                'description' => 'DÃ©lai d\'expiration de session (en secondes)',
+                'description' => 'Délai d\'expiration de session (en secondes)',
                 'is_system' => true,
                 'constraints' => json_encode(['min' => 300, 'max' => 86400]),
             ]
@@ -116,20 +116,20 @@ class SettingSeeder extends Seeder
                 'category_id' => $emailNotifCategory->id,
                 'type' => 'string',
                 'default_value' => json_encode('daily'),
-                'description' => 'FrÃ©quence des notifications email',
+                'description' => 'Fréquence des notifications email',
                 'is_system' => false,
                 'constraints' => json_encode(['options' => ['immediate', 'daily', 'weekly', 'never']]),
             ]
         );
 
-        // ParamÃ¨tres gÃ©nÃ©raux pour l'IA
+        // Paramètres généraux pour l'IA
         Setting::updateOrCreate(
             ['name' => 'ai_default_provider'],
             [
                 'category_id' => $aiCategory->id,
                 'type' => 'string',
                 'default_value' => json_encode('ollama'),
-                'description' => 'Provider d\'IA par dÃ©faut',
+                'description' => 'Provider d\'IA par défaut',
                 'is_system' => true,
                 'constraints' => json_encode(['options' => [
                     'ollama',
@@ -150,7 +150,7 @@ class SettingSeeder extends Seeder
                 'category_id' => $aiCategory->id,
                 'type' => 'string',
                 'default_value' => json_encode('gemma3:4b'),
-                'description' => 'ModÃ¨le d\'IA par dÃ©faut',
+                'description' => 'Modèle d\'IA par défaut',
                 'is_system' => true,
             ]
         );
@@ -162,7 +162,7 @@ class SettingSeeder extends Seeder
                 'category_id' => $aiCategory->id,
                 'type' => 'integer',
                 'default_value' => json_encode(200),
-                'description' => 'Nombre maximum de caractÃ¨res Ã  conserver par fichier avant envoi Ã  l\'IA (Drag & Drop).',
+                'description' => 'Nombre maximum de caractères à conserver par fichier avant envoi à l\'IA (Drag & Drop).',
                 'is_system' => false,
                 'constraints' => json_encode(['min' => 200, 'max' => 100000, 'step' => 500]),
             ]
@@ -174,7 +174,7 @@ class SettingSeeder extends Seeder
                 'category_id' => $aiCategory->id,
                 'type' => 'integer',
                 'default_value' => json_encode(40000),
-                'description' => 'Budget global maximum de caractÃ¨res envoyÃ©s Ã  l\'IA (aprÃ¨s agrÃ©gation de tous les fichiers).',
+                'description' => 'Budget global maximum de caractères envoyés à l\'IA (après agrégation de tous les fichiers).',
                 'is_system' => false,
                 'constraints' => json_encode(['min' => 5000, 'max' => 200000, 'step' => 1000]),
             ]
@@ -186,7 +186,7 @@ class SettingSeeder extends Seeder
                 'category_id' => $aiCategory->id,
                 'type' => 'integer',
                 'default_value' => json_encode(120),
-                'description' => 'Timeout des requÃªtes IA (en secondes)',
+                'description' => 'Timeout des requêtes IA (en secondes)',
                 'is_system' => true,
                 'constraints' => json_encode(['min' => 30, 'max' => 300]),
             ]
@@ -244,7 +244,7 @@ class SettingSeeder extends Seeder
                 'category_id' => $aiProvidersCategory->id,
                 'type' => 'string',
                 'default_value' => json_encode(''),
-                'description' => 'ClÃ© API pour LM Studio (optionnelle)',
+                'description' => 'Clé API pour LM Studio (optionnelle)',
                 'is_system' => true,
             ]
         );
@@ -278,7 +278,7 @@ class SettingSeeder extends Seeder
                 'category_id' => $aiProvidersCategory->id,
                 'type' => 'string',
                 'default_value' => json_encode(''),
-                'description' => 'ClÃ© API pour AnythingLLM',
+                'description' => 'Clé API pour AnythingLLM',
                 'is_system' => true,
             ]
         );
@@ -301,7 +301,7 @@ class SettingSeeder extends Seeder
                 'category_id' => $aiProvidersCategory->id,
                 'type' => 'string',
                 'default_value' => json_encode(''),
-                'description' => 'ClÃ© API pour OpenAI',
+                'description' => 'Clé API pour OpenAI',
                 'is_system' => true,
             ]
         );
@@ -317,14 +317,14 @@ class SettingSeeder extends Seeder
             ]
         );
 
-        // Configuration des modÃ¨les par dÃ©faut
+        // Configuration des modèles par défaut
         Setting::updateOrCreate(
             ['name' => 'model_summary'],
             [
                 'category_id' => $aiModelsCategory->id,
                 'type' => 'string',
                 'default_value' => json_encode('gemma3:4b'),
-                'description' => 'ModÃ¨le pour la gÃ©nÃ©ration de rÃ©sumÃ©s',
+                'description' => 'Modèle pour la génération de résumés',
                 'is_system' => true,
             ]
         );
@@ -335,7 +335,7 @@ class SettingSeeder extends Seeder
                 'category_id' => $aiModelsCategory->id,
                 'type' => 'string',
                 'default_value' => json_encode('gemma3:4b'),
-                'description' => 'ModÃ¨le pour l\'extraction de mots-clÃ©s',
+                'description' => 'Modèle pour l\'extraction de mots-clés',
                 'is_system' => true,
             ]
         );
@@ -346,7 +346,7 @@ class SettingSeeder extends Seeder
                 'category_id' => $aiModelsCategory->id,
                 'type' => 'string',
                 'default_value' => json_encode('gemma3:4b'),
-                'description' => 'ModÃ¨le pour l\'analyse de texte',
+                'description' => 'Modèle pour l\'analyse de texte',
                 'is_system' => true,
             ]
         );
