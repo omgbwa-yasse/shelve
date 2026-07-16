@@ -24,7 +24,7 @@ return new class extends Migration
             $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
 
-            $table->index(['organisation_id', 'titular_user_id', 'is_active']);
+            $table->index(['organisation_id', 'titular_user_id', 'is_active'], 'org_interims_org_titular_active_idx');
         });
     }
 
