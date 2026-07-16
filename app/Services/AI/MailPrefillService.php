@@ -77,7 +77,13 @@ class MailPrefillService
             return $attachment->content_text;
         }
 
-        $absolutePath = storage_path('app/public/' . $attachment->path);
+        // La pièce jointe est stockée sur le disque local (store('attachments')),
+        // comme le drag-drop des records. On teste ce chemin, avec repli sur le
+        // disque public pour d'anciens fichiers éventuels.
+        $localPath = storage_path('app/' . ltrim($attachment->path, '/'));
+        $publicPath = storage_path('app/public/' . ltrim($attachment->path, '/'));
+        $absolutePath = is_file($localPath) ? $localPath : $publicPath;
+
         if (!is_file($absolutePath)) {
             return null;
         }

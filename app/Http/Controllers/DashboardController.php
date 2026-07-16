@@ -33,7 +33,7 @@ class DashboardController extends Controller
 
         // Bulles de notification du courrier (mêmes règles que MailController::badgeCounts).
         $mailStats = [
-            'unread' => Mail::where('mail_type', Mail::TYPE_INCOMING)
+            'unread' => Mail::whereIn('mail_type', [Mail::TYPE_INCOMING, Mail::TYPE_INTERNAL])
                 ->where(function ($q) use ($organisationId) {
                     $q->where('recipient_organisation_id', $organisationId)
                       ->orWhere('assigned_organisation_id', $organisationId);
@@ -55,17 +55,19 @@ class DashboardController extends Controller
                     ->count()
                 : 0,
 
-            'to_validate' => Mail::where('mail_type', Mail::TYPE_OUTGOING)
+            // Sortants ET notes internes (communications inter-services) suivent le
+            // même circuit de visa N+1 — seule la signature DG est réservée aux sortants.
+            'to_validate' => Mail::whereIn('mail_type', [Mail::TYPE_OUTGOING, Mail::TYPE_INTERNAL])
                 ->where('status', MailStatusEnum::PENDING_REVIEW)
                 ->where('assigned_to', $user->id)
                 ->count(),
 
-            'to_confirm' => Mail::where('mail_type', Mail::TYPE_INCOMING)
+            'to_confirm' => Mail::whereIn('mail_type', [Mail::TYPE_INCOMING, Mail::TYPE_INTERNAL])
                 ->where('assigned_organisation_id', $organisationId)
                 ->whereNot('status', MailStatusEnum::COMPLETED)
                 ->count(),
 
-            'to_fix' => Mail::where('mail_type', Mail::TYPE_OUTGOING)
+            'to_fix' => Mail::whereIn('mail_type', [Mail::TYPE_OUTGOING, Mail::TYPE_INTERNAL])
                 ->where('sender_user_id', $user->id)
                 ->where('status', MailStatusEnum::REJECTED)
                 ->count(),
@@ -88,23 +90,23 @@ class DashboardController extends Controller
                     });
                 }
 
-                // Service : réception à valider.
+                // Service : réception à valider (entrants externes + notes internes reçues).
                 $q->orWhere(function ($sub) use ($organisationId) {
-                    $sub->where('mail_type', Mail::TYPE_INCOMING)
+                    $sub->whereIn('mail_type', [Mail::TYPE_INCOMING, Mail::TYPE_INTERNAL])
                         ->where('assigned_organisation_id', $organisationId)
                         ->whereNot('status', MailStatusEnum::COMPLETED);
                 });
 
-                // Validateur courant : sortants en attente de mon visa.
+                // Validateur courant : sortants ou notes internes en attente de mon visa.
                 $q->orWhere(function ($sub) use ($user) {
-                    $sub->where('mail_type', Mail::TYPE_OUTGOING)
+                    $sub->whereIn('mail_type', [Mail::TYPE_OUTGOING, Mail::TYPE_INTERNAL])
                         ->where('status', MailStatusEnum::PENDING_REVIEW)
                         ->where('assigned_to', $user->id);
                 });
 
-                // Initiateur : sortants rejetés à reprendre.
+                // Initiateur : sortants ou notes internes rejetés à reprendre.
                 $q->orWhere(function ($sub) use ($user) {
-                    $sub->where('mail_type', Mail::TYPE_OUTGOING)
+                    $sub->whereIn('mail_type', [Mail::TYPE_OUTGOING, Mail::TYPE_INTERNAL])
                         ->where('sender_user_id', $user->id)
                         ->where('status', MailStatusEnum::REJECTED);
                 });

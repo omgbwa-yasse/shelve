@@ -25,7 +25,23 @@ class MailAiPrefillController extends Controller
             'file' => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png',
         ]);
 
-        $attachment = Attachment::createFromUpload($request->file('file'), Attachment::TYPE_ATTACHMENT, Auth::id());
+        // Même méthode robuste que le drag-drop des records (qui fonctionne en prod) :
+        // stockage sur le disque local + empreintes calculées sur le fichier source,
+        // tolérantes (@ ... ?: '') pour ne jamais faire échouer l'upload.
+        $uploaded = $request->file('file');
+        $path = $uploaded->store('attachments');
+        $real = $uploaded->getRealPath();
+
+        $attachment = Attachment::create([
+            'path' => $path,
+            'name' => $uploaded->getClientOriginalName(),
+            'crypt' => @md5_file($real) ?: '',
+            'crypt_sha512' => @hash_file('sha512', $real) ?: '',
+            'size' => $uploaded->getSize(),
+            'creator_id' => Auth::id(),
+            'mime_type' => $uploaded->getMimeType(),
+            'type' => Attachment::TYPE_ATTACHMENT,
+        ]);
 
         return response()->json([
             'success' => true,

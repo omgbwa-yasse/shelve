@@ -253,7 +253,9 @@ class MailSendController extends Controller
                 'sender_organisation_id' => auth()->user()->current_organisation_id,
                 'sender_user_id' => auth()->id(),
                 'status' => MailStatusEnum::IN_PROGRESS,
-                'mail_type' => 'outgoing', // Courrier sortant
+                // Un destinataire interne = communication inter-services (visa N+1 puis
+                // livraison directe, sans signature DG) ; sinon, courrier sortant classique.
+                'mail_type' => $validatedData['recipient_type'] === 'internal' ? Mail::TYPE_INTERNAL : Mail::TYPE_OUTGOING,
                 'sender_type' => 'user', // L'expéditeur est toujours un utilisateur interne
             ];
 

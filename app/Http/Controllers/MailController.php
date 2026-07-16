@@ -362,8 +362,8 @@ class MailController extends Controller
                 abort(404);
         }
 
-        // Relations communes pour la traçabilité (timeline) et la signature DG.
-        $relations = array_merge($relations, ['histories.user', 'dgSigner', 'assignedOrganisation']);
+        // Relations communes pour la traçabilité (timeline), la signature DG et l'accusé de réception.
+        $relations = array_merge($relations, ['histories.user', 'dgSigner', 'assignedOrganisation', 'assignedTo']);
 
         $mail = Mail::with($relations)->findOrFail($id);
 
@@ -672,7 +672,7 @@ class MailController extends Controller
         $organisationId = $user->current_organisation_id;
         $isDg = $user->isSuperAdmin() || $user->hasRoleInOrganisation('DG', $organisationId);
 
-        $unread = Mail::where('mail_type', Mail::TYPE_INCOMING)
+        $unread = Mail::whereIn('mail_type', [Mail::TYPE_INCOMING, Mail::TYPE_INTERNAL])
             ->where(function ($q) use ($organisationId) {
                 $q->where('recipient_organisation_id', $organisationId)
                   ->orWhere('assigned_organisation_id', $organisationId);
@@ -695,20 +695,21 @@ class MailController extends Controller
                 ->count();
         }
 
-        // Courriers sortants en attente de MON visa hiérarchique (validateur courant).
-        $toValidate = Mail::where('mail_type', Mail::TYPE_OUTGOING)
+        // Courriers sortants OU notes internes en attente de MON visa hiérarchique
+        // (validateur courant) — seule la signature DG reste réservée aux sortants.
+        $toValidate = Mail::whereIn('mail_type', [Mail::TYPE_OUTGOING, Mail::TYPE_INTERNAL])
             ->where('status', MailStatusEnum::PENDING_REVIEW)
             ->where('assigned_to', $user->id)
             ->count();
 
-        // Réception à valider par le service auquel le courrier a été coté.
-        $toConfirm = Mail::where('mail_type', Mail::TYPE_INCOMING)
+        // Réception à valider par le service auquel le courrier a été coté (ou la note interne livrée).
+        $toConfirm = Mail::whereIn('mail_type', [Mail::TYPE_INCOMING, Mail::TYPE_INTERNAL])
             ->where('assigned_organisation_id', $organisationId)
             ->whereNot('status', MailStatusEnum::COMPLETED)
             ->count();
 
-        // Mes courriers sortants rejetés, à reprendre.
-        $toFix = Mail::where('mail_type', Mail::TYPE_OUTGOING)
+        // Mes courriers sortants ou notes internes rejetés, à reprendre.
+        $toFix = Mail::whereIn('mail_type', [Mail::TYPE_OUTGOING, Mail::TYPE_INTERNAL])
             ->where('sender_user_id', $user->id)
             ->where('status', MailStatusEnum::REJECTED)
             ->count();

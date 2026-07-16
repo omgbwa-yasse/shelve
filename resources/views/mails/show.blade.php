@@ -522,8 +522,8 @@
                             </form>
                         @endif
 
-                        {{-- Courrier SORTANT renvoyé pour révision : l'initiateur corrige et resoumet --}}
-                        @if($mail->mail_type === 'outgoing' && $statusVal === 'rejected' && $isInitiator)
+                        {{-- Courrier SORTANT ou note interne renvoyé pour révision : l'initiateur corrige et resoumet --}}
+                        @if(in_array($mail->mail_type, ['outgoing', 'internal']) && $statusVal === 'rejected' && $isInitiator)
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#resubmitModal">
                                 <i class="bi bi-arrow-repeat"></i> Corriger et resoumettre
                             </button>
@@ -548,6 +548,18 @@
                             {{ $isRevision ? 'Renvoyé pour révision' : 'Rejeté' }}
                             le {{ optional($mail->dg_signed_at)->format('d/m/Y H:i') }}.
                             @if($mail->dg_signature_note) — « {{ $mail->dg_signature_note }} » @endif
+                        </div>
+                    @endif
+
+                    {{-- Bandeau accusé de réception (courrier entrant / interne validé par le destinataire) --}}
+                    @if(in_array($mail->mail_type, ['incoming', 'internal']) && $statusVal === 'completed')
+                        @php
+                            $receiver = $mail->assignedTo;
+                            $receiverLabel = $receiver ? trim($receiver->name . ' ' . ($receiver->surname ?? '')) : '—';
+                        @endphp
+                        <div class="alert alert-success mt-3 mb-0">
+                            <i class="bi bi-check2-circle"></i>
+                            Accusé de réception : reçu par {{ $receiverLabel }} le {{ optional($mail->processed_at)->format('d/m/Y H:i') }}.
                         </div>
                     @endif
                 </div>
