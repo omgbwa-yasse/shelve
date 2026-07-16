@@ -80,11 +80,14 @@
             body: formData,
         });
 
-        if (!response.ok) {
-            throw new Error('upload_failed');
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok || !data || data.success === false) {
+            // Remonter le message serveur s'il existe (diagnostic clair côté UI).
+            throw new Error((data && data.message) ? data.message : 'upload_failed');
         }
 
-        return response.json();
+        return data;
     }
 
     async function requestSuggestions(attachmentId) {

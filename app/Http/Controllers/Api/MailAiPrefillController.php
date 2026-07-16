@@ -25,30 +25,55 @@ class MailAiPrefillController extends Controller
             'file' => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png',
         ]);
 
-        // Même méthode robuste que le drag-drop des records (qui fonctionne en prod) :
-        // stockage sur le disque local + empreintes calculées sur le fichier source,
-        // tolérantes (@ ... ?: '') pour ne jamais faire échouer l'upload.
-        $uploaded = $request->file('file');
-        $path = $uploaded->store('attachments');
-        $real = $uploaded->getRealPath();
+        try {
+            // Même méthode robuste que le drag-drop des records (qui fonctionne en prod) :
+            // stockage sur le disque local + empreintes calculées sur le fichier source,
+            // tolérantes (@ ... ?: '') pour ne jamais faire échouer l'upload.
+            $uploaded = $request->file('file');
+            $real = $uploaded->getRealPath();
 
-        $attachment = Attachment::create([
-            'path' => $path,
-            'name' => $uploaded->getClientOriginalName(),
-            'crypt' => @md5_file($real) ?: '',
-            'crypt_sha512' => @hash_file('sha512', $real) ?: '',
-            'size' => $uploaded->getSize(),
-            'creator_id' => Auth::id(),
-            'mime_type' => $uploaded->getMimeType(),
-            'type' => Attachment::TYPE_ATTACHMENT,
-        ]);
+            // Empreintes calculées AVANT le déplacement (le fichier temporaire existe encore).
+            $md5 = @md5_file($real) ?: '';
+            $sha512 = @hash_file('sha512', $real) ?: '';
+            $size = $uploaded->getSize();
+            $mime = $uploaded->getMimeType();
+            $extension = strtolower($uploaded->getClientOriginalExtension() ?: 'bin');
 
-        return response()->json([
-            'success' => true,
-            'attachment_id' => $attachment->id,
-            'name' => $attachment->name,
-            'size' => $attachment->size,
-        ], 201);
+            $path = $uploaded->store('attachments');
+
+            // Insert défensif : on remplit tous les champs susceptibles d'être NOT NULL
+            // selon l'environnement (crypt, hash, extension), sans jamais laisser de null.
+            $attachment = Attachment::create([
+                'path' => $path,
+                'name' => $uploaded->getClientOriginalName(),
+                'crypt' => $md5,
+                'crypt_sha512' => $sha512,
+                'file_hash_md5' => $md5,
+                'file_extension' => $extension,
+                'size' => $size,
+                'creator_id' => Auth::id(),
+                'mime_type' => $mime,
+                'type' => Attachment::TYPE_ATTACHMENT,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'attachment_id' => $attachment->id,
+                'name' => $attachment->name,
+                'size' => $attachment->size,
+            ], 201);
+        } catch (\Throwable $e) {
+            // On ne renvoie jamais de 500 : l'utilisateur pourra remplir manuellement.
+            Log::error('MailAiPrefillController::upload a échoué', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile() . ':' . $e->getLine(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => "L'envoi du document a échoué : " . $e->getMessage(),
+            ], 422);
+        }
     }
 
     /**
