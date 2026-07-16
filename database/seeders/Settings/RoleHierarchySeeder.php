@@ -131,6 +131,10 @@ class RoleHierarchySeeder extends Seeder
         $drh     = Organisation::where('code', 'DRH')->first();
         $dag     = Organisation::where('code', 'DAG')->first();
         $accueil = Organisation::where('code', 'DAG-COUR')->first(); // Service Courrier & Accueil
+        // Sous-niveaux DSI pour démontrer la cascade de visas sur plusieurs niveaux :
+        // Bureau Réseaux (DSI-RES) < Service Infrastructures (DSI-INFRA) < DSI < DG
+        $dsiInfra  = Organisation::where('code', 'DSI-INFRA')->first();
+        $dsiReseau = Organisation::where('code', 'DSI-RES')->first();
 
         // 3. Utilisateurs de démonstration : [email, nom, prénom, organisation, rôle]
         $demoUsers = [
@@ -144,6 +148,11 @@ class RoleHierarchySeeder extends Seeder
             // Direction des Systèmes d'Information
             ['dir.dsi@example.com',     'Directeur',   'DSI',         $dsi,     'directeur'],
             ['agent.dsi@example.com',   'Agent',       'DSI',         $dsi,     'agent'],
+
+            // Sous-niveaux DSI (cascade de visas : bureau → service → direction → DG)
+            ['resp.infra@example.com',  'Responsable', 'Infrastructures', $dsiInfra,  'responsable'],
+            ['resp.reseaux@example.com','Responsable', 'Réseaux',         $dsiReseau, 'responsable'],
+            ['agent.reseaux@example.com','Agent',      'Réseaux',         $dsiReseau, 'agent'],
 
             // Direction des Ressources Humaines
             ['dir.drh@example.com',     'Directeur',   'DRH',         $drh,     'directeur'],

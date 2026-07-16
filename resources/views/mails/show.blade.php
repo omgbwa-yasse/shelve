@@ -204,11 +204,14 @@
                                     <div>
                                         {{-- Gestion des différents types d'expéditeurs --}}
                                         @if($mail->sender)
-                                            {{-- Expéditeur interne --}}
+                                            {{-- Expéditeur interne (personne précise) --}}
                                             <div class="fw-semibold">{{ $mail->sender->name ?? 'N/A' }}</div>
                                             @if($mail->senderOrganisation)
                                                 <div class="text-muted small">{{ $mail->senderOrganisation->name ?? 'N/A' }}</div>
                                             @endif
+                                        @elseif($mail->senderOrganisation)
+                                            {{-- Expéditeur interne (organisation/service, sans personne précise) --}}
+                                            <div class="fw-semibold">{{ $mail->senderOrganisation->name ?? 'N/A' }}</div>
                                         @elseif($mail->externalSender)
                                             {{-- Expéditeur externe (contact) --}}
                                             <div class="fw-semibold">
@@ -239,11 +242,14 @@
                                     <div>
                                         {{-- Gestion des différents types de destinataires --}}
                                         @if($mail->recipient)
-                                            {{-- Destinataire interne --}}
+                                            {{-- Destinataire interne (personne précise) --}}
                                             <div class="fw-semibold">{{ $mail->recipient->name ?? 'N/A' }}</div>
                                             @if($mail->recipientOrganisation)
                                                 <div class="text-muted small">{{ $mail->recipientOrganisation->name ?? 'N/A' }}</div>
                                             @endif
+                                        @elseif($mail->recipientOrganisation)
+                                            {{-- Destinataire interne (organisation/service, sans personne précise) --}}
+                                            <div class="fw-semibold">{{ $mail->recipientOrganisation->name ?? 'N/A' }}</div>
                                         @elseif($mail->externalRecipient)
                                             {{-- Destinataire externe (contact) --}}
                                             <div class="fw-semibold">
@@ -445,8 +451,18 @@
                             </form>
                         @endif
 
-                        {{-- Courrier SORTANT ou INTERNE en cours : soumettre pour validation (N+1) --}}
-                        @if(in_array($mail->mail_type, ['outgoing', 'internal']) && in_array($statusVal, ['draft', 'in_progress']) && $isInitiator && !$mail->assigned_organisation_id)
+                        {{-- Courrier SORTANT initié par le DG : il signe et transmet directement
+                             (aucune validation intermédiaire nécessaire). --}}
+                        @if($mail->mail_type === 'outgoing' && in_array($statusVal, ['draft', 'in_progress']) && $isDg && $isInitiator)
+                            <form action="{{ route('mails.workflow.sign', $mail->id) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-pen"></i> Signer et transmettre
+                                </button>
+                            </form>
+
+                        {{-- Courrier SORTANT ou INTERNE en cours (agent/directeur) : soumettre pour validation --}}
+                        @elseif(in_array($mail->mail_type, ['outgoing', 'internal']) && in_array($statusVal, ['draft', 'in_progress']) && $isInitiator && !$mail->assigned_organisation_id)
                             <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#submitModal">
                                 <i class="bi bi-send"></i> Soumettre pour validation
                             </button>
