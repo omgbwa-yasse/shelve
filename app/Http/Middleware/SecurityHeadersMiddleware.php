@@ -17,8 +17,8 @@ class SecurityHeadersMiddleware
     {
         $response = $next($request);
 
-        // Protection contre le clickjacking
-        $response->headers->set('X-Frame-Options', 'DENY');
+        // Protection contre le clickjacking (SAMEORIGIN pour autoriser l'affichage en frame depuis le même domaine)
+        $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
 
         // Protection contre le sniffing de type MIME
         $response->headers->set('X-Content-Type-Options', 'nosniff');

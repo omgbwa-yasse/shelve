@@ -144,13 +144,16 @@ class Attachment extends Model
             default => 'attachments',
         };
 
-        $path = $file->storeAs($directory, $filename, 'public');
+        // Calculer les empreintes AVANT le déplacement, directement sur le fichier
+        // uploadé (temporaire). Robuste : ne dépend ni du disque, ni de sa racine,
+        // ni d'un cache de bytecode côté serveur.
+        $sourcePath = $file->getRealPath();
+        $md5Hash = $sourcePath ? md5_file($sourcePath) : null;
+        $sha512Hash = $sourcePath ? hash_file('sha512', $sourcePath) : null;
+        $size = $file->getSize();
+        $mimeType = $file->getMimeType();
 
-        // On résout le chemin réel via le disque lui-même (robuste quelle que
-        // soit la racine configurée pour le disque « public »).
-        $filePath = \Illuminate\Support\Facades\Storage::disk('public')->path($path);
-        $md5Hash = md5_file($filePath);
-        $sha512Hash = hash_file('sha512', $filePath);
+        $path = $file->storeAs($directory, $filename, 'public');
 
         // Create attachment record
         return self::create(array_merge([
@@ -158,10 +161,10 @@ class Attachment extends Model
             'name' => $originalName,
             'crypt' => $hash,
             'crypt_sha512' => $sha512Hash,
-            'size' => $file->getSize(),
+            'size' => $size,
             'creator_id' => $creatorId ?? Auth::id(),
             'type' => $type,
-            'mime_type' => $file->getMimeType(),
+            'mime_type' => $mimeType,
             'file_hash_md5' => $md5Hash,
             'file_extension' => $extension,
         ], $additionalData));

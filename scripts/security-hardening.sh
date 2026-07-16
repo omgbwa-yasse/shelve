@@ -47,8 +47,11 @@ ssl_stapling on;
 ssl_stapling_verify on;
 
 # Security Headers
+# X-Frame-Options est géré uniquement par SecurityHeadersMiddleware (Laravel).
+# Ne PAS le redéfinir ici : Nginx "add_header" s'ajoute au header déjà envoyé
+# par PHP-FPM au lieu de le remplacer, ce qui produit deux valeurs en conflit
+# (ex: "DENY, SAMEORIGIN") et fait que le navigateur bloque tout affichage en frame.
 add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
-add_header X-Frame-Options "SAMEORIGIN" always;
 add_header X-Content-Type-Options "nosniff" always;
 add_header X-XSS-Protection "1; mode=block" always;
 add_header Referrer-Policy "strict-origin-when-cross-origin" always;
