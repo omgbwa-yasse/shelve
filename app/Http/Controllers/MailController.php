@@ -61,9 +61,21 @@ class MailController extends Controller
      */
     public function indexOutgoing()
     {
-        $organisationId = Auth::user()->current_organisation_id;
-        $mails = Mail::where('sender_organisation_id', $organisationId)
-            ->where('mail_type', Mail::TYPE_OUTGOING)
+        $user = Auth::user();
+        $organisationId = $user->current_organisation_id;
+        $isDg = $user->isSuperAdmin() || $user->hasRoleInOrganisation('DG', $organisationId);
+
+        $mails = Mail::where('mail_type', Mail::TYPE_OUTGOING)
+            ->where(function ($q) use ($organisationId, $isDg) {
+                $q->where('sender_organisation_id', $organisationId);
+
+                if ($isDg) {
+                    // Le DG doit voir, en plus des courriers de son propre service,
+                    // tous les courriers sortants en attente de sa signature,
+                    // quel que soit le service émetteur (ex: DRH, DAG, etc.).
+                    $q->orWhere('status', MailStatusEnum::PENDING_APPROVAL);
+                }
+            })
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
