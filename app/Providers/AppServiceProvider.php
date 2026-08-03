@@ -46,6 +46,8 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFive();
         Schema::defaultStringLength(191);
 
+        $this->loadModuleMigrations();
+
         // Enregistrer les Observers
         Slip::observe(SlipObserver::class);
         Task::observe(TaskObserver::class);
@@ -75,6 +77,25 @@ class AppServiceProvider extends ServiceProvider
         }
 
     }
+    /**
+     * Les migrations sont rangées par module dans des sous-dossiers de
+     * database/migrations (core, mails, records, thesaurus…). Laravel ne balaie
+     * que le dossier racine : on enregistre donc chaque sous-dossier.
+     *
+     * Le nom d'une migration reste son nom de fichier (sans le chemin), donc ce
+     * rangement ne perturbe ni le journal `migrations` déjà en base, ni l'ordre
+     * d'exécution — le migrateur trie toutes les migrations par nom, tous
+     * dossiers confondus.
+     */
+    protected function loadModuleMigrations(): void
+    {
+        $directories = glob(database_path('migrations/*'), GLOB_ONLYDIR);
+
+        if ($directories) {
+            $this->loadMigrationsFrom($directories);
+        }
+    }
+
     protected function handleLocale(): void
     {
         if (session()->has('locale')) {

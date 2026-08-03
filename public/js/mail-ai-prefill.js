@@ -124,7 +124,10 @@
         try {
             uploadResult = await uploadFile(file);
         } catch (e) {
-            setStatus("Échec de l'envoi du document. Vous pouvez continuer à remplir manuellement.", false);
+            const msg = (e && e.message && e.message !== 'upload_failed')
+                ? e.message
+                : "Échec de l'envoi du document. Vous pouvez continuer à remplir manuellement.";
+            setStatus(msg, false);
             return;
         }
 

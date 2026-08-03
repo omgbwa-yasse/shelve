@@ -50,9 +50,10 @@ return new class extends Migration
                 $table->dropForeign(['external_recipient_organization_id']);
                 $table->dropColumn('external_recipient_organization_id');
             }
-            $table->dropColumn('external_recipient_organization_id');
-            $table->dropColumn('sender_type');
-            $table->dropColumn('recipient_type');
+
+            // NB : sender_type / recipient_type appartiennent à la migration
+            // 2025_07_04_022549 (cf. commentaire du up()) — les supprimer ici
+            // cassait le rollback et le down() de cette autre migration.
         });
     }
 };

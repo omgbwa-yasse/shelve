@@ -2,6 +2,20 @@
 
 @section('content')
     <div class="container-fluid py-3">
+        {{-- Retour des actions du workflow (cotation, réception, réponse, signature...) --}}
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check2-circle"></i> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
         {{-- En-tête --}}
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
@@ -357,6 +371,14 @@
                                         </div>
                                     @endif
 
+                                    {{-- Activité du plan de classement --}}
+                                    @if($mail->activity)
+                                        <div class="col">
+                                            <div class="text-muted">Activité (plan de classement)</div>
+                                            <div class="fw-semibold">{{ $mail->activity->name }}</div>
+                                        </div>
+                                    @endif
+
                                     {{-- Action --}}
                                     @if($mail->action)
                                         <div class="col">
@@ -430,19 +452,44 @@
                     }
                     $isInitiator = (int) $mail->sender_user_id === (int) $u->id
                         || (int) $mail->sender_organisation_id === (int) $u->current_organisation_id;
+                    // Cotations multi-directions
+                    $cotations = $mail->cotations()->with('organisation', 'action', 'activity', 'assignedTo')->get();
+                    // Directions dont cet utilisateur a la charge : la sienne, ou celle
+                    // d'un intérim dont le volet couvre l'activité de ce courrier.
+                    $handledOrgIds = $mail->organisationsHandledBy($u);
+                    $myCotation = $cotations->first(fn ($c) => in_array((int) $c->organisation_id, $handledOrgIds, true));
+                    // Volets d'intérim de l'utilisateur sur les directions cotées (affichage).
+                    $myInterimVolets = \App\Models\OrganisationInterim::activeVoletsOf($u->id)
+                        ->whereIn('organisation_id', $cotations->pluck('organisation_id')->all());
                 @endphp
                 <div class="col-md-12 mt-3">
                     <div class="d-flex flex-wrap gap-2">
 
-                        {{-- Courrier ENTRANT : cotation par le DG --}}
-                        @if($mail->mail_type === 'incoming' && $isDg && !$mail->assigned_organisation_id)
+                        {{-- Courrier ENTRANT : cotation par le DG (une ou plusieurs directions) --}}
+                        @if($mail->mail_type === 'incoming' && $isDg && $statusVal !== 'completed')
                             <a href="{{ route('mails.workflow.cote-form', $mail->id) }}" class="btn btn-primary">
-                                <i class="bi bi-diagram-3"></i> Coter (affecter à une direction)
+                                <i class="bi bi-diagram-3"></i>
+                                {{ $cotations->isEmpty() ? 'Coter (affecter à des directions)' : 'Modifier / ajouter des directions' }}
                             </a>
                         @endif
 
-                        {{-- Courrier ENTRANT coté : validation de la réception par le service --}}
-                        @if($mail->mail_type === 'incoming' && $mail->assigned_organisation_id && $statusVal !== 'completed')
+                        {{-- Courrier ENTRANT coté : validation de réception par la direction dont j'ai la charge --}}
+                        @if($mail->mail_type === 'incoming' && $myCotation && $myCotation->status !== 'completed')
+                            <form action="{{ route('mails.workflow.confirm-reception', $mail->id) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check2-circle"></i>
+                                    Valider la réception
+                                    @if((int) $myCotation->organisation_id !== (int) $u->current_organisation_id)
+                                        (intérim {{ $myCotation->organisation->code ?? '' }})
+                                    @else
+                                        (ma direction)
+                                    @endif
+                                </button>
+                            </form>
+                        @elseif($mail->mail_type === 'incoming' && !$cotations->count() && $mail->assigned_organisation_id
+                                && in_array((int) $mail->assigned_organisation_id, $handledOrgIds, true) && $statusVal !== 'completed')
+                            {{-- Rétro-compat : courrier coté avant la multi-cotation --}}
                             <form action="{{ route('mails.workflow.confirm-reception', $mail->id) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="btn btn-success">
@@ -528,7 +575,143 @@
                                 <i class="bi bi-arrow-repeat"></i> Corriger et resoumettre
                             </button>
                         @endif
+
+                        {{-- Répondre / donner suite : crée un courrier rattaché à celui-ci --}}
+                        @php
+                            // Un intérimaire ne répond qu'aux courriers de son volet :
+                            // organisationsHandledBy() applique déjà cette restriction.
+                            $canReply = $isDg
+                                || (int) $mail->sender_user_id === (int) $u->id
+                                || !empty($handledOrgIds);
+                        @endphp
+                        @if($canReply && $statusVal !== 'draft')
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#replyModal">
+                                <i class="bi bi-reply"></i> Répondre / donner suite
+                            </button>
+                        @endif
                     </div>
+
+                    {{-- L'utilisateur agit ici au titre d'un intérim : on rappelle son volet --}}
+                    @if($myInterimVolets->count())
+                        @foreach($myInterimVolets as $volet)
+                            <div class="alert alert-info mt-3 mb-0 py-2">
+                                <i class="bi bi-person-badge"></i>
+                                Vous intervenez sur ce courrier au titre de votre <strong>intérim</strong> à
+                                « {{ $volet->organisation->name ?? '' }} » —
+                                volet <strong>{{ $volet->voletLabel() }}</strong>.
+                                @unless($volet->coversActivity($mail->activityForOrganisation((int) $volet->organisation_id)))
+                                    <span class="d-block small">
+                                        Ce courrier relève d'une autre activité : il est traité par l'autre intérimaire.
+                                    </span>
+                                @endunless
+                            </div>
+                        @endforeach
+                    @endif
+
+                    {{-- Chaînage des courriers : d'où vient ce courrier, ce qu'il a produit --}}
+                    @php
+                        $parentMail = $mail->parentMail;
+                        $replies = $mail->replies()->orderBy('id')->get();
+                        $showRoute = fn ($m) => $m->mail_type === 'incoming'
+                            ? route('mails.incoming.show', $m->id)
+                            : ($m->mail_type === 'outgoing' ? route('mails.outgoing.show', $m->id) : route('mail-send.show', $m->id));
+                    @endphp
+
+                    @if($parentMail)
+                        <div class="alert alert-secondary mt-3 mb-0">
+                            <i class="bi bi-arrow-90deg-up"></i>
+                            En réponse à :
+                            <a href="{{ $showRoute($parentMail) }}"><strong>{{ $parentMail->code }}</strong> — {{ $parentMail->name }}</a>
+                        </div>
+                    @endif
+
+                    @if($replies->count())
+                        <div class="mt-3">
+                            <h6 class="text-muted mb-2">
+                                <i class="bi bi-diagram-2"></i> Suites données à ce courrier
+                                <span class="badge bg-secondary">{{ $replies->count() }}</span>
+                            </h6>
+                            <ul class="list-group list-group-flush">
+                                @foreach($replies as $reply)
+                                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                        <span>
+                                            <a href="{{ $showRoute($reply) }}"><strong>{{ $reply->code }}</strong></a>
+                                            — {{ $reply->name }}
+                                            <span class="text-muted small">
+                                                ({{ $reply->mail_type === 'outgoing' ? 'courrier sortant' : 'courrier interne' }},
+                                                créé le {{ optional($reply->created_at)->format('d/m/Y') }})
+                                            </span>
+                                        </span>
+                                        <span class="badge bg-{{ $reply->status->bootstrapColor() }}">{{ $reply->status->label() }}</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    {{-- Suivi de la cotation par direction : le DG suit chaque réponse individuellement --}}
+                    @if($mail->mail_type === 'incoming' && $cotations->count())
+                        <div class="mt-3">
+                            <h6 class="text-muted mb-2">
+                                <i class="bi bi-diagram-3"></i> Suivi de la cotation
+                                @php $doneCount = $cotations->where('status', 'completed')->count(); @endphp
+                                <span class="badge bg-secondary">{{ $doneCount }}/{{ $cotations->count() }} direction(s) ont validé</span>
+                            </h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Direction</th>
+                                            <th>Activité (plan de classement)</th>
+                                            <th>Instruction</th>
+                                            <th>Statut</th>
+                                            <th>Validée le</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($cotations as $cot)
+                                            <tr>
+                                                <td>{{ $cot->organisation->name ?? '—' }}</td>
+                                                <td>
+                                                    @if($cot->activity)
+                                                        <span class="badge bg-light text-dark border">
+                                                            <i class="bi bi-diagram-2"></i> {{ $cot->activity->name }}
+                                                        </span>
+                                                    @else
+                                                        <span class="text-muted">—</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($cot->action)
+                                                        <span class="badge bg-info text-dark">{{ $cot->action->name }}</span>
+                                                    @endif
+                                                    @if($cot->instruction)
+                                                        <span class="text-muted small">{{ $cot->instruction }}</span>
+                                                    @endif
+                                                    @if(!$cot->action && !$cot->instruction)
+                                                        <span class="text-muted">—</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($cot->status === 'completed')
+                                                        <span class="badge bg-success"><i class="bi bi-check2-circle"></i> Réception validée</span>
+                                                    @else
+                                                        <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> En attente</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    {{ $cot->confirmed_at ? $cot->confirmed_at->format('d/m/Y H:i') : '—' }}
+                                                    @if($cot->status === 'completed' && $cot->assignedTo)
+                                                        <span class="text-muted small d-block">par {{ $cot->assignedTo->name }}</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endif
 
                     {{-- Bandeau signature DG --}}
                     @if($mail->dg_signature_status === 'signed')
@@ -554,8 +737,18 @@
                     {{-- Bandeau accusé de réception (courrier entrant / interne validé par le destinataire) --}}
                     @if(in_array($mail->mail_type, ['incoming', 'internal']) && $statusVal === 'completed')
                         @php
-                            $receiver = $mail->assignedTo;
-                            $receiverLabel = $receiver ? trim($receiver->name . ' ' . ($receiver->surname ?? '')) : '—';
+                            // Cotation multi-directions : l'accusé porte sur toutes les directions
+                            // cotées (le détail nominatif figure dans le suivi par direction).
+                            $cotationsRecues = $mail->cotations;
+                            if ($cotationsRecues->count()) {
+                                $receiverLabel = $cotationsRecues
+                                    ->map(fn ($c) => $c->organisation->name ?? null)
+                                    ->filter()
+                                    ->implode(', ');
+                            } else {
+                                $receiver = $mail->assignedTo;
+                                $receiverLabel = $receiver ? trim($receiver->name . ' ' . ($receiver->surname ?? '')) : '—';
+                            }
                         @endphp
                         <div class="alert alert-success mt-3 mb-0">
                             <i class="bi bi-check2-circle"></i>
@@ -581,6 +774,8 @@
                         'dg_rejected' => 'Rejeté par le DG',
                         'returned_for_revision' => 'Renvoyé pour révision',
                         'resubmitted' => 'Corrigé et resoumis',
+                        'replied' => 'Réponse / suite créée',
+                        'created_from_reply' => 'Créé en réponse à un courrier',
                         'deleted' => 'Supprimé',
                     ];
                 @endphp
@@ -755,6 +950,52 @@
         </div>
     </div>
     @endif
+
+    {{-- Modal : répondre / donner suite (le nouveau courrier reste rattaché à celui-ci) --}}
+    <div class="modal fade" id="replyModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route('mails.workflow.reply', $mail->id) }}" method="POST">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title">Répondre / donner suite</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted small">
+                            Le courrier créé reste <strong>rattaché à {{ $mail->code }}</strong> : on garde la trace
+                            de tout ce qu'a produit ce courrier. Il part en brouillon et suit ensuite le circuit
+                            normal (soumission, visas, signature du DG).
+                        </p>
+
+                        <label for="reply_name" class="form-label">Objet <span class="text-danger">*</span></label>
+                        <input type="text" name="name" id="reply_name" class="form-control mb-3" maxlength="255"
+                               value="RE : {{ \Illuminate\Support\Str::limit($mail->name, 200, '') }}" required>
+
+                        <label for="reply_type" class="form-label">Type de courrier</label>
+                        <select name="mail_type" id="reply_type" class="form-select mb-3">
+                            <option value="outgoing" {{ $mail->mail_type === 'incoming' ? 'selected' : '' }}>
+                                Sortant (réponse à un tiers extérieur)
+                            </option>
+                            <option value="internal" {{ $mail->mail_type !== 'incoming' ? 'selected' : '' }}>
+                                Interne (note / transmission à un autre service)
+                            </option>
+                        </select>
+
+                        <label for="reply_description" class="form-label">Contenu / éléments de réponse</label>
+                        <textarea name="description" id="reply_description" class="form-control" rows="4"
+                                  placeholder="Rédigez ici les éléments de réponse…"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-reply"></i> Créer la réponse
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     {{-- Modal de suppression --}}
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">

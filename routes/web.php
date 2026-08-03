@@ -29,11 +29,9 @@ use App\Http\Controllers\RecordAuthorController;
 use App\Http\Controllers\RecordAttachmentController;
 use App\Http\Controllers\RecordContainerController;
 use App\Http\Controllers\activityCommunicabilityController;
-use App\Http\Controllers\MailAuthorController;
 use App\Http\Controllers\MailTransactionController;
-use App\Http\Controllers\MailAuthorContactController;
 use App\Http\Controllers\BuildingController;
-use App\Http\Controllers\floorController;
+use App\Http\Controllers\FloorController;
 use App\Http\Controllers\ExternalContactController;
 use App\Http\Controllers\ExternalOrganizationController;
 use App\Http\Controllers\RoomController;
@@ -49,7 +47,7 @@ use App\Http\Controllers\RetentionController;
 use App\Http\Controllers\LawController;
 use App\Http\Controllers\LawArticleController;
 use App\Http\Controllers\RetentionLawArticleController;
-use App\Http\Controllers\retentionActivityController;
+use App\Http\Controllers\RetentionActivityController;
 use App\Http\Controllers\CommunicabilityController;
 use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\OrganisationRoomController;
@@ -83,11 +81,10 @@ use App\Http\Controllers\BatchHandlerController;
 use App\Http\Controllers\MailPriorityController;
 use App\Http\Controllers\DollyController;
 use App\Http\Controllers\DollyHandlerController;
-use App\Http\Controllers\DollyMailTransactionController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\SlipStatusController;
 use App\Http\Controllers\SlipRecordController;
-use App\Http\Controllers\SlipRecordAttachmentController;
+use App\Http\Controllers\slipRecordAttachmentController;
 use App\Http\Controllers\SlipController;
 use App\Http\Controllers\SlipContainerController;
 use App\Http\Controllers\SlipRecordContainerController;
@@ -278,6 +275,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('workflow/{mail}/cote', [\App\Http\Controllers\MailWorkflowController::class, 'coteForm'])->name('mails.workflow.cote-form');
         Route::post('workflow/{mail}/cote', [\App\Http\Controllers\MailWorkflowController::class, 'cote'])->name('mails.workflow.cote');
         Route::post('workflow/{mail}/confirm-reception', [\App\Http\Controllers\MailWorkflowController::class, 'confirmReception'])->name('mails.workflow.confirm-reception');
+        // Réponse / suite donnée à un courrier (chaînage : on garde la trace du circuit)
+        Route::post('workflow/{mail}/reply', [\App\Http\Controllers\MailWorkflowController::class, 'reply'])->name('mails.workflow.reply');
         Route::post('workflow/{mail}/assign-user', [\App\Http\Controllers\MailWorkflowController::class, 'assignToUser'])->name('mails.workflow.assign-user');
         Route::post('workflow/{mail}/submit', [\App\Http\Controllers\MailWorkflowController::class, 'submit'])->name('mails.workflow.submit');
         Route::post('workflow/{mail}/validate-n1', [\App\Http\Controllers\MailWorkflowController::class, 'validateByN1'])->name('mails.workflow.validate-n1');
@@ -643,9 +642,9 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('/slips/{slip}/print', [SlipController::class, 'print'])->name('slips.print');
             Route::get('slip/select', [SearchSlipController::class, 'date'])->name('slips-select-date');
             Route::get('organisation/select', [SearchSlipController::class, 'organisation'])->name('slips-select-organisation');
-            Route::post('slipRecordAttachment/upload', [SlipRecordAttachmentController::class, 'upload'])->name('slip-record-upload');
-            Route::post('slipRecordAttachment/show', [SlipRecordAttachmentController::class, 'show'])->name('slip-record-show');
-            Route::delete('slips/{slip}/records/{record}/attachments/{id}', [SlipRecordAttachmentController::class, 'delete'])
+            Route::post('slipRecordAttachment/upload', [slipRecordAttachmentController::class, 'upload'])->name('slip-record-upload');
+            Route::post('slipRecordAttachment/show', [slipRecordAttachmentController::class, 'show'])->name('slip-record-show');
+            Route::delete('slips/{slip}/records/{record}/attachments/{id}', [slipRecordAttachmentController::class, 'delete'])
                 ->name('slipRecordAttachment.delete');
 
         });
@@ -790,7 +789,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::prefix('tools')->group(function () {
         Route::get('/', [ActivityController::class , 'index' ] );
         Route::resource('activities', ActivityController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
-        Route::resource('activities.retentions', retentionActivityController::class);
+        Route::resource('activities.retentions', RetentionActivityController::class);
         Route::resource('retentions', RetentionController::class);
         Route::resource('retentions.exigences', RetentionLawArticleController::class);
         Route::resource('laws', LawController::class);
@@ -811,6 +810,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('organisation-interims/create', [\App\Http\Controllers\OrganisationInterimController::class, 'create'])->name('organisation-interims.create');
         Route::post('organisation-interims', [\App\Http\Controllers\OrganisationInterimController::class, 'store'])->name('organisation-interims.store');
         Route::patch('organisation-interims/{interim}/deactivate', [\App\Http\Controllers\OrganisationInterimController::class, 'deactivate'])->name('organisation-interims.deactivate');
+        Route::patch('organisation-interims/{interim}/primary', [\App\Http\Controllers\OrganisationInterimController::class, 'setPrimary'])->name('organisation-interims.primary');
         Route::delete('organisation-interims/{interim}', [\App\Http\Controllers\OrganisationInterimController::class, 'destroy'])->name('organisation-interims.destroy');
 
         Route::resource('organisations', OrganisationController::class);

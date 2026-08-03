@@ -37,19 +37,17 @@ class MailAiPrefillController extends Controller
             $sha512 = @hash_file('sha512', $real) ?: '';
             $size = $uploaded->getSize();
             $mime = $uploaded->getMimeType();
-            $extension = strtolower($uploaded->getClientOriginalExtension() ?: 'bin');
 
             $path = $uploaded->store('attachments');
 
-            // Insert défensif : on remplit tous les champs susceptibles d'être NOT NULL
-            // selon l'environnement (crypt, hash, extension), sans jamais laisser de null.
+            // Insert strictement identique au drag-drop des records (prouvé en prod) :
+            // uniquement les colonnes NOT NULL garanties, aucune colonne optionnelle
+            // susceptible d'être absente selon le schéma.
             $attachment = Attachment::create([
                 'path' => $path,
                 'name' => $uploaded->getClientOriginalName(),
                 'crypt' => $md5,
                 'crypt_sha512' => $sha512,
-                'file_hash_md5' => $md5,
-                'file_extension' => $extension,
                 'size' => $size,
                 'creator_id' => Auth::id(),
                 'mime_type' => $mime,

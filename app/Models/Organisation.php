@@ -71,7 +71,7 @@ class Organisation extends Model
      *
      * @param  array<int, string>  $roleNames
      */
-    public function userWithRole(array $roleNames): ?User
+    public function userWithRole(array $roleNames, ?int $activityId = null): ?User
     {
         $roleIds = Role::whereIn('name', $roleNames)->pluck('id');
 
@@ -87,8 +87,9 @@ class Organisation extends Model
             return null;
         }
 
-        // Si un intérim actif remplace le titulaire pour cette organisation, le renvoyer.
-        $interim = OrganisationInterim::activeFor($titular->id, $this->id);
+        // Si un intérim actif remplace le titulaire, on renvoie celui dont le volet
+        // couvre l'activité concernée (à défaut, le volet global ou le principal).
+        $interim = OrganisationInterim::activeForActivity($titular->id, $this->id, $activityId);
 
         return $interim ? $interim->interim : $titular;
     }
@@ -96,10 +97,13 @@ class Organisation extends Model
     /**
      * Le responsable attitré de cette organisation (responsable de service,
      * ou directeur, ou DG selon le niveau hiérarchique).
+     *
+     * @param  int|null  $activityId  activité du plan de classement concernée :
+     *                                permet de router vers l'intérimaire du bon volet.
      */
-    public function responsible(): ?User
+    public function responsible(?int $activityId = null): ?User
     {
-        return $this->userWithRole(['responsable', 'directeur', 'DG']);
+        return $this->userWithRole(['responsable', 'directeur', 'DG'], $activityId);
     }
 }
 

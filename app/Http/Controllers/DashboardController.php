@@ -7,7 +7,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\RecordDigitalFolder;
 use App\Models\RecordDigitalDocument;
 use App\Models\Mail;
+use App\Models\MailCotation;
 use App\Models\MailHistory;
+use App\Models\OrganisationInterim;
 use App\Enums\MailStatusEnum;
 
 class DashboardController extends Controller
@@ -62,15 +64,25 @@ class DashboardController extends Controller
                 ->where('assigned_to', $user->id)
                 ->count(),
 
-            'to_confirm' => Mail::whereIn('mail_type', [Mail::TYPE_INCOMING, Mail::TYPE_INTERNAL])
-                ->where('assigned_organisation_id', $organisationId)
-                ->whereNot('status', MailStatusEnum::COMPLETED)
-                ->count(),
+            // Réception à valider : cotations encore en attente pour ma direction —
+            // ou pour une direction dont j'assure l'intérim, dans la limite de mon
+            // volet (handledBy) — + courriers/notes affectés sans ligne de cotation.
+            'to_confirm' => \App\Models\MailCotation::handledBy($user)
+                    ->where('status', \App\Models\MailCotation::STATUS_PENDING)
+                    ->count()
+                + Mail::whereIn('mail_type', [Mail::TYPE_INCOMING, Mail::TYPE_INTERNAL])
+                    ->where('assigned_organisation_id', $organisationId)
+                    ->whereNot('status', MailStatusEnum::COMPLETED)
+                    ->whereDoesntHave('cotations')
+                    ->count(),
 
             'to_fix' => Mail::whereIn('mail_type', [Mail::TYPE_OUTGOING, Mail::TYPE_INTERNAL])
                 ->where('sender_user_id', $user->id)
                 ->where('status', MailStatusEnum::REJECTED)
                 ->count(),
+
+            // Délais dépassés : échéance passée alors que le courrier n'est pas clos.
+            'overdue' => $this->overdueQuery($user, $organisationId, $isDg)->count(),
         ];
 
         // Accès direct aux courriers demandant une action de cet utilisateur.
@@ -97,6 +109,11 @@ class DashboardController extends Controller
                         ->whereNot('status', MailStatusEnum::COMPLETED);
                 });
 
+                // Cotations dont j'ai la charge (ma direction ou mon volet d'intérim).
+                $q->orWhereHas('cotations', function ($sub) use ($user) {
+                    $sub->handledBy($user)->where('status', \App\Models\MailCotation::STATUS_PENDING);
+                });
+
                 // Validateur courant : sortants ou notes internes en attente de mon visa.
                 $q->orWhere(function ($sub) use ($user) {
                     $sub->whereIn('mail_type', [Mail::TYPE_OUTGOING, Mail::TYPE_INTERNAL])
@@ -121,6 +138,58 @@ class DashboardController extends Controller
             ->limit(6)
             ->get();
 
-        return view('dashboard', compact('stats', 'recentActivities', 'mailStats', 'priorityMails', 'isDg'));
+        // Courriers en retard, listés pour agir tout de suite.
+        $overdueMails = $this->overdueQuery($user, $organisationId, $isDg)
+            ->with(['assignedOrganisation', 'typology'])
+            ->orderBy('deadline')
+            ->limit(6)
+            ->get();
+
+        // Suivi des cotations multi-directions : où en est chaque courrier coté ?
+        $cotationSuivi = collect();
+        if ($isDg) {
+            $cotationSuivi = Mail::query()
+                ->where('mail_type', Mail::TYPE_INCOMING)
+                ->whereHas('cotations')
+                ->with(['cotations.organisation'])
+                ->withCount([
+                    'cotations as cotations_total',
+                    'cotations as cotations_done' => fn ($q) => $q->where('status', MailCotation::STATUS_COMPLETED),
+                ])
+                ->orderByDesc('assigned_at')
+                ->limit(5)
+                ->get();
+        }
+
+        // Intérims que cet utilisateur assure actuellement (volets délégués).
+        $interimVolets = OrganisationInterim::activeVoletsOf($user->id)
+            ->load(['organisation', 'activity', 'titular']);
+
+        return view('dashboard', compact(
+            'stats', 'recentActivities', 'mailStats', 'priorityMails', 'isDg',
+            'overdueMails', 'cotationSuivi', 'interimVolets'
+        ));
+    }
+
+    /**
+     * Courriers dont l'échéance est dépassée et qui ne sont pas clos.
+     * Le DG voit l'ensemble ; un agent ne voit que ceux de sa direction.
+     */
+    private function overdueQuery($user, ?int $organisationId, bool $isDg)
+    {
+        $clos = [MailStatusEnum::COMPLETED, MailStatusEnum::TRANSMITTED, MailStatusEnum::CANCELLED];
+
+        return Mail::query()
+            ->whereNotNull('deadline')
+            ->whereDate('deadline', '<', now())
+            ->whereNotIn('status', $clos)
+            ->when(!$isDg, function ($q) use ($organisationId, $user) {
+                $q->where(function ($sub) use ($organisationId, $user) {
+                    $sub->where('assigned_organisation_id', $organisationId)
+                        ->orWhere('recipient_organisation_id', $organisationId)
+                        ->orWhere('sender_user_id', $user->id)
+                        ->orWhereHas('cotations', fn ($c) => $c->handledBy($user));
+                });
+            });
     }
 }

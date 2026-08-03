@@ -33,6 +33,12 @@ return new class extends Migration
 
     public function up(): void
     {
+        // Rien à faire si le renommage a déjà eu lieu : sans cette garde, un
+        // « migrate » rejoué échoue avec « Table 'records' doesn't exist ».
+        if (!Schema::hasTable('records') || Schema::hasTable('record_physicals')) {
+            return;
+        }
+
         // Désactiver temporairement les contraintes de clés étrangères
         $this->disableForeignKeys();
 
@@ -69,11 +75,10 @@ return new class extends Migration
                 Schema::rename('record_links', 'record_physical_links');
             }
 
-            // 3. Log de la migration
-            DB::table('migrations')->insert([
-                'migration' => '2025_11_07_000001_rename_records_to_record_physicals',
-                'batch' => DB::table('migrations')->max('batch') + 1
-            ]);
+            // NB : ne jamais écrire soi-même dans la table `migrations` — Laravel
+            // enregistre la migration après `up()`. L'insertion manuelle qui se
+            // trouvait ici créait une ligne en double et faussait le numéro de batch
+            // (donc le rollback).
 
             // Réactiver les contraintes
             $this->enableForeignKeys();
@@ -92,6 +97,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (!Schema::hasTable('record_physicals') || Schema::hasTable('records')) {
+            return;
+        }
+
         // Désactiver temporairement les contraintes de clés étrangères
         $this->disableForeignKeys();
 

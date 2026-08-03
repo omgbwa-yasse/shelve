@@ -76,7 +76,16 @@ return new class extends Migration
             }
         }
 
-        // Quatrième étape : supprimer la table communication_statuses si elle existe
+        // Quatrième étape : supprimer la table communication_statuses si elle existe.
+        // Sous SQLite, la colonne communications.status_id n'a pas pu être retirée
+        // (contrainte FK) : supprimer la table ferait échouer toute insertion dans
+        // communications avec « no such table: main.communication_statuses ».
+        // On garde donc la table vide sur SQLite (dev/démo) ; elle est bien supprimée
+        // sur MySQL (production).
+        if (DB::getDriverName() === 'sqlite' && Schema::hasColumn('communications', 'status_id')) {
+            return;
+        }
+
         Schema::dropIfExists('communication_statuses');
     }
 

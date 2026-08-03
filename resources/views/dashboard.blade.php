@@ -21,6 +21,29 @@
         </div>
     @endif
 
+    {{-- ===== Intérims en cours : rappel du périmètre délégué ===== --}}
+    @if($interimVolets->count())
+        <div class="alert alert-info d-flex align-items-start gap-2">
+            <i class="bi bi-person-badge fs-5"></i>
+            <div>
+                <strong>Vous assurez un intérim.</strong>
+                <ul class="mb-0 ps-3">
+                    @foreach($interimVolets as $volet)
+                        <li>
+                            {{ $volet->organisation->name ?? '—' }}
+                            @if($volet->titular) — en remplacement de {{ $volet->titular->name }} {{ $volet->titular->surname }} @endif
+                            — volet <strong>{{ $volet->voletLabel() }}</strong>
+                            @if($volet->end_date) <span class="text-muted">(jusqu'au {{ $volet->end_date->format('d/m/Y') }})</span> @endif
+                        </li>
+                    @endforeach
+                </ul>
+                <small class="text-muted">
+                    Vous ne traitez que les courriers relevant de ce ou ces volets.
+                </small>
+            </div>
+        </div>
+    @endif
+
     {{-- ===== Bulles de notification du courrier ===== --}}
     @php
         // Bulles affichées selon le rôle : le DG cote et signe, le service valide
@@ -32,6 +55,7 @@
             ['label' => 'À viser (N+1)',       'value' => $mailStats['to_validate'],'color' => 'info',    'icon' => 'bi-check2-all',      'href' => route('mails.outgoing.index'), 'show' => true],
             ['label' => 'Réception à valider', 'value' => $mailStats['to_confirm'], 'color' => 'success', 'icon' => 'bi-check2-circle',   'href' => route('mail-received.index'),  'show' => true],
             ['label' => 'À reprendre',         'value' => $mailStats['to_fix'],     'color' => 'secondary','icon' => 'bi-arrow-counterclockwise', 'href' => route('mail-send.index'), 'show' => true],
+            ['label' => 'En retard',           'value' => $mailStats['overdue'],    'color' => 'dark',    'icon' => 'bi-alarm',           'href' => route('mails.incoming.index'), 'show' => true],
         ];
     @endphp
 
@@ -45,7 +69,7 @@
             <div class="row g-3">
                 @foreach($bubbles as $bubble)
                     @continue(!$bubble['show'])
-                    <div class="col-6 col-md-4 col-lg">
+                    <div class="col-6 col-md-4 col-xl-3">
                         <a href="{{ $bubble['href'] }}" class="text-decoration-none">
                             <div class="border rounded p-3 h-100 d-flex align-items-center gap-3 dashboard-bubble">
                                 <span class="badge bg-{{ $bubble['color'] }} rounded-circle d-flex align-items-center justify-content-center"
@@ -98,6 +122,17 @@
                                         @if($mail->typology) — {{ $mail->typology->name }} @endif
                                         @if($mail->assignedOrganisation) — {{ $mail->assignedOrganisation->name }} @endif
                                     </small>
+                                    {{-- Délai : depuis quand il attend, et l'échéance si elle est fixée --}}
+                                    <small class="d-block">
+                                        <span class="text-muted">en attente depuis {{ $mail->updated_at?->diffForHumans(null, true) }}</span>
+                                        @if($mail->deadline)
+                                            @php $enRetard = \Illuminate\Support\Carbon::parse($mail->deadline)->isPast(); @endphp
+                                            <span class="{{ $enRetard ? 'text-danger fw-semibold' : 'text-muted' }}">
+                                                — échéance {{ \Illuminate\Support\Carbon::parse($mail->deadline)->format('d/m/Y') }}
+                                                @if($enRetard) (dépassée) @endif
+                                            </span>
+                                        @endif
+                                    </small>
                                 </span>
                                 <span class="badge {{ $todo[1] }} flex-shrink-0">{{ $todo[0] }}</span>
                             </a>
@@ -132,6 +167,92 @@
                             <li class="text-center text-muted py-4">Aucune activité récente.</li>
                         @endforelse
                     </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ===== Suivi des cotations multi-directions + courriers en retard ===== --}}
+    <div class="row g-4 mt-1">
+        @if($isDg)
+            <div class="col-lg-7">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            <i class="bi bi-diagram-3"></i> Suivi des cotations
+                            <small class="text-muted fs-6">où en est chaque direction ?</small>
+                        </h5>
+
+                        @forelse($cotationSuivi as $mail)
+                            @php
+                                $total = $mail->cotations_total ?: 1;
+                                $done = $mail->cotations_done;
+                                $pct = (int) round($done / $total * 100);
+                                $couleur = $pct === 100 ? 'success' : ($pct === 0 ? 'warning' : 'info');
+                            @endphp
+                            <div class="mb-3 pb-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center gap-2 mb-1">
+                                    <a href="{{ route('mails.incoming.show', $mail->id) }}" class="text-truncate">
+                                        {{ $mail->name }}
+                                    </a>
+                                    <span class="badge bg-{{ $couleur }} flex-shrink-0">
+                                        {{ $done }}/{{ $mail->cotations_total }} direction(s)
+                                    </span>
+                                </div>
+                                <div class="progress" style="height:6px;">
+                                    <div class="progress-bar bg-{{ $couleur }}" style="width: {{ $pct }}%"></div>
+                                </div>
+                                <small class="text-muted">
+                                    @foreach($mail->cotations as $cot)
+                                        <span class="me-2">
+                                            <i class="bi {{ $cot->status === 'completed' ? 'bi-check2-circle text-success' : 'bi-hourglass-split text-warning' }}"></i>
+                                            {{ $cot->organisation->code ?? $cot->organisation->name ?? '—' }}
+                                        </span>
+                                    @endforeach
+                                </small>
+                            </div>
+                        @empty
+                            <p class="text-center text-muted py-4 mb-0">Aucun courrier coté pour le moment.</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <div class="{{ $isDg ? 'col-lg-5' : 'col-12' }}">
+            <div class="card shadow-sm h-100 {{ $overdueMails->count() ? 'border-danger' : '' }}">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-alarm {{ $overdueMails->count() ? 'text-danger' : '' }}"></i>
+                        Délais dépassés
+                    </h5>
+
+                    <div class="list-group list-group-flush">
+                        @forelse($overdueMails as $mail)
+                            @php
+                                $lien = $mail->mail_type === 'incoming'
+                                    ? route('mails.incoming.show', $mail->id)
+                                    : route('mails.outgoing.show', $mail->id);
+                                $retard = \Illuminate\Support\Carbon::parse($mail->deadline)->diffInDays(now());
+                            @endphp
+                            <a href="{{ $lien }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2 px-0">
+                                <span class="text-truncate">
+                                    <span class="d-block text-body">{{ $mail->name }}</span>
+                                    <small class="text-muted">
+                                        {{ $mail->code }}
+                                        @if($mail->assignedOrganisation) — {{ $mail->assignedOrganisation->name }} @endif
+                                    </small>
+                                </span>
+                                <span class="badge bg-danger flex-shrink-0">
+                                    +{{ max(1, (int) $retard) }} j
+                                </span>
+                            </a>
+                        @empty
+                            <p class="text-center text-muted py-4 mb-0">
+                                <i class="bi bi-check2-circle text-success"></i> Aucun délai dépassé.
+                            </p>
+                        @endforelse
+                    </div>
                 </div>
             </div>
         </div>

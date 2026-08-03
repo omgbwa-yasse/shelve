@@ -98,7 +98,17 @@ class PolicyService
 
             // Si le modèle supporte le dual-organisation (emitter/beneficiary pattern)
             if (method_exists($model, 'involvesOrganisation')) {
-                return $model->involvesOrganisation($user->current_organisation_id);
+                if ($model->involvesOrganisation($user->current_organisation_id)) {
+                    return true;
+                }
+
+                // Un intérimaire accède aussi aux objets de la direction qu'il remplace,
+                // dans la limite du volet qui lui est délégué.
+                if (method_exists($model, 'isHandledBy')) {
+                    return $model->isHandledBy($user);
+                }
+
+                return false;
             }
 
             // Si le modèle a une relation avec l'organisation

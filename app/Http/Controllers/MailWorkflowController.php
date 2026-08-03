@@ -42,7 +42,10 @@ class MailWorkflowController extends Controller
     {
         $this->requireDg();
 
-        $organisations = Organisation::orderBy('name')->get();
+        $organisations = Organisation::with(['activities' => fn ($q) => $q->orderBy('name')])
+            ->orderBy('name')
+            ->get();
+
         // Instructions de cotation du DG (sous-ensemble des actions).
         $instructions = MailAction::whereIn('name', ['Donner suite', "M'expliquer", 'En parler', 'Classer'])
             ->orderBy('name')
@@ -52,26 +55,82 @@ class MailWorkflowController extends Controller
     }
 
     /**
-     * Enregistre la cotation : affectation à une direction + instruction.
+     * Enregistre la cotation : affectation à UNE OU PLUSIEURS directions + instruction.
      */
     public function cote(Request $request, Mail $mail)
     {
         $this->requireDg();
 
         $data = $request->validate([
-            'assigned_organisation_id' => 'required|exists:organisations,id',
+            'assigned_organisation_ids' => 'required|array|min:1',
+            'assigned_organisation_ids.*' => 'exists:organisations,id',
+            'activity_ids' => 'nullable|array',
+            'activity_ids.*' => 'nullable|exists:activities,id',
             'action_id' => 'nullable|exists:mail_actions,id',
             'instruction' => 'nullable|string|max:500',
+        ], [
+            'assigned_organisation_ids.required' => 'Sélectionnez au moins une direction.',
         ]);
 
+        // Activité du plan de classement retenue pour chaque direction cotée.
+        $activityIds = collect($data['activity_ids'] ?? [])
+            ->filter()
+            ->mapWithKeys(fn ($activityId, $orgId) => [(int) $orgId => (int) $activityId])
+            ->all();
+
         $mail->cote(
-            (int) $data['assigned_organisation_id'],
+            $data['assigned_organisation_ids'],
             $data['action_id'] ?? null,
-            $data['instruction'] ?? null
+            $data['instruction'] ?? null,
+            Auth::id(),
+            $activityIds
         );
 
+        $count = count($data['assigned_organisation_ids']);
         return redirect()->route('mails.incoming.show', $mail->id)
-            ->with('success', 'Courrier coté et affecté avec succès.');
+            ->with('success', $count > 1
+                ? "Courrier coté à {$count} directions avec succès."
+                : 'Courrier coté et affecté avec succès.');
+    }
+
+    /**
+     * Crée une réponse (ou une suite) rattachée à un courrier existant.
+     * Le nouveau courrier garde le lien vers le courrier d'origine : on trace ainsi
+     * qu'un courrier reçu a débouché sur un ou plusieurs autres courriers.
+     */
+    public function reply(Request $request, Mail $mail)
+    {
+        $user = Auth::user();
+
+        // Peut répondre : le DG, l'expéditeur interne, la direction en charge —
+        // ou l'intérimaire dont le volet couvre l'activité de ce courrier.
+        abort_unless(
+            $user->isSuperAdmin()
+                || $this->isDg()
+                || (int) $mail->sender_user_id === (int) $user->id
+                || $mail->isHandledBy($user),
+            403,
+            "Vous ne pouvez répondre qu'aux courriers relevant de votre direction ou de votre volet d'intérim."
+        );
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:5000',
+            'mail_type' => 'nullable|in:internal,outgoing',
+        ]);
+
+        $reply = $mail->createReply(
+            $user,
+            $data['name'],
+            $data['description'] ?? null,
+            $data['mail_type'] ?? null
+        );
+
+        // Sortant → fiche « courrier sortant » ; interne → fiche « courrier envoyé ».
+        $route = $reply->mail_type === Mail::TYPE_OUTGOING ? 'mails.outgoing.show' : 'mail-send.show';
+
+        return redirect()->route($route, $reply->id)
+            ->with('success', 'Réponse créée (' . $reply->code . '). Complétez-la puis soumettez-la à la validation.');
     }
 
     /**
@@ -105,18 +164,26 @@ class MailWorkflowController extends Controller
      */
     public function confirmReception(Mail $mail)
     {
-        // Le responsable (ou un membre) de l'organisation destinataire/assignée valide la réception.
         $user = Auth::user();
-        $orgId = $mail->assigned_organisation_id ?? $mail->recipient_organisation_id;
-        abort_unless(
-            $user->isSuperAdmin() || (int) $user->current_organisation_id === (int) $orgId,
+
+        // Le courrier peut être coté à plusieurs directions : l'utilisateur valide la
+        // réception de la direction dont il a la charge — la sienne, ou celle d'un
+        // intérim dont le volet couvre l'activité au titre de laquelle ce courrier
+        // lui est confié. Un intérimaire ne traite que les courriers de son volet.
+        $handled = $mail->organisationsHandledBy($user);
+
+        abort_if(
+            empty($handled) && !$user->isSuperAdmin(),
             403,
-            'Seul le service destinataire peut valider la réception.'
+            "Seul le service destinataire — ou l'intérimaire du volet concerné — peut valider la réception."
         );
 
-        $mail->confirmReception(Auth::id());
+        $cotedOrgIds = $mail->cotations()->pluck('organisation_id')->map(fn ($id) => (int) $id);
+        $orgId = collect($handled)->first(fn ($id) => $cotedOrgIds->contains($id));
 
-        return back()->with('success', 'Réception du courrier validée.');
+        $mail->confirmReception($user->id, $orgId);
+
+        return back()->with('success', 'Réception du courrier validée pour votre direction.');
     }
 
     /**

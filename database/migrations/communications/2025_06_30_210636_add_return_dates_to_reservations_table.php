@@ -9,6 +9,11 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+    /**
+     * Filet de rattrapage : sur une base récente, `reservations.return_date` et
+     * `return_effective` sont déjà créées par 2024_11_02_000006. Cette migration
+     * ne les ajoute donc que si elles manquent (bases plus anciennes).
+     */
     public function up(): void
     {
         Schema::table('reservations', function (Blueprint $table) {
@@ -22,12 +27,12 @@ return new class extends Migration
     }
 
     /**
-     * Reverse the migrations.
+     * Ne rien supprimer : ces colonnes appartiennent à 2024_11_02_000006, qui les
+     * crée avec la table. Les retirer ici cassait le rollback (et le down() de la
+     * migration propriétaire).
      */
     public function down(): void
     {
-        Schema::table('reservations', function (Blueprint $table) {
-            $table->dropColumn(['return_date', 'return_effective']);
-        });
+        // no-op volontaire
     }
 };

@@ -6,7 +6,8 @@
         <div>
             <h1 class="text-primary mb-1">Intérims des responsables</h1>
             <p class="text-muted mb-0">
-                Tant qu'un intérim est actif, le courrier adressé au service est routé vers l'intérimaire.
+                Un titulaire peut avoir plusieurs intérimaires, chacun sur son volet.
+                Le courrier adressé au service est routé vers l'intérimaire <strong>principal</strong>.
             </p>
         </div>
         <a href="{{ route('organisation-interims.create') }}" class="btn btn-primary">
@@ -28,6 +29,7 @@
                     <th>Service / Direction</th>
                     <th>Titulaire</th>
                     <th>Intérimaire</th>
+                    <th>Volet géré</th>
                     <th>Période</th>
                     <th>État</th>
                     <th class="text-end">Actions</th>
@@ -38,7 +40,25 @@
                     <tr>
                         <td>{{ $interim->organisation->name ?? '—' }}</td>
                         <td>{{ $interim->titular->name ?? '—' }} {{ $interim->titular->surname ?? '' }}</td>
-                        <td>{{ $interim->interim->name ?? '—' }} {{ $interim->interim->surname ?? '' }}</td>
+                        <td>
+                            {{ $interim->interim->name ?? '—' }} {{ $interim->interim->surname ?? '' }}
+                            @if($interim->is_primary)
+                                <span class="badge bg-primary ms-1" title="Reçoit le courrier du service par défaut">Principal</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($interim->activity)
+                                <span class="badge bg-info text-dark">
+                                    <i class="bi bi-diagram-2"></i> {{ $interim->activity->name }}
+                                </span>
+                            @endif
+                            @if($interim->scope)
+                                <span class="d-block text-muted small">{{ $interim->scope }}</span>
+                            @endif
+                            @if(!$interim->activity && !$interim->scope)
+                                <span class="text-muted">Toutes les attributions</span>
+                            @endif
+                        </td>
                         <td>
                             du {{ optional($interim->start_date)->format('d/m/Y') }}
                             @if($interim->end_date)
@@ -63,6 +83,15 @@
                             @endif
                         </td>
                         <td class="text-end">
+                            @if($interim->is_active && !$interim->is_primary)
+                                <form action="{{ route('organisation-interims.primary', $interim->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-sm btn-outline-primary" title="Router le courrier du service vers cet intérimaire">
+                                        <i class="bi bi-star"></i> Principal
+                                    </button>
+                                </form>
+                            @endif
                             @if($interim->is_active)
                                 <form action="{{ route('organisation-interims.deactivate', $interim->id) }}" method="POST" class="d-inline">
                                     @csrf
@@ -84,7 +113,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">Aucun intérim enregistré.</td>
+                        <td colspan="7" class="text-center text-muted py-4">Aucun intérim enregistré.</td>
                     </tr>
                 @endforelse
             </tbody>

@@ -16,6 +16,24 @@ class Mail extends Model
     protected $emitterOrgField = 'sender_organisation_id';
     protected $beneficiaryOrgField = 'recipient_organisation_id';
 
+    /**
+     * Champs indexés pour la recherche plein texte.
+     * On restreint explicitement à des chaînes : par défaut Scout indexe
+     * toArray(), donc toute relation chargée (cotations, pièces jointes...)
+     * partait dans l'index sous forme de tableau et faisait échouer le
+     * tokenizer lors d'un simple enregistrement du courrier.
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => (string) $this->id,
+            'code' => (string) $this->code,
+            'name' => (string) $this->name,
+            'description' => (string) $this->description,
+            'document_type' => (string) $this->document_type,
+        ];
+    }
+
 
     const TYPE_INTERNAL = 'internal';
     const TYPE_INCOMING = 'incoming';
@@ -32,6 +50,8 @@ class Mail extends Model
         'status',
         'priority_id',
         'typology_id',
+        'activity_id',
+        'parent_mail_id',
         'action_id',
         'sender_user_id',
         'sender_organisation_id',
@@ -196,6 +216,13 @@ class Mail extends Model
             $this->assigned_organisation_id,
         ]);
 
+        // Directions cotées (cotation multi-directions) : elles voient le courrier.
+        if ($this->exists) {
+            foreach ($this->cotations()->pluck('organisation_id') as $cotedOrgId) {
+                $mailOrgIds[] = $cotedOrgId;
+            }
+        }
+
         if (in_array($organisationId, array_map('intval', $mailOrgIds), true)) {
             return true;
         }
@@ -310,28 +337,302 @@ class Mail extends Model
     // === WORKFLOW COURRIER (circuits entrant / sortant) ===
 
     /**
-     * Cotation d'un courrier entrant par le DG : affectation à une direction
-     * avec une instruction (mail_action), puis passage en cours de traitement.
+     * Lignes de cotation (une par direction cotée).
      */
-    public function cote(int $organisationId, ?int $actionId = null, ?string $instruction = null): self
+    public function cotations()
     {
-        $this->update([
-            'assigned_organisation_id' => $organisationId,
-            'action_id' => $actionId ?? $this->action_id,
-            'assigned_at' => now(),
-            'status' => MailStatusEnum::IN_PROGRESS,
+        return $this->hasMany(MailCotation::class);
+    }
+
+    /**
+     * Activité du plan de classement dont relève ce courrier.
+     */
+    public function activity()
+    {
+        return $this->belongsTo(Activity::class, 'activity_id');
+    }
+
+    /**
+     * Activité au titre de laquelle une direction donnée traite ce courrier :
+     * celle de sa cotation, à défaut celle du courrier.
+     */
+    public function activityForOrganisation(?int $organisationId): ?int
+    {
+        if ($organisationId) {
+            $cotation = $this->cotations->firstWhere('organisation_id', $organisationId)
+                ?? $this->cotations()->where('organisation_id', $organisationId)->first();
+
+            if ($cotation && $cotation->activity_id) {
+                return (int) $cotation->activity_id;
+            }
+        }
+
+        return $this->activity_id ? (int) $this->activity_id : null;
+    }
+
+    /**
+     * Directions au titre desquelles cet utilisateur peut traiter ce courrier.
+     *
+     * Deux sources d'accès :
+     *  - son organisation d'appartenance (fonctionnement normal) ;
+     *  - un intérim actif — mais alors uniquement si le volet délégué couvre
+     *    l'activité au titre de laquelle la direction traite ce courrier.
+     *    Un intérimaire ne répond donc qu'aux courriers de son volet.
+     *
+     * @return array<int, int>
+     */
+    public function organisationsHandledBy(User $user): array
+    {
+        $concerned = $this->cotations->pluck('organisation_id')->map(fn ($id) => (int) $id);
+
+        if ($concerned->isEmpty()) {
+            $fallback = (int) ($this->assigned_organisation_id ?? $this->recipient_organisation_id);
+            $concerned = collect($fallback ? [$fallback] : []);
+        }
+
+        $own = (int) $user->current_organisation_id;
+        $accessible = $concerned->filter(fn ($orgId) => $orgId === $own);
+
+        foreach (OrganisationInterim::activeVoletsOf($user->id) as $volet) {
+            $orgId = (int) $volet->organisation_id;
+
+            if (!$concerned->contains($orgId) || $accessible->contains($orgId)) {
+                continue;
+            }
+
+            if ($volet->coversActivity($this->activityForOrganisation($orgId))) {
+                $accessible->push($orgId);
+            }
+        }
+
+        return $accessible->unique()->values()->all();
+    }
+
+    /**
+     * L'utilisateur peut-il agir sur ce courrier (réception, réponse) au titre
+     * d'au moins une direction — la sienne ou un volet d'intérim ?
+     */
+    public function isHandledBy(User $user): bool
+    {
+        return count($this->organisationsHandledBy($user)) > 0;
+    }
+
+    /**
+     * Courrier auquel celui-ci répond (ou qu'il prolonge).
+     */
+    public function parentMail()
+    {
+        return $this->belongsTo(Mail::class, 'parent_mail_id');
+    }
+
+    /**
+     * Réponses et suites données à ce courrier : un courrier entrant peut
+     * déboucher sur plusieurs courriers (réponse au tiers, note interne...).
+     */
+    public function replies()
+    {
+        return $this->hasMany(Mail::class, 'parent_mail_id');
+    }
+
+    /**
+     * Remonte jusqu'au courrier d'origine de la chaîne.
+     */
+    public function rootMail(): self
+    {
+        $current = $this;
+        $guard = 0;
+
+        while ($current->parent_mail_id && $guard < 20) {
+            $parent = $current->parentMail;
+            if (!$parent) {
+                break;
+            }
+            $current = $parent;
+            $guard++;
+        }
+
+        return $current;
+    }
+
+    /**
+     * Crée une réponse (ou une suite) rattachée à ce courrier.
+     * Le nouveau courrier part en brouillon et suit ensuite le circuit normal
+     * (soumission, visas N+1, signature du DG).
+     */
+    public function createReply(User $author, string $subject, ?string $body = null, ?string $mailType = null): self
+    {
+        // Répondre à un courrier reçu de l'extérieur produit un courrier sortant ;
+        // répondre à un courrier interne produit un courrier interne.
+        $type = $mailType ?: ($this->mail_type === self::TYPE_INCOMING ? self::TYPE_OUTGOING : self::TYPE_INTERNAL);
+
+        $reply = static::create([
+            'code' => static::generateReplyCode($type),
+            'name' => $subject,
+            'date' => now(),
+            'description' => $body,
+            'document_type' => 'original',
+            'status' => MailStatusEnum::DRAFT,
+            'mail_type' => $type,
+            'parent_mail_id' => $this->id,
+            'activity_id' => $this->activity_id,
+            'typology_id' => $this->typology_id,
+            'priority_id' => $this->priority_id,
+            'sender_user_id' => $author->id,
+            'sender_organisation_id' => $author->current_organisation_id,
+            'sender_type' => 'internal',
+            // Le destinataire de la réponse est l'expéditeur du courrier d'origine.
+            'recipient_type' => $this->sender_type,
+            'recipient_user_id' => $this->sender_user_id,
+            'recipient_organisation_id' => $this->sender_organisation_id,
+            'external_recipient_id' => $this->external_sender_id,
+            'external_recipient_organization_id' => $this->external_sender_organization_id,
         ]);
 
-        $this->logAction('coted', 'assigned_organisation_id', null, (string) $organisationId, $instruction ?? 'Courrier coté par le DG');
+        $this->logAction('replied', 'reply', null, (string) $reply->id, 'Réponse créée : ' . $reply->code . ' — ' . $subject);
+        $reply->logAction('created_from_reply', 'reply', null, (string) $this->id, 'Créé en réponse au courrier ' . $this->code);
+
+        return $reply;
+    }
+
+    /**
+     * Code séquentiel pour un courrier créé en réponse.
+     */
+    protected static function generateReplyCode(string $type): string
+    {
+        $prefix = match ($type) {
+            self::TYPE_OUTGOING => 'OUT',
+            self::TYPE_INCOMING => 'IN',
+            default => 'INT',
+        };
+
+        $year = now()->format('Y');
+        $count = static::where('code', 'like', "$prefix-$year-%")->count() + 1;
+
+        do {
+            $code = sprintf('%s-%s-%03d', $prefix, $year, $count);
+            $count++;
+        } while (static::where('code', $code)->exists());
+
+        return $code;
+    }
+
+    /**
+     * Cotation d'un courrier entrant par le DG à UNE OU PLUSIEURS directions.
+     * Crée une ligne de suivi par direction (instruction + réception propres),
+     * ce qui permet au DG de suivre la réponse de chaque direction individuellement.
+     *
+     * @param  int|array<int, int>  $organisationIds
+     * @param  array<int, int|null>  $activityIds  activité du plan de classement par direction
+     */
+    public function cote($organisationIds, ?int $actionId = null, ?string $instruction = null, ?int $cotedBy = null, array $activityIds = []): self
+    {
+        $orgIds = collect(is_array($organisationIds) ? $organisationIds : [$organisationIds])
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        if ($orgIds->isEmpty()) {
+            return $this;
+        }
+
+        foreach ($orgIds as $orgId) {
+            $activityId = isset($activityIds[$orgId]) && $activityIds[$orgId] ? (int) $activityIds[$orgId] : null;
+
+            $existing = MailCotation::where('mail_id', $this->id)
+                ->where('organisation_id', $orgId)
+                ->first();
+
+            // Une direction qui a déjà validé sa réception n'est pas réinitialisée :
+            // le DG peut ajouter une direction sans effacer les réponses obtenues.
+            if ($existing && $existing->isCompleted()) {
+                continue;
+            }
+
+            if ($existing) {
+                $existing->update([
+                    'action_id' => $actionId,
+                    'activity_id' => $activityId,
+                    'instruction' => $instruction,
+                    'coted_by' => $cotedBy,
+                ]);
+
+                continue;
+            }
+
+            MailCotation::create([
+                'mail_id' => $this->id,
+                'organisation_id' => $orgId,
+                'action_id' => $actionId,
+                'activity_id' => $activityId,
+                'instruction' => $instruction,
+                'status' => MailCotation::STATUS_PENDING,
+                'coted_by' => $cotedBy,
+            ]);
+        }
+
+        // La première direction reste la direction "principale" (compat. requêtes /
+        // tableau de bord existants qui lisent assigned_organisation_id).
+        // Le courrier ne redevient « en cours » que s'il reste une direction à répondre.
+        $stillPending = $this->cotations()->where('status', MailCotation::STATUS_PENDING)->exists();
+
+        $this->update([
+            'assigned_organisation_id' => $orgIds->first(),
+            'action_id' => $actionId ?? $this->action_id,
+            // Le courrier prend l'activité de la première direction cotée
+            // (rattachement au plan de classement).
+            'activity_id' => ($activityIds[$orgIds->first()] ?? null) ?: $this->activity_id,
+            'assigned_at' => now(),
+            'status' => $stillPending ? MailStatusEnum::IN_PROGRESS : $this->status,
+        ]);
+
+        $names = Organisation::whereIn('id', $orgIds)->pluck('name')->implode(', ');
+        $this->logAction('coted', 'cotation', null, $orgIds->implode(','), ($instruction ? $instruction . ' — ' : 'Coté par le DG à : ') . $names);
 
         return $this;
     }
 
     /**
-     * Validation de la réception par le responsable du service destinataire.
+     * Validation de la réception pour UNE direction donnée (par son responsable).
+     * Le courrier n'est globalement « Terminé » que lorsque toutes les directions
+     * cotées ont validé leur réception.
      */
-    public function confirmReception(int $userId): self
+    public function confirmReceptionForOrg(int $organisationId, int $userId): self
     {
+        $cotation = $this->cotations()->where('organisation_id', $organisationId)->first();
+
+        if ($cotation) {
+            $cotation->update([
+                'status' => MailCotation::STATUS_COMPLETED,
+                'assigned_to' => $userId,
+                'confirmed_at' => now(),
+            ]);
+        }
+
+        $orgName = Organisation::whereKey($organisationId)->value('name');
+        $this->logAction('reception_confirmed', 'cotation', null, (string) $organisationId, 'Réception validée par ' . ($orgName ?? 'la direction'));
+
+        // Statut global : terminé seulement si toutes les cotations sont validées.
+        $pending = $this->cotations()->where('status', MailCotation::STATUS_PENDING)->count();
+        if ($pending === 0) {
+            $this->update(['status' => MailStatusEnum::COMPLETED, 'processed_at' => now()]);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Validation de la réception (rétro-compatible). Si le courrier a des cotations
+     * multiples, on valide celle de l'organisation de l'utilisateur.
+     */
+    public function confirmReception(int $userId, ?int $organisationId = null): self
+    {
+        if ($this->cotations()->exists()) {
+            $orgId = $organisationId ?? optional(User::find($userId))->current_organisation_id;
+            return $this->confirmReceptionForOrg((int) $orgId, $userId);
+        }
+
+        // Ancien comportement (courrier sans cotation multiple).
         $this->update([
             'assigned_to' => $userId,
             'processed_at' => now(),

@@ -24,15 +24,50 @@
         @csrf
 
         <div class="mb-3">
-            <label for="assigned_organisation_id" class="form-label">Affecter à la direction</label>
-            <select name="assigned_organisation_id" id="assigned_organisation_id" class="form-select" required>
-                <option value="">Choisir une direction</option>
+            <label class="form-label">Affecter à une ou plusieurs directions <span class="text-danger">*</span></label>
+            <div class="border rounded p-2" style="max-height: 320px; overflow-y: auto;">
+                @php
+                    $alreadyCoted = $mail->cotations->pluck('organisation_id')->map(fn($i)=>(int)$i)->all();
+                    $activitesCotees = $mail->cotations->pluck('activity_id', 'organisation_id');
+                @endphp
                 @foreach($organisations as $org)
-                    <option value="{{ $org->id }}" {{ old('assigned_organisation_id', $mail->assigned_organisation_id) == $org->id ? 'selected' : '' }}>
-                        {{ $org->name }}
-                    </option>
+                    <div class="row align-items-center py-1 border-bottom">
+                        <div class="col-md-6">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input" type="checkbox"
+                                       name="assigned_organisation_ids[]"
+                                       value="{{ $org->id }}"
+                                       id="org_{{ $org->id }}"
+                                       {{ in_array($org->id, old('assigned_organisation_ids', $alreadyCoted)) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="org_{{ $org->id }}">
+                                    {{ $org->name }} <span class="text-muted small">({{ $org->code }})</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            @if($org->activities->count())
+                                {{-- Activité du plan de classement au titre de laquelle cette direction traitera le courrier --}}
+                                <select name="activity_ids[{{ $org->id }}]" class="form-select form-select-sm">
+                                    <option value="">Activité (plan de classement)…</option>
+                                    @foreach($org->activities as $activity)
+                                        <option value="{{ $activity->id }}"
+                                            {{ (int) old('activity_ids.' . $org->id, $activitesCotees[$org->id] ?? null) === (int) $activity->id ? 'selected' : '' }}>
+                                            {{ $activity->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <span class="text-muted small">Aucune activité rattachée à cette entité</span>
+                            @endif
+                        </div>
+                    </div>
                 @endforeach
-            </select>
+            </div>
+            <small class="form-text text-muted">
+                Chaque direction cochée traitera le courrier et validera sa propre réception ; vous suivez chaque
+                réponse individuellement. L'<strong>activité</strong> rattache le courrier au <strong>plan de
+                classement</strong> de la direction (utile pour le classement et la durée de conservation).
+            </small>
         </div>
 
         <div class="mb-3">

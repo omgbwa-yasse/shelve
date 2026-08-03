@@ -702,11 +702,25 @@ class MailController extends Controller
             ->where('assigned_to', $user->id)
             ->count();
 
-        // Réception à valider par le service auquel le courrier a été coté (ou la note interne livrée).
-        $toConfirm = Mail::whereIn('mail_type', [Mail::TYPE_INCOMING, Mail::TYPE_INTERNAL])
+        // Réception à valider par MA direction. Avec la cotation multi-directions,
+        // chaque direction cotée a sa propre ligne : je ne compte que les cotations
+        // encore en attente POUR ma direction (si la mienne est validée mais qu'une
+        // autre direction reste en attente, cela ne me concerne plus).
+        // handledBy() couvre aussi les directions où je suis intérimaire, limitées
+        // à l'activité de mon volet.
+        $cotationPending = \App\Models\MailCotation::handledBy($user)
+            ->where('status', \App\Models\MailCotation::STATUS_PENDING)
+            ->count();
+
+        // Rétro-compat / notes internes : courriers affectés à ma direction sans
+        // ligne de cotation (courrier coté avant la multi-cotation, ou note interne).
+        $legacyConfirm = Mail::whereIn('mail_type', [Mail::TYPE_INCOMING, Mail::TYPE_INTERNAL])
             ->where('assigned_organisation_id', $organisationId)
             ->whereNot('status', MailStatusEnum::COMPLETED)
+            ->whereDoesntHave('cotations')
             ->count();
+
+        $toConfirm = $cotationPending + $legacyConfirm;
 
         // Mes courriers sortants ou notes internes rejetés, à reprendre.
         $toFix = Mail::whereIn('mail_type', [Mail::TYPE_OUTGOING, Mail::TYPE_INTERNAL])

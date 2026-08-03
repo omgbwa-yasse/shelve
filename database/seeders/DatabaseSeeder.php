@@ -21,6 +21,7 @@ use Database\Seeders\Transfers\SlipStatusSeeder;
 use Database\Seeders\Workplaces\OrganisationSeeder;
 use Database\Seeders\Workplaces\OrganisationServicesSeeder;
 use Database\Seeders\Workplaces\OrganisationRoomSeeder;
+use Database\Seeders\Workplaces\OrganisationInterimSeeder;
 use Database\Seeders\Workplaces\WorkplaceCategorySeeder;
 use Database\Seeders\Settings\SuperAdminSeeder;
 use Database\Seeders\Settings\RoleHierarchySeeder;
@@ -96,6 +97,10 @@ class DatabaseSeeder extends Seeder
             // 7. ACTIVITÉS ET SERVICES (Dépendent des organisations)
             ToolActivitySeeder::class, // Seeder pour les activités
             ToolCommunicabilitySeeder::class, // Seeder pour les règles de communicabilité
+
+            // Intérims de démo : APRÈS ToolActivitySeeder, car les volets délégués
+            // pointent sur des activités du plan de classement.
+            OrganisationInterimSeeder::class,
 
             // 7bis. AFFECTATION SALLES AUX ORGANISATIONS
             OrganisationRoomSeeder::class, // Seeder pour affecter les salles aux organisations

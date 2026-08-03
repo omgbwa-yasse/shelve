@@ -7,7 +7,12 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * ATTENTION — le nom de ce fichier est trompeur (conservé tel quel : il est
+     * déjà enregistré en production, le renommer le ferait rejouer).
+     *
+     * La table `external_organizations` est créée par 2025_07_04_022444.
+     * Cette migration-ci ne fait que la COMPLÉTER (colonnes legal_form, etc.),
+     * ou la créer en dernier recours si elle manque.
      */
     public function up(): void
     {

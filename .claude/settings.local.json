@@ -13,7 +13,8 @@
       "Bash(do)",
       "Bash(perl -pi -e 's/use App\\\\\\\\\\\\\\\\models\\\\\\\\\\\\\\\\/use App\\\\\\\\\\\\\\\\Models\\\\\\\\\\\\\\\\/g' \"$f\")",
       "mcp__plugin_chrome-devtools-mcp_chrome-devtools__navigate_page",
-      "Bash(awk 'BEGIN{depth=0} {n=gsub\\(/{/,\"{\"\\); m=gsub\\(/}/,\"}\"\\); depth+=n-m} END{print \"brace depth:\", depth}' \"e:\\\\project\\\\procuregenious\\\\shelve\\\\app\\\\Services\\\\AI\\\\Agent\\\\AgentToolRegistry.php\")"
+      "Bash(awk 'BEGIN{depth=0} {n=gsub\\(/{/,\"{\"\\); m=gsub\\(/}/,\"}\"\\); depth+=n-m} END{print \"brace depth:\", depth}' \"e:\\\\project\\\\procuregenious\\\\shelve\\\\app\\\\Services\\\\AI\\\\Agent\\\\AgentToolRegistry.php\")",
+      "PowerShell(git -C E:\\\\project\\\\procuregenious\\\\shelve status --short)"
     ],
     "deny": [],
     "ask": []

@@ -7,7 +7,9 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Filet de rattrapage : les colonnes external_*_organization_id appartiennent à
+     * 2025_07_04_023045. On ne les recrée ici que si elles manquent (bases dont la
+     * migration précédente a échoué en cours de route).
      */
     public function up(): void
     {
@@ -32,21 +34,11 @@ return new class extends Migration
     }
 
     /**
-     * Reverse the migrations.
+     * Ne rien supprimer : cette migration ne fait que rattraper des colonnes
+     * appartenant à 2025_07_04_023045, dont c'est le `down()` qui les retire.
      */
     public function down(): void
     {
-        Schema::table('mails', function (Blueprint $table) {
-            // Drop foreign keys if they exist
-            if (Schema::hasColumn('mails', 'external_sender_organization_id')) {
-                $table->dropForeign(['external_sender_organization_id']);
-                $table->dropColumn('external_sender_organization_id');
-            }
-
-            if (Schema::hasColumn('mails', 'external_recipient_organization_id')) {
-                $table->dropForeign(['external_recipient_organization_id']);
-                $table->dropColumn('external_recipient_organization_id');
-            }
-        });
+        // no-op volontaire
     }
 };

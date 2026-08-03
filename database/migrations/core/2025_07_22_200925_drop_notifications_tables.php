@@ -7,7 +7,15 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Fait table rase des notifications historiques ; la table définitive est
+     * (re)créée juste après par 2025_07_22_205745_create_notifications_system_table.
+     *
+     * Les 5 migrations qui construisaient l'ancienne table `notifications`
+     * (2025_07_01_222710 / 222801 / 223711 et 2025_07_21_184109 / 185952) ont été
+     * retirées du dépôt : elles ne faisaient que bâtir une table supprimée ici même.
+     * L'état final de la base est strictement identique, sur une base neuve comme
+     * sur une base déjà migrée (leurs lignes restent dans le journal `migrations`,
+     * sans fichier — ce que Laravel ignore sans erreur).
      */
     public function up(): void
     {

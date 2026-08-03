@@ -273,6 +273,64 @@ class MailDataSeeder extends Seeder
             ]
         );
 
+        // =====================================================================
+        // 9. COURRIER ENTRANT — coté à PLUSIEURS directions, réponses partielles
+        //    (→ le DG suit chaque direction individuellement, la DSI a répondu,
+        //       la DRH et la DAG sont encore en attente)
+        // =====================================================================
+        $createdMails[] = $in4 = Mail::firstOrCreate(
+            ['code' => 'IN-2026-004'],
+            [
+                'name' => 'Circulaire interministérielle - Dématérialisation des procédures',
+                'description' => 'Circulaire concernant plusieurs directions : volet technique (DSI), volet ressources humaines (DRH) et volet logistique (DAG).',
+                'date' => now()->subDays(6),
+                'document_type' => 'original',
+                'status' => MailStatusEnum::IN_PROGRESS,
+                'mail_type' => Mail::TYPE_INCOMING,
+                'priority_id' => $priority?->id,
+                'typology_id' => $typoCourrier?->id,
+                'action_id' => $instrSuite?->id,
+                'sender_type' => 'external_organization',
+                'recipient_organisation_id' => $dg->id,
+                'recipient_type' => 'organisation',
+                'assigned_at' => now()->subDays(5),
+                // Échéance dépassée : alimente le bloc « Délais dépassés » du tableau de bord.
+                'deadline' => now()->subDays(2),
+            ]
+        );
+
+        if ($in4->cotations()->doesntExist()) {
+            $activites = fn ($org, $motif) => $org
+                ? optional($org->activities()->where('name', 'like', "%$motif%")->first())->id
+                : null;
+
+            $in4->cote(
+                array_values(array_filter([$dsi?->id, $drh?->id, $dag?->id])),
+                $instrSuite?->id,
+                'Chaque direction traite le volet qui la concerne et rend compte.',
+                $dgUser->id,
+                array_filter([
+                    $dsi?->id => $activites($dsi, 'APPLICATION'),
+                    $drh?->id => $activites($drh, 'GESTION DU PERSONNEL'),
+                    $dag?->id => $activites($dag, 'GESTION DU COURRIER'),
+                ])
+            );
+
+            // La DSI a déjà validé sa réception : 1/3 au tableau de bord.
+            $in4->confirmReceptionForOrg($dsi->id, $dirDsi->id);
+            $in4->update(['deadline' => now()->subDays(2), 'status' => MailStatusEnum::IN_PROGRESS]);
+        }
+
+        // =====================================================================
+        // 10. RÉPONSES CHAÎNÉES — un courrier reçu débouche sur plusieurs courriers
+        // =====================================================================
+        if ($in1 ?? null) {
+            if ($in1->replies()->doesntExist()) {
+                $in1->createReply($dirDsi, 'RE : ' . $in1->name, "Éléments de réponse transmis au Ministère.", Mail::TYPE_OUTGOING);
+                $in1->createReply($dirDsi, 'Note interne — suites à donner', 'Transmission au service concerné pour exécution.', Mail::TYPE_INTERNAL);
+            }
+        }
+
         // --- Historique (traçabilité affichée dans la timeline de la fiche) ---
         $this->seedHistory($in2, [
             ['created', $accueil ?? $dgUser, "Courrier déposé à l'accueil et enregistré", now()->subDays(5)],

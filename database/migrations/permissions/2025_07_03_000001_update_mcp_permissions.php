@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
 class UpdateMcpPermissions extends Migration
@@ -75,32 +76,33 @@ class UpdateMcpPermissions extends Migration
             );
         }
 
-        // 3. Attribuer ces permissions au rôle superadmin
+        // 3. Attribuer ces permissions au rôle superadmin.
+        // Le pivot du système de permissions natif est `role_permissions`
+        // (cf. App\Models\Role::permissions()). L'ancien code visait une table
+        // `permission_role` qui n'existe nulle part : la migration plantait dès
+        // qu'un rôle superadmin était présent en base.
+        if (!Schema::hasTable('roles') || !Schema::hasTable('role_permissions')) {
+            return;
+        }
+
         $superadminRoles = DB::table('roles')
             ->where('name', 'superadmin')
             ->get();
 
+        if ($superadminRoles->isEmpty()) {
+            return;
+        }
+
+        $permissionIds = DB::table('permissions')
+            ->whereIn('name', array_column($newPermissions, 'name'))
+            ->pluck('id');
+
         foreach ($superadminRoles as $role) {
-            // Obtenir les IDs des nouvelles permissions
-            $permissionIds = DB::table('permissions')
-                ->whereIn('name', array_column($newPermissions, 'name'))
-                ->pluck('id');
-
-            // Pour chaque permission, vérifier si l'association existe déjà
             foreach ($permissionIds as $permissionId) {
-                $exists = DB::table('permission_role')
-                    ->where('role_id', $role->id)
-                    ->where('permission_id', $permissionId)
-                    ->exists();
-
-                if (!$exists) {
-                    DB::table('permission_role')->insert([
-                        'role_id' => $role->id,
-                        'permission_id' => $permissionId,
-                        'created_at' => $now,
-                        'updated_at' => $now,
-                    ]);
-                }
+                DB::table('role_permissions')->updateOrInsert(
+                    ['role_id' => $role->id, 'permission_id' => $permissionId],
+                    ['created_at' => $now, 'updated_at' => $now]
+                );
             }
         }
     }
@@ -112,18 +114,27 @@ class UpdateMcpPermissions extends Migration
      */
     public function down()
     {
-        // Supprimer les permissions MCP
-        DB::table('permissions')
-            ->whereIn('name', [
-                'records_import',
-                'records_search',
-                'records_lifecycle',
-                'authors_view',
-                'authors_create',
-                'mcp_features',
-            ])
-            ->delete();
+        $names = [
+            'records_import',
+            'records_search',
+            'records_lifecycle',
+            'authors_view',
+            'authors_create',
+            'mcp_features',
+        ];
 
-        // Les relations dans permission_role seront supprimées automatiquement si vous avez défini des clés étrangères avec cascade
+        $ids = DB::table('permissions')->whereIn('name', $names)->pluck('id');
+
+        if ($ids->isEmpty()) {
+            return;
+        }
+
+        // On retire explicitement les lignes de pivot : sous SQLite, les contraintes
+        // FK ne sont pas toujours actives, donc le CASCADE n'est pas garanti.
+        if (Schema::hasTable('role_permissions')) {
+            DB::table('role_permissions')->whereIn('permission_id', $ids)->delete();
+        }
+
+        DB::table('permissions')->whereIn('id', $ids)->delete();
     }
 }
