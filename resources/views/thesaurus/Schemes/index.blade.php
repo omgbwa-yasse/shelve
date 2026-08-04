@@ -120,7 +120,7 @@
 <script>
     function confirmDelete(schemeId) {
         const form = document.getElementById('deleteForm');
-        form.action = `{{ route('thesaurus.schemes.destroy', '') }}/${schemeId}`;
+        form.action = `{{ route('thesaurus.schemes.destroy', 'SCHEME_ID') }}`.replace('SCHEME_ID', schemeId);
         $('#deleteModal').modal('show');
     }
 </script>
