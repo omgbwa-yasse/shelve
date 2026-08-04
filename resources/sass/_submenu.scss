@@ -216,23 +216,8 @@
   }
 }
 
-// Paramètres : sections sur deux lignes par défaut (2 boutons par ligne),
-// sauf Paramètres / Courrier / Répertoire dont les boutons sont empilés (1 colonne).
-.ribbon-settings {
-  height: auto;
-  min-height: 156px;
-  overflow-y: visible;
-
-  .submenu-section {
-    max-width: 215px;   // 2 colonnes : les boutons passent à la ligne après 2
-  }
-
-  .submenu-section:has(#settingsSection),
-  .submenu-section:has(#mailSection),
-  .submenu-section:has(#directorySection) {
-    max-width: 116px;   // 1 colonne : les boutons l'un sur l'autre
-  }
-}
+// Settings suit le comportement par défaut du ruban (hauteur fixe 156px,
+// sections dimensionnées au contenu) comme les autres onglets.
 
 // Sur mobile, le ruban revient au tiroir latéral (voir #sidebar en media query du layout)
 @media (max-width: 991px) {
