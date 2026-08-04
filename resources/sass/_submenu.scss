@@ -100,20 +100,21 @@
   }
 
   .submenu-heading {
+    order: 2;                   // titre déplacé en bas du groupe
     flex: none;
-    height: 20px;
+    height: auto;
     background: transparent;
-    color: #3c4043;
+    color: #8a9099;
     box-shadow: none;
     border-radius: 0;
     padding: 0;
-    margin: 0 0 5px 0;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .4px;
+    margin: 3px 0 0 0;
+    font-size: 5.5px;           // 50% de la taille précédente (11px)
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: .3px;
     text-align: center;
-    border-bottom: 1px solid #d9dde3;
+    border-bottom: none;
     cursor: default;
     overflow: hidden;
     white-space: nowrap;
@@ -121,7 +122,7 @@
 
     &::after { display: none; }
     &:hover { background: transparent; }
-    i { margin: 0 4px 0 0; font-size: 12px; }
+    i { display: none; }        // retire le logo du titre
   }
 
   // Grille de boutons : les boutons s'alignent horizontalement et passent
