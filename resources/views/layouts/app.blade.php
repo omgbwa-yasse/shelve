@@ -32,6 +32,12 @@
     </script>
 
     <style>
+        /* Liens du contenu : gras et non soulignés */
+        #container a {
+            font-weight: 600;
+            text-decoration: none;
+        }
+
         /* Les pages de contenu occupent toute la largeur (comme container-fluid) */
         #container .container {
             max-width: 100%;
