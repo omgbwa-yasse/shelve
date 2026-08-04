@@ -30,11 +30,6 @@
                         <th>Nom</th>
                         <th>Type</th>
                         <th>Niveau</th>
-                        <th>Statut</th>
-                        <th>Supports</th>
-                        <th>Version</th>
-                        <th>Mis à jour</th>
-                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -48,25 +43,9 @@
                                 </span>
                             </td>
                             <td>{{ $record->level?->name ?? '—' }}</td>
-                            <td><span class="badge bg-light text-dark">{{ $record->status?->name ?? '—' }}</span></td>
-                            <td>
-                                @foreach($record->mediums as $medium)
-                                    <span class="badge {{ $medium->support_id === 1 ? 'bg-primary' : 'bg-dark' }}">
-                                        {{ $medium->support?->name ?? '?' }}
-                                        @if($medium->attachment) <i class="bi bi-file-earmark"></i> @endif
-                                        @if($medium->isCheckedOut()) <i class="bi bi-lock"></i> @endif
-                                    </span>
-                                @endforeach
-                            </td>
-                            <td>
-                                @if($record->version_number > 1)
-                                    <span class="badge bg-warning text-dark">v{{ $record->version_number }}</span>
-                                @endif
-                            </td>
-                            <td>{{ $record->updated_at?->format('d/m/Y') }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="9" class="text-center text-muted py-4">Aucune notice trouvée.</td></tr>
+                        <tr><td colspan="4" class="text-center text-muted py-4">Aucune notice trouvée.</td></tr>
                     @endforelse
                 </tbody>
             </table>
