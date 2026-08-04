@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Organisation;
+use App\Models\Record;
 use App\Models\RecordPhysical;
 use App\Models\RecordSupport;
 use App\Models\RecordStatus;
@@ -20,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 class LifeCycleController extends Controller
 {
     // Constantes pour éviter la duplication avec logique date_end/date_exact
-    const RECORDS_SELECT = 'record_physicals.*';
+    const RECORDS_SELECT = 'records.*';
 
     /**
      * Convertit une date selon son format en date MySQL
@@ -28,9 +29,10 @@ class LifeCycleController extends Controller
      * @param string $formatField Le champ de format de date
      * @return string Expression SQL pour la conversion
      */
-    private function convertDateToMysqlDate($dateField, $formatField = 'record_physicals.date_format')
+    private function convertDateToMysqlDate($dateField, $formatField = 'records.date_format')
     {
         return "CASE
+            WHEN {$dateField} IS NULL OR {$dateField} = '' OR {$dateField} = '0000' OR {$dateField} = '0000-00-00' THEN NULL
             WHEN {$formatField} = 'Y' AND {$dateField} REGEXP '^[0-9]{4}$' THEN
                 MAKEDATE({$dateField}, 365)
             WHEN {$formatField} = 'M' AND {$dateField} REGEXP '^[0-9]{4}/[0-9]{1,2}$' THEN
@@ -48,19 +50,19 @@ class LifeCycleController extends Controller
                         STR_TO_DATE(CONCAT({$dateField}, '-01'), '%Y-%m-%d')
                     WHEN {$dateField} REGEXP '^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$' THEN
                         STR_TO_DATE({$dateField}, '%Y-%m-%d')
-                    ELSE MAKEDATE({$dateField}, 365)
+                    ELSE NULL
                 END
             ELSE NULL
         END";
     }
 
     /**
-     * Retourne l'expression SQL pour la date de référence (date_end convertie en priorité, sinon date_exact)
+     * Retourne l'expression SQL pour la date de référence (end_date en priorité, sinon date_exact).
+     * La table unifiée records stocke de vraies dates (pas de conversion format nécessaire).
      */
     private function getReferenceDateExpression()
     {
-        $convertedDateEnd = $this->convertDateToMysqlDate('record_physicals.date_end');
-        return "COALESCE({$convertedDateEnd}, record_physicals.date_exact)";
+        return "COALESCE(records.end_date, records.date_exact)";
     }
 
     /**
@@ -104,7 +106,7 @@ class LifeCycleController extends Controller
      */
     private function getRetentionBaseQuery()
     {
-        return RecordPhysical::join('activities', 'record_physicals.activity_id', '=', 'activities.id')
+        return Record::join('activities', 'records.activity_id', '=', 'activities.id')
             ->join('retention_activity', 'activities.id', '=', 'retention_activity.activity_id')
             ->join('retentions', 'retention_activity.retention_id', '=', 'retentions.id')
             ->join('sorts', 'retentions.sort_id', '=', 'sorts.id');
@@ -116,6 +118,7 @@ class LifeCycleController extends Controller
     private function getCommonViewData()
     {
         return [
+            'types' => \App\Models\RecordType::active()->ordered()->get(),
             'slipStatuses' => SlipStatus::all(),
             'statuses' => RecordStatus::all(),
             'terms' => [],
@@ -137,7 +140,7 @@ class LifeCycleController extends Controller
                 ->where('sorts.code', 'C')
                 ->whereRaw($this->getRetentionActiveCondition())
                 ->select(self::RECORDS_SELECT)
-                ->with(['activity', 'status', 'level', 'user'])
+                ->with(['activity', 'status', 'level','creator'])
         )->paginate(15);
 
         return view('records.index', array_merge(
@@ -155,11 +158,11 @@ class LifeCycleController extends Controller
         $title = "à transférer aux archives historiques - communicabilité écoulée";
 
         $records = $this->addDateOrderBy(
-            RecordPhysical::join('activities', 'record_physicals.activity_id', '=', 'activities.id')
+            Record::join('activities', 'records.activity_id', '=', 'activities.id')
                 ->join('communicabilities', 'activities.communicability_id', '=', 'communicabilities.id')
                 ->whereRaw($this->getCommunicabilityExpiredCondition())
                 ->select(self::RECORDS_SELECT)
-                ->with(['activity', 'status', 'level', 'user'])
+                ->with(['activity', 'status', 'level','creator'])
         )->paginate(15);
 
         return view('records.index', array_merge(
@@ -181,7 +184,7 @@ class LifeCycleController extends Controller
                 ->where('sorts.code', 'T')
                 ->whereRaw($this->getRetentionExpiredCondition())
                 ->select(self::RECORDS_SELECT)
-                ->with(['activity', 'status', 'level', 'user'])
+                ->with(['activity', 'status', 'level','creator'])
         )->paginate(15);
 
         return view('records.index', array_merge(
@@ -203,7 +206,7 @@ class LifeCycleController extends Controller
                 ->where('sorts.code', 'C')
                 ->whereRaw($this->getRetentionExpiredCondition())
                 ->select(self::RECORDS_SELECT)
-                ->with(['activity', 'status', 'level', 'user'])
+                ->with(['activity', 'status', 'level','creator'])
         )->paginate(15);
 
         return view('records.index', array_merge(
@@ -226,7 +229,7 @@ class LifeCycleController extends Controller
                 ->where('sorts.code', 'C')
                 ->whereRaw($this->getRetentionActiveCondition())
                 ->select(self::RECORDS_SELECT)
-                ->with(['activity', 'status', 'level', 'user'])
+                ->with(['activity', 'status', 'level','creator'])
         )->paginate(15);
 
         return view('records.index', array_merge(
@@ -248,7 +251,7 @@ class LifeCycleController extends Controller
                 ->where('sorts.code', 'E')
                 ->whereRaw($this->getRetentionExpiredCondition())
                 ->select(self::RECORDS_SELECT)
-                ->with(['activity', 'status', 'level', 'user'])
+                ->with(['activity', 'status', 'level','creator'])
         )->paginate(15);
 
         return view('records.index', array_merge(

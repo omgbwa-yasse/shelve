@@ -160,7 +160,10 @@
                             <td>{{ $folder->name }}</td>
                             <td>{{ $folder->created_at->format('d/m/Y') }}</td>
                             <td>
-                                <a href="{{ route('record-digital-folders.show', $folder) }}" class="btn btn-sm btn-info">Voir</a>
+                                @php($unified = \App\Models\Record::where('legacy_source', 'digital_folder')->where('legacy_id', $folder->id)->first())
+                                @if($unified)
+                                    <a href="{{ route('records.show', $unified) }}" class="btn btn-sm btn-info">Voir</a>
+                                @endif
                                 <form action="{{ route('dolly.remove-digital-folder', [$dolly, $folder]) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
@@ -191,7 +194,10 @@
                             <td>{{ $document->name }}</td>
                             <td>{{ $document->type ?? 'N/A' }}</td>
                             <td>
-                                <a href="{{ route('record-digital-documents.show', $document) }}" class="btn btn-sm btn-info">Voir</a>
+                                @php($unified = \App\Models\Record::where('legacy_source', 'digital_document')->where('legacy_id', $document->id)->first())
+                                @if($unified)
+                                    <a href="{{ route('records.show', $unified) }}" class="btn btn-sm btn-info">Voir</a>
+                                @endif
                                 <form action="{{ route('dolly.remove-digital-document', [$dolly, $document]) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')

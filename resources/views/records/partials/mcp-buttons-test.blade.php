@@ -1,1 +1,0 @@
-{{-- removed: mcp-buttons-test --}}
