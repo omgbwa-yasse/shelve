@@ -461,35 +461,6 @@ Route::group(['middleware' => 'auth'], function () {
          // Physical Records Management (harmonized route)
         Route::get('physical', [RecordController::class, 'indexPhysical'])->name('records.physical');
 
-         // Digital Folders Management (Phase 10 - Task 10.2)
-        Route::resource('folders', \App\Http\Controllers\Web\FolderController::class);
-        Route::post('folders/{folder}/move', [\App\Http\Controllers\Web\FolderController::class, 'move'])->name('folders.move');
-        Route::get('folders/tree/view', [\App\Http\Controllers\Web\FolderController::class, 'treeView'])->name('folders.tree.view');
-        Route::get('folders/tree/data', [\App\Http\Controllers\Web\FolderController::class, 'tree'])->name('folders.tree');
-
-        // Digital Documents Management (Phase 10 - Task 10.3)
-        Route::resource('documents', \App\Http\Controllers\Web\DocumentController::class);
-        Route::post('documents/{document}/upload', [\App\Http\Controllers\Web\DocumentController::class, 'upload'])->name('documents.upload');
-        Route::post('documents/{document}/approve', [\App\Http\Controllers\Web\DocumentController::class, 'approve'])->name('documents.approve');
-        Route::post('documents/{document}/reject', [\App\Http\Controllers\Web\DocumentController::class, 'reject'])->name('documents.reject');
-        Route::get('documents/{document}/versions', [\App\Http\Controllers\Web\DocumentController::class, 'versions'])->name('documents.versions');
-        Route::get('documents/{document}/versions/{version}/download', [\App\Http\Controllers\Web\DocumentController::class, 'downloadVersion'])->name('documents.versions.download');
-
-        // Document Workflow - Check-out/Check-in (Phase 3 - Critical)
-        Route::post('documents/{document}/checkout', [\App\Http\Controllers\Web\DocumentController::class, 'checkout'])->name('documents.checkout');
-        Route::post('documents/{document}/checkin', [\App\Http\Controllers\Web\DocumentController::class, 'checkin'])->name('documents.checkin');
-        Route::post('documents/{document}/cancel-checkout', [\App\Http\Controllers\Web\DocumentController::class, 'cancelCheckout'])->name('documents.cancel-checkout');
-
-        // Document Workflow - Signature (Phase 3 - Critical)
-        Route::post('documents/{document}/sign', [\App\Http\Controllers\Web\DocumentController::class, 'sign'])->name('documents.sign');
-        Route::post('documents/{document}/verify-signature', [\App\Http\Controllers\Web\DocumentController::class, 'verifySignature'])->name('documents.verify-signature');
-        Route::post('documents/{document}/revoke-signature', [\App\Http\Controllers\Web\DocumentController::class, 'revokeSignature'])->name('documents.revoke-signature');
-
-        // Document Workflow - Version Management (Phase 3 - Critical)
-        Route::post('documents/{document}/versions/{version}/restore', [\App\Http\Controllers\Web\DocumentController::class, 'restoreVersion'])->name('documents.versions.restore');
-        Route::get('documents/{document}/download', [\App\Http\Controllers\Web\DocumentController::class, 'download'])->name('documents.download');
-
-
 
 
         Route::post('/slips/store', [SlipController::class, 'storetransfert'])->name('slips.storetransfert');

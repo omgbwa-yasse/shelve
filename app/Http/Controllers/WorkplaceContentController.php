@@ -154,8 +154,8 @@ class WorkplaceContentController extends Controller
     {
         $document->incrementViews();
 
-        // Redirect to actual document view
-        return redirect()->route('documents.show', $document->document_id);
+        // Redirect to actual record view (modèle unifié)
+        return redirect()->route('records.show', $document->document_id);
     }
 
     /**

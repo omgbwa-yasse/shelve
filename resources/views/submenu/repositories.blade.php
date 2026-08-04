@@ -23,22 +23,6 @@
                 </a>
             </div>
             @endcan
-
-            @can('viewAny', App\Models\RecordDigitalFolder::class)
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('folders.index') }}">
-                    <i class="bi bi-folder"></i> {{ __('Digital Folders') }}
-                </a>
-            </div>
-            @endcan
-
-            @can('viewAny', App\Models\RecordDigitalDocument::class)
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('documents.index') }}">
-                    <i class="bi bi-file-earmark-text"></i> {{ __('Digital Documents') }}
-                </a>
-            </div>
-            @endcan
         </div>
     </div>
 
@@ -98,26 +82,10 @@
             <i class="bi bi-journal-plus"></i> {{ __('registration') }}
         </div>
         <div class="submenu-content" id="enregistrementMenu">
-            @can('create', App\Models\RecordPhysical::class)
+            @can('create', App\Models\Record::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('records.create') }}">
-                    <i class="bi bi-plus-square"></i> {{ __('new') }} {{ __('(Physical)') }}
-                </a>
-            </div>
-            @endcan
-
-            @can('create', App\Models\RecordDigitalFolder::class)
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('folders.create') }}">
-                    <i class="bi bi-folder-plus"></i> {{ __('Folder (Digital)') }}
-                </a>
-            </div>
-            @endcan
-
-            @can('create', App\Models\RecordDigitalDocument::class)
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('documents.create') }}">
-                    <i class="bi bi-file-earmark-plus"></i> {{ __('Document (Digital)') }}
+                    <i class="bi bi-plus-square"></i> {{ __('new') }}
                 </a>
             </div>
             @endcan

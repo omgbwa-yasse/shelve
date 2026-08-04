@@ -6,6 +6,7 @@ use App\Models\SlipStatus;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\Mail;
+use App\Models\Record;
 use App\Models\RecordPhysical;
 use App\Models\RecordDigitalFolder;
 use App\Models\RecordDigitalDocument;
@@ -44,79 +45,21 @@ class SearchController extends Controller
     {
         $queries = $this->convertStringToWords($request);
 
-        // Recherche dans RecordPhysical
-        $physicalRecords = RecordPhysical::query();
+        // Recherche unifiée dans Record
+        $query = Record::query()
+            ->currentVersion()
+            ->with(['type', 'level', 'status', 'activity', 'organisation', 'mediums.support', 'mediums.attachment']);
+
         foreach ($queries as $q) {
-            $physicalRecords->where(function ($queryBuilder) use ($q) {
+            $query->where(function ($queryBuilder) use ($q) {
                 $queryBuilder->where('name', 'LIKE', "%{$q}%")
                     ->orWhere('code', 'LIKE', "%{$q}%")
                     ->orWhere('content', 'LIKE', "%{$q}%")
-                    ->orWhereHas('authors', function ($qb) use ($q) {
-                        $qb->where('name', 'LIKE', "%$q%");
-                    })
-                    ->orWhereHas('activity', function ($qb) use ($q) {
-                        $qb->where('name', 'LIKE', "%$q%");
-                    })
-                    ->orWhereHas('terms', function ($qb) use ($q) {
-                        $qb->where('name', 'LIKE', "%$q%");
-                    });
-            });
-        }
-        $physicalRecords = $physicalRecords->with(['status', 'support', 'level', 'activity', 'containers', 'authors']);
-
-        // Recherche dans RecordDigitalFolder
-        $folders = RecordDigitalFolder::query();
-        foreach ($queries as $q) {
-            $folders->where(function ($queryBuilder) use ($q) {
-                $queryBuilder->where('name', 'LIKE', "%{$q}%")
-                    ->orWhere('code', 'LIKE', "%{$q}%")
                     ->orWhere('description', 'LIKE', "%{$q}%");
             });
         }
-        $folders = $folders->with(['type', 'creator', 'organisation']);
 
-        // Recherche dans RecordDigitalDocument
-        $documents = RecordDigitalDocument::query();
-        foreach ($queries as $q) {
-            $documents->where(function ($queryBuilder) use ($q) {
-                $queryBuilder->where('name', 'LIKE', "%{$q}%")
-                    ->orWhere('code', 'LIKE', "%{$q}%")
-                    ->orWhere('description', 'LIKE', "%{$q}%");
-            });
-        }
-        $documents = $documents->with(['type', 'folder', 'creator', 'organisation']);
-
-        // Combiner tous les résultats avec marqueur de type
-        $allRecords = collect();
-
-        foreach ($physicalRecords->get() as $record) {
-            $record->record_type = 'physical';
-            $record->type_label = 'Dossier Physique';
-            $allRecords->push($record);
-        }
-
-        foreach ($folders->get() as $folder) {
-            $folder->record_type = 'folder';
-            $folder->type_label = 'Dossier Numérique';
-            $allRecords->push($folder);
-        }
-
-        foreach ($documents->get() as $document) {
-            $document->record_type = 'document';
-            $document->type_label = 'Document Numérique';
-            $allRecords->push($document);
-        }
-
-        // Paginer manuellement
-        $perPage = 15;
-        $page = $request->input('page', 1);
-        $records = new \Illuminate\Pagination\LengthAwarePaginator(
-            $allRecords->forPage($page, $perPage),
-            $allRecords->count(),
-            $perPage,
-            $page,
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
+        $records = $query->orderBy('updated_at', 'desc')->paginate(15);
 
         $statuses = RecordStatus::all();
         $terms = [];

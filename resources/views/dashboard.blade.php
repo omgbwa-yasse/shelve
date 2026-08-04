@@ -21,13 +21,13 @@
 
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <!-- Folders Card -->
+        <!-- Records Card -->
         <x-stat-card
-            title="Digital Folders"
-            :value="$stats['folders']"
+            title="Archives"
+            :value="$stats['records']"
             :trend="5"
             color="blue"
-            href="{{ route('folders.index') }}">
+            href="{{ route('records.index') }}">
             <x-slot name="icon">
                 <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -35,13 +35,13 @@
             </x-slot>
         </x-stat-card>
 
-        <!-- Documents Card -->
+        <!-- Digital Records Card -->
         <x-stat-card
-            title="Documents"
-            :value="$stats['documents']"
+            title="Numériques"
+            :value="$stats['digital']"
             :trend="12"
             color="green"
-            href="{{ route('documents.index') }}">
+            href="{{ route('records.index', ['medium_filter' => 'digital']) }}">
             <x-slot name="icon">
                 <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -69,18 +69,11 @@
         <div class="p-6">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <a href="{{ route('folders.create') }}" class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors group">
+                <a href="{{ route('records.create') }}" class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors group">
                     <svg class="h-8 w-8 text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span class="text-sm font-medium text-gray-900 dark:text-white">New Folder</span>
-                </a>
-
-                <a href="{{ route('documents.create') }}" class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors group">
-                    <svg class="h-8 w-8 text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    <span class="text-sm font-medium text-gray-900 dark:text-white">Upload Document</span>
+                    <span class="text-sm font-medium text-gray-900 dark:text-white">Nouvelle notice</span>
                 </a>
 
                 <a href="{{ route('search.advanced') }}" class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors group">

@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\RecordDigitalFolder;
-use App\Models\RecordDigitalDocument;
+use App\Models\Record;
 use App\Models\RecordPeriodic;
 
 class DashboardController extends Controller
@@ -16,10 +15,11 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        // Get statistics
+        // Get statistics (modèle unifié Record)
         $stats = [
-            'folders' => RecordDigitalFolder::count(),
-            'documents' => RecordDigitalDocument::count(),
+            'records' => Record::currentVersion()->count(),
+            'physical' => Record::currentVersion()->whereHas('mediums', fn ($q) => $q->physical())->count(),
+            'digital' => Record::currentVersion()->whereHas('mediums', fn ($q) => $q->digital())->count(),
             'periodicals' => RecordPeriodic::count(),
         ];
 
