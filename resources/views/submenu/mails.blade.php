@@ -5,15 +5,13 @@
 
     <!-- Styles partagés via _submenu.scss -->
 
-    <!-- Recherche Section - Consultations -->
-
+    <!-- Recherche Section - Consultations (courrier interne) -->
     <div class="submenu-section">
         <div class="submenu-heading">
-            <i class="bi bi-search"></i> {{ __('Consultations') }}
+            <i class="bi bi-envelope"></i> {{ __('Consultations') }} — {{ __('Courrier interne') }}
         </div>
-        <div class="submenu-content" id="consultationMenu">
+        <div class="submenu-content" id="consultationInterneMenu">
 
-            <div class="submenu-category-title">{{ __('Courrier interne') }}</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-received.index') }}">
                     <i class="bi bi-inbox"></i> {{ __('Reçus') }}
@@ -40,8 +38,16 @@
                 </a>
             </div>
 
-            <div class="submenu-divider"></div>
-            <div class="submenu-category-title">{{ __('Courrier externe') }}</div>
+        </div>
+    </div>
+
+    <!-- Recherche Section - Consultations (externe / archives / recherche) -->
+    <div class="submenu-section">
+        <div class="submenu-heading">
+            <i class="bi bi-globe"></i> {{ __('Consultations') }} — {{ __('Externe / Archives / Recherche') }}
+        </div>
+        <div class="submenu-content" id="consultationExterneMenu">
+
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.send.external.index') }}">
                     <i class="bi bi-send"></i> {{ __('Envoyer') }}
@@ -52,9 +58,6 @@
                     <i class="bi bi-inbox"></i> {{ __('Recevoir') }}
                 </a>
             </div>
-
-            <div class="submenu-divider"></div>
-            <div class="submenu-category-title">{{ __('Archives') }}</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.archived') }}">
                     <i class="bi bi-folder"></i> {{ __('Courrier') }}
@@ -65,9 +68,6 @@
                     <i class="bi bi-archive"></i> {{ __('Boîtes') }}
                 </a>
             </div>
-
-            <div class="submenu-divider"></div>
-            <div class="submenu-category-title">{{ __('Recherche avancée') }}</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-select-typologies') }}">
                     <i class="bi bi-tags"></i> {{ __('typologies') }}
