@@ -863,7 +863,7 @@
         <main class="py-3">
             <div class="container-fluid">
                 <!-- Ruban façon Office : commandes du module actif en groupes horizontaux -->
-                <div class="office-ribbon mb-3" id="sidebar">
+                <div class="office-ribbon mb-3 ribbon-{{ Request::segment(1) }}" id="sidebar">
                     @switch(Request::segment(1))
                         @case('public')
                             @include('submenu.public')

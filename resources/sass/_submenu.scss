@@ -216,6 +216,18 @@
   }
 }
 
+// Paramètres : boutons empilés dans chaque section (1 colonne) pour gagner de la
+// largeur. La hauteur s'adapte à la section la plus haute (pas de troncature).
+.ribbon-settings {
+  height: auto;
+  min-height: 156px;
+  overflow-y: visible;
+
+  .submenu-section {
+    max-width: 116px;   // 1 colonne : boutons les uns sur les autres
+  }
+}
+
 // Sur mobile, le ruban revient au tiroir latéral (voir #sidebar en media query du layout)
 @media (max-width: 991px) {
   .office-ribbon {
