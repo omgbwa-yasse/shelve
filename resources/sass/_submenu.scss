@@ -216,18 +216,14 @@
   }
 }
 
-// Settings : sections de largeur fixe (2 boutons par ligne) et de hauteur
-// identique, qui passent à la ligne proprement (pas de bande défilante).
+// Settings : les sections restent côte à côte (comme les autres onglets) ;
+// ce sont les boutons À L'INTÉRIEUR de chaque section qui sont superposés
+// sur deux lignes (2 par ligne) pour gagner de la largeur.
 .ribbon-settings {
-  flex-wrap: wrap;            // les sections passent à la ligne
-  align-content: flex-start;
-  height: auto;
-  overflow: visible;
-
   .submenu-section {
-    flex: 0 0 215px;          // largeur fixe : exactement 2 boutons par ligne
+    flex: 0 0 215px;    // largeur fixe = 2 boutons par ligne
     max-width: 215px;
-    height: 156px;            // hauteur identique pour toutes les sections
+    height: 156px;      // hauteur identique pour toutes les sections
     justify-content: flex-start;
   }
 }
