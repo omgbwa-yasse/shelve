@@ -15,6 +15,8 @@ use Database\Seeders\Tools\ThesaurusActionsAdministrativesSeeder;
 use Database\Seeders\Records\Configuration\RecordStatusSeeder;
 use Database\Seeders\Records\Configuration\RecordLevelSeeder;
 use Database\Seeders\Records\Configuration\RecordSupportSeeder;
+use Database\Seeders\Records\Configuration\DeclassementStatusSeeder;
+use Database\Seeders\Records\DeclassementPermissionsSeeder;
 use Database\Seeders\Deposits\ContainerStatusSeeder;
 use Database\Seeders\Deposits\SortSeeder;
 use Database\Seeders\Transfers\SlipStatusSeeder;
@@ -69,6 +71,7 @@ class DatabaseSeeder extends Seeder
 
             // 4. DONNÉES RECORDS (Indépendantes)
             RecordStatusSeeder::class, // Seeder pour les statuts des dossiers
+            DeclassementStatusSeeder::class, // Seeder pour les statuts du circuit de déclassement
             RecordLevelSeeder::class,  // Seeder pour les niveaux hiérarchiques
             RecordSupportSeeder::class, // Seeder pour les supports physiques
             ContainerStatusSeeder::class, // Seeder pour les statuts des contenants
@@ -86,6 +89,9 @@ class DatabaseSeeder extends Seeder
 
             // 6. UTILISATEURS (Dépendent des organisations et permissions)
             SuperAdminSeeder::class, // Seeder pour créer le superadmin avec toutes les permissions
+
+            // 6bis. PERMISSIONS COMPLÉMENTAIRES (Dépendent du rôle superadmin)
+            DeclassementPermissionsSeeder::class, // Permissions déclassement/réactivation
 
             // 7. ACTIVITÉS ET SERVICES (Dépendent des organisations)
             ToolActivitySeeder::class, // Seeder pour les activités

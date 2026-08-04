@@ -1,9 +1,65 @@
-@extends('layouts.app')
+@extends('layouts.workplace')
 
 @section('content')
 <div class="container-fluid workplace-dashboard">
 
     @include('workplaces.partials.site-header', ['activeTab' => 'dashboard'])
+    @php
+        $activeTab = $activeTab ?? 'dashboard';
+    @endphp
+
+    <div class="row g-4 align-items-start mt-1">
+        <div class="col-lg-3">
+            <div class="card workplace-sidepanel border-0 shadow-sm mb-4 position-sticky" style="top: 1rem;">
+                <div class="card-header bg-white border-0 pb-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="fw-semibold text-uppercase text-muted" style="font-size: 0.72rem; letter-spacing: 0.06em;">Navigation</div>
+                        <i class="bi bi-grid-1x2-fill text-primary"></i>
+                    </div>
+                </div>
+                <div class="card-body pt-2">
+                    <div class="nav flex-column nav-pills workplace-side-nav gap-1">
+                        <a class="nav-link {{ $activeTab === 'dashboard' ? 'active' : '' }}" href="{{ route('workplaces.show', $workplace) }}">
+                            <i class="bi bi-speedometer2 me-2"></i>Tableau de bord
+                        </a>
+                        <a class="nav-link {{ $activeTab === 'folders' ? 'active' : '' }}" href="{{ route('workplaces.content.folders', $workplace) }}">
+                            <i class="bi bi-folder me-2"></i>Dossiers
+                        </a>
+                        <a class="nav-link {{ $activeTab === 'documents' ? 'active' : '' }}" href="{{ route('workplaces.content.documents', $workplace) }}">
+                            <i class="bi bi-file-earmark-text me-2"></i>Documents
+                        </a>
+                        <a class="nav-link {{ $activeTab === 'members' ? 'active' : '' }}" href="{{ route('workplaces.members.index', $workplace) }}">
+                            <i class="bi bi-people me-2"></i>Membres
+                        </a>
+                        <a class="nav-link {{ $activeTab === 'activities' ? 'active' : '' }}" href="{{ route('workplaces.activities.index', $workplace) }}">
+                            <i class="bi bi-clock-history me-2"></i>Activités
+                        </a>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="fw-semibold mb-2" style="font-size: 0.9rem;">Actions rapides</div>
+                    <div class="d-grid gap-2">
+                        <a href="{{ route('workplaces.content.documents', $workplace) }}" class="btn btn-outline-primary btn-sm text-start">
+                            <i class="bi bi-file-earmark-plus me-2"></i>Partager un document
+                        </a>
+                        <a href="{{ route('workplaces.content.folders', $workplace) }}" class="btn btn-outline-success btn-sm text-start">
+                            <i class="bi bi-folder-plus me-2"></i>Partager un dossier
+                        </a>
+                        <a href="{{ route('workplaces.members.index', $workplace) }}" class="btn btn-outline-info btn-sm text-start">
+                            <i class="bi bi-person-plus me-2"></i>Inviter un membre
+                        </a>
+                        @can('update', $workplace)
+                        <a href="{{ route('workplaces.edit', $workplace) }}" class="btn btn-outline-secondary btn-sm text-start">
+                            <i class="bi bi-pencil-square me-2"></i>Modifier l'espace
+                        </a>
+                        @endcan
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
 
     {{-- ==================== STATS ROW ==================== --}}
     <div class="row g-3 mb-4">
@@ -461,6 +517,9 @@
 
         </div>
     </div>
+
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -486,6 +545,28 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
 }
 
+.workplace-dashboard .workplace-sidepanel {
+    border-radius: 0.9rem;
+}
+
+.workplace-dashboard .workplace-side-nav .nav-link {
+    color: #516072;
+    border-radius: 0.75rem;
+    padding: 0.7rem 0.9rem;
+    font-weight: 500;
+    background: #f8fafc;
+}
+
+.workplace-dashboard .workplace-side-nav .nav-link:hover {
+    background: #edf4ff;
+    color: #0d6efd;
+}
+
+.workplace-dashboard .workplace-side-nav .nav-link.active {
+    background: #0d6efd;
+    color: #fff;
+}
+
 /* Content Tabs (pills inside dashlet) */
 .nav-sm .nav-link {
     font-size: 0.75rem !important;
@@ -505,6 +586,11 @@
 
 /* Responsive adjustments */
 @media (max-width: 991.98px) {
+    .workplace-sidepanel {
+        position: static !important;
+        top: auto !important;
+    }
+
     .stat-dashlet .card-body {
         padding: 0.75rem !important;
     }

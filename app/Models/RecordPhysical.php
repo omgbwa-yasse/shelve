@@ -163,6 +163,16 @@ class RecordPhysical extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function declassementRecords()
+    {
+        return $this->hasMany(DeclassementRecord::class, 'record_physical_id');
+    }
+
+    public function reactivations()
+    {
+        return $this->hasMany(RecordReactivation::class, 'record_physical_id');
+    }
+
     public function toSearchableArray()
     {
         return [

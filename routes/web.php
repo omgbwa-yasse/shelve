@@ -28,6 +28,7 @@ use App\Http\Controllers\LogController;
 use App\Http\Controllers\RecordAuthorController;
 use App\Http\Controllers\RecordAttachmentController;
 use App\Http\Controllers\RecordContainerController;
+use App\Models\Attachment;
 use App\Http\Controllers\activityCommunicabilityController;
 use App\Http\Controllers\MailAuthorController;
 use App\Http\Controllers\MailTransactionController;
@@ -89,6 +90,8 @@ use App\Http\Controllers\SlipStatusController;
 use App\Http\Controllers\SlipRecordController;
 use App\Http\Controllers\SlipRecordAttachmentController;
 use App\Http\Controllers\SlipController;
+use App\Http\Controllers\DeclassementListController;
+use App\Http\Controllers\RecordReactivationController;
 use App\Http\Controllers\SlipContainerController;
 use App\Http\Controllers\SlipRecordContainerController;
 use App\Http\Controllers\MailActionController;
@@ -129,15 +132,12 @@ use Illuminate\Support\Facades\Gate;
 
 
 Route::get('/', function () {
-        return redirect('/dashboard');
+    return Auth::check()
+        ? redirect()->route('report.dashboard')
+        : redirect()->route('login');
 });
 
 Auth::routes();
-
-// Dashboard route
-Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
-    ->middleware('auth')
-    ->name('dashboard');
 
 Route::get('pdf/thumbnail/{id}', [PDFController::class, 'thumbnail'])->name('pdf.thumbnail');
 
@@ -539,6 +539,13 @@ Route::group(['middleware' => 'auth'], function () {
         // Routes imbriquées
         Route::resource('records.attachments', RecordAttachmentController::class);
         Route::post('attachments/upload-temp', [RecordAttachmentController::class, 'uploadTemp'])->name('attachments.upload-temp');
+        Route::get('attachments/{attachment}/download', function (Attachment $attachment) {
+            if (!file_exists($attachment->full_path)) {
+                abort(404);
+            }
+
+            return $attachment->download();
+        })->name('attachments.download');
         Route::get('upload-diagnostics', [RecordAttachmentController::class, 'diagnostics'])->name('upload.diagnostics');
 
         Route::resource('authors', RecordAuthorController::class)->names('record-author');
@@ -617,12 +624,36 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('/slips/{slip}/print', [SlipController::class, 'print'])->name('slips.print');
             Route::get('slip/select', [SearchSlipController::class, 'date'])->name('slips-select-date');
             Route::get('organisation/select', [SearchSlipController::class, 'organisation'])->name('slips-select-organisation');
+
             Route::post('slipRecordAttachment/upload', [SlipRecordAttachmentController::class, 'upload'])->name('slip-record-upload');
             Route::post('slipRecordAttachment/show', [SlipRecordAttachmentController::class, 'show'])->name('slip-record-show');
             Route::delete('slips/{slip}/records/{record}/attachments/{id}', [SlipRecordAttachmentController::class, 'delete'])
                 ->name('slipRecordAttachment.delete');
 
         });
+
+    Route::prefix('declassements')->name('declassement-lists.')->group(function () {
+        Route::get('eligible-records', [DeclassementListController::class, 'eligibleRecords'])->name('eligible-records');
+        Route::post('{declassementList}/records', [DeclassementListController::class, 'addRecords'])->name('records.add');
+        Route::delete('{declassementList}/records/{declassementRecord}', [DeclassementListController::class, 'removeRecord'])->name('records.remove');
+        Route::post('{declassementList}/comments', [DeclassementListController::class, 'comment'])->name('comments.store');
+        Route::post('{declassementList}/request-approval', [DeclassementListController::class, 'requestApproval'])->name('request-approval');
+        Route::post('{declassementList}/approve', [DeclassementListController::class, 'approve'])->name('approve');
+        Route::post('{declassementList}/validate', [DeclassementListController::class, 'validateList'])->name('validate');
+        Route::post('{declassementList}/process', [DeclassementListController::class, 'process'])->name('process');
+        Route::post('{declassementList}/reject', [DeclassementListController::class, 'reject'])->name('reject');
+    });
+    Route::resource('declassements', DeclassementListController::class)
+        ->names('declassement-lists')
+        ->parameters(['declassements' => 'declassementList']);
+
+    Route::prefix('record-reactivations')->name('record-reactivations.')->group(function () {
+        Route::get('/', [RecordReactivationController::class, 'index'])->name('index');
+        Route::get('create/{record}', [RecordReactivationController::class, 'create'])->name('create');
+        Route::post('/', [RecordReactivationController::class, 'store'])->name('store');
+        Route::post('{reactivation}/approve', [RecordReactivationController::class, 'approve'])->name('approve');
+        Route::post('{reactivation}/reject', [RecordReactivationController::class, 'reject'])->name('reject');
+    });
 
     Route::prefix('deposits')->group(function () {
         Route::get('/', [BuildingController::class, 'index']);
@@ -837,7 +868,7 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     // Routes pour les rapports
-    Route::prefix('dashboard')->group(function () {
+    Route::prefix('reports')->group(function () {
         Route::get('/', [ReportController::class, 'dashboard'])->name('report.dashboard');
         Route::get('mails', [ReportController::class, 'statisticsMails'])->name('report.statistics.mails');
         Route::get('repositories', [ReportController::class, 'statisticsRepositories'])->name('report.statistics.repositories');

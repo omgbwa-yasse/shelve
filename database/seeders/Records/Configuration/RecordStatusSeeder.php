@@ -48,6 +48,18 @@ class RecordStatusSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now
             ],
+            [
+                'name' => "Proposé à l'élimination",
+                'description' => "Le dossier figure dans une liste de déclassement en cours de circuit d'approbation",
+                'created_at' => $now,
+                'updated_at' => $now
+            ],
+            [
+                'name' => 'Éliminé',
+                'description' => "Le dossier a été détruit à l'issue d'une liste de déclassement traitée",
+                'created_at' => $now,
+                'updated_at' => $now
+            ],
         ];
 
         DB::table('record_statuses')->insertOrIgnore($statuses);

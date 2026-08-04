@@ -10,7 +10,7 @@
                 <div>
                     <h4 class="page-title">{{ __('Create OPAC Page') }}</h4>
                     <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('public.dashboard') }}">{{ __('Dashboard') }}</a></li>
                         <li class="breadcrumb-item"><a href="{{ route('admin.opac.configurations.index') }}">{{ __('OPAC') }}</a></li>
                         <li class="breadcrumb-item"><a href="{{ route('admin.opac.pages.index') }}">{{ __('Pages') }}</a></li>
                         <li class="breadcrumb-item active">{{ __('Create') }}</li>

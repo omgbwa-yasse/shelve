@@ -10,7 +10,7 @@
                 <h4 class="mb-sm-0 font-size-18">Configuration OPAC</h4>
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Administration</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('public.dashboard') }}">Administration</a></li>
                         <li class="breadcrumb-item active">Configuration OPAC</li>
                     </ol>
                 </div>

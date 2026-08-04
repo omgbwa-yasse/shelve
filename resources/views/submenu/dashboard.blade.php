@@ -1,5 +1,5 @@
 <nav class="flex flex-col space-y-1">
-    <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+    <a href="{{ route('report.dashboard') }}" class="nav-link {{ request()->routeIs('report.dashboard') ? 'active' : '' }}">
         <i class="bi bi-speedometer2"></i>
         <span>{{ __('Overview') }}</span>
     </a>

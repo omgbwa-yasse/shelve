@@ -128,6 +128,36 @@
     </div>
     @endcan
 
+    <!-- Déclassement Section -->
+    @can('viewAny', App\Models\DeclassementList::class)
+    <div class="submenu-section">
+        <div class="submenu-heading">
+            <i class="bi bi-trash"></i> {{ __('declassement') }}
+        </div>
+        <div class="submenu-content" id="declassementMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('declassement-lists.index') }}">
+                    <i class="bi bi-list-ul"></i> {{ __('declassement_lists') }}
+                </a>
+            </div>
+            @can('create', App\Models\DeclassementList::class)
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('declassement-lists.create') }}">
+                    <i class="bi bi-plus-circle"></i> {{ __('new_declassement_list') }}
+                </a>
+            </div>
+            @endcan
+            @can('viewAny', App\Models\RecordReactivation::class)
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('record-reactivations.index') }}">
+                    <i class="bi bi-arrow-counterclockwise"></i> {{ __('reactivations') }}
+                </a>
+            </div>
+            @endcan
+        </div>
+    </div>
+    @endcan
+
     <!-- Import / Export Section -->
     @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('transferrings', 'tools'))
     <div class="submenu-section">
