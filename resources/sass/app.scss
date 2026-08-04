@@ -236,14 +236,26 @@ h2 { font-weight:600; }
 }
 
 .nav-modules .nav-link {
-    padding: 6px 9px;
-    border-radius: 50%;
-    width: 38px;
-    height: 38px;
+    padding: 4px 6px;
+    border-radius: 8px;
+    width: auto;
+    height: auto;
+    flex-direction: column;
+    gap: 1px;
 }
 
 .nav-modules .nav-link i {
-    font-size: 1.68rem; /* 1.4rem + 20% */
+    font-size: 1.4rem;
+}
+
+.nav-modules .nav-link .nav-module-label {
+    font-size: 0.58rem;
+    line-height: 1;
+    white-space: nowrap;
+    max-width: 58px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: rgba(255, 255, 255, 0.75);
 }
 
 /* Logo styles */

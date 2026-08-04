@@ -652,66 +652,66 @@
                     <nav class="main-navigation nav-modules">
                         @can('module_mails_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'mails' || Request::segment(1) == '') active @endif" href="{{ route('mail-received.index') }}" title="Mails"><i class="bi bi-envelope"></i></a>
+                            <a class="nav-link @if (Request::segment(1) == 'mails' || Request::segment(1) == '') active @endif" href="{{ route('mail-received.index') }}" title="Mails"><i class="bi bi-envelope"></i><span class="nav-module-label">Mails</span></a>
                         </div>
                         @endcan
                         @can('module_workflow_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'workflows' || Request::segment(1) == 'tasks') active @endif" href="{{ route('tasks.index') }}" title="Workflow"><i class="bi bi-diagram-3"></i></a>
+                            <a class="nav-link @if (Request::segment(1) == 'workflows' || Request::segment(1) == 'tasks') active @endif" href="{{ route('tasks.index') }}" title="Workflow"><i class="bi bi-diagram-3"></i><span class="nav-module-label">Workflow</span></a>
                         </div>
                         @endcan
                         @can('module_workplace_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'workplaces') active @endif" href="{{ route('workplaces.index') }}" title="WorkPlaces"><i class="bi bi-briefcase"></i></a>
+                            <a class="nav-link @if (Request::segment(1) == 'workplaces') active @endif" href="{{ route('workplaces.index') }}" title="WorkPlaces"><i class="bi bi-briefcase"></i><span class="nav-module-label">Workplace</span></a>
                         </div>
                         @endcan
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'chats') active @endif" href="{{ route('chats.index') }}" title="Chat"><i class="bi bi-chat-left-text"></i></a>
+                            <a class="nav-link @if (Request::segment(1) == 'chats') active @endif" href="{{ route('chats.index') }}" title="Chat"><i class="bi bi-chat-left-text"></i><span class="nav-module-label">Chat</span></a>
                         </div>
                         @can('module_repositories_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'repositories') active @endif" href="{{ route('records.index') }}" title="Records"><i class="bi bi-folder"></i></a>
+                            <a class="nav-link @if (Request::segment(1) == 'repositories') active @endif" href="{{ route('records.index') }}" title="Records"><i class="bi bi-folder"></i><span class="nav-module-label">Notices</span></a>
                         </div>
                         @endcan
                         @can('module_communications_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'communications') active @endif" href="{{ route('communications.transactions.index') }}" title="Communications"><i class="bi bi-chat-dots"></i></a>
+                            <a class="nav-link @if (Request::segment(1) == 'communications') active @endif" href="{{ route('communications.transactions.index') }}" title="Communications"><i class="bi bi-chat-dots"></i><span class="nav-module-label">Comms</span></a>
                         </div>
                         @endcan
                         @can('module_transferrings_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'transferrings') active @endif" href="{{ route('slips.index') }}" title="Transfers"><i class="bi bi-arrow-left-right"></i></a>
+                            <a class="nav-link @if (Request::segment(1) == 'transferrings') active @endif" href="{{ route('slips.index') }}" title="Transfers"><i class="bi bi-arrow-left-right"></i><span class="nav-module-label">Transferts</span></a>
                         </div>
                         @endcan
                         @can('module_deposits_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'deposits') active @endif" href="{{ route('buildings.index') }}" title="Deposits"><i class="bi bi-building"></i></a>
+                            <a class="nav-link @if (Request::segment(1) == 'deposits') active @endif" href="{{ route('buildings.index') }}" title="Deposits"><i class="bi bi-building"></i><span class="nav-module-label">Dépôts</span></a>
                         </div>
                         @endcan
                         @can('module_tools_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'tools') active @endif" href="{{ route('activities.index') }}" title="Tools"><i class="bi bi-tools"></i></a>
+                            <a class="nav-link @if (Request::segment(1) == 'tools') active @endif" href="{{ route('activities.index') }}" title="Tools"><i class="bi bi-tools"></i><span class="nav-module-label">Outils</span></a>
                         </div>
                         @endcan
                         @can('module_dollies_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'dollies') active @endif" href="{{ route('dolly.index') }}" title="Dollies"><i class="bi bi-cart3"></i></a>
+                            <a class="nav-link @if (Request::segment(1) == 'dollies') active @endif" href="{{ route('dolly.index') }}" title="Dollies"><i class="bi bi-cart3"></i><span class="nav-module-label">Chariots</span></a>
                         </div>
                         @endcan
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'external') active @endif" href="{{ route('external.contacts.index') }}" title="Contacts"><i class="bi bi-people"></i></a>
+                            <a class="nav-link @if (Request::segment(1) == 'external') active @endif" href="{{ route('external.contacts.index') }}" title="Contacts"><i class="bi bi-people"></i><span class="nav-module-label">Contacts</span></a>
                         </div>
                         @can('module_public_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'public') active @endif" href="{{ route('public.users.index') }}" title="Public"><i class="bi bi-globe"></i></a>
+                            <a class="nav-link @if (Request::segment(1) == 'public') active @endif" href="{{ route('public.users.index') }}" title="Public"><i class="bi bi-globe"></i><span class="nav-module-label">Public</span></a>
                         </div>
                         @endcan
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'ai-search') active @endif" href="{{ route('ai-search.index') }}" title="AI"><i class="bi bi-robot"></i></a>
+                            <a class="nav-link @if (Request::segment(1) == 'ai-search') active @endif" href="{{ route('ai-search.index') }}" title="AI"><i class="bi bi-robot"></i><span class="nav-module-label">IA</span></a>
                         </div>
                         @can('module_settings_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('users.show', Auth::user()) }}" title="Settings"><i class="bi bi-gear"></i></a>
+                            <a class="nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('users.show', Auth::user()) }}" title="Settings"><i class="bi bi-gear"></i><span class="nav-module-label">Paramètres</span></a>
                         </div>
                         @endcan
                     </nav>
