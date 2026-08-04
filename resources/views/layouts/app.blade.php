@@ -34,7 +34,7 @@
     <style>
         /* Liens du contenu : gras et non soulignés */
         #container a {
-            font-weight: 600;
+            font-weight: 800;
             text-decoration: none;
         }
 
@@ -665,6 +665,9 @@
                             <a class="nav-link @if (Request::segment(1) == 'workplaces') active @endif" href="{{ route('workplaces.index') }}" title="WorkPlaces"><i class="bi bi-briefcase"></i></a>
                         </div>
                         @endcan
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'chats') active @endif" href="{{ route('chats.index') }}" title="Chat"><i class="bi bi-chat-left-text"></i></a>
+                        </div>
                         @can('module_repositories_access')
                         <div class="nav-item">
                             <a class="nav-link @if (Request::segment(1) == 'repositories') active @endif" href="{{ route('records.index') }}" title="Records"><i class="bi bi-folder"></i></a>
@@ -858,6 +861,9 @@
                             @break
                         @case('workplaces')
                             @include('submenu.workplaces')
+                            @break
+                        @case('chats')
+                            @include('submenu.chats')
                             @break
                     @endswitch
                 </div>

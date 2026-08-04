@@ -1219,6 +1219,15 @@ Route::prefix('workplaces')->name('workplaces.')->middleware('auth')->group(func
     });
 });
 
+// Global Chat Routes (tous les workplaces + messages privés entre collègues)
+Route::prefix('chats')->name('chats.')->middleware('auth')->group(function () {
+    Route::get('/', [\App\Http\Controllers\ChatController::class, 'index'])->name('index');
+    Route::get('/{conversation}', [\App\Http\Controllers\ChatController::class, 'show'])->name('show');
+    Route::post('/', [\App\Http\Controllers\ChatController::class, 'store'])->name('store');
+    Route::post('/{conversation}/messages', [\App\Http\Controllers\ChatController::class, 'storeMessage'])->name('send');
+    Route::delete('/{conversation}', [\App\Http\Controllers\ChatController::class, 'destroy'])->name('destroy');
+});
+
 
 
 
