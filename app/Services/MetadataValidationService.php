@@ -4,12 +4,90 @@ namespace App\Services;
 
 use App\Models\RecordDigitalDocumentType;
 use App\Models\RecordDigitalFolderType;
+use App\Models\RecordType;
 use App\Models\MetadataDefinition;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class MetadataValidationService
 {
+    /**
+     * Validate metadata for a unified record type (Phase 1/2 — reciblage).
+     *
+     * @param RecordType $recordType
+     * @param array $metadata
+     * @return array Validated metadata
+     * @throws ValidationException
+     */
+    public function validateRecordMetadata(RecordType $recordType, array $metadata): array
+    {
+        $profiles = $recordType->metadataProfiles()->with('metadataDefinition')->ordered()->get();
+
+        return $this->validateProfiles($profiles, $metadata);
+    }
+
+    /**
+     * Get metadata form fields for a unified record type.
+     *
+     * @param RecordType $recordType
+     * @return array
+     */
+    public function getRecordMetadataFields(RecordType $recordType): array
+    {
+        $profiles = $recordType->metadataProfiles()
+            ->with(['metadataDefinition.referenceList.activeValues'])
+            ->visible()
+            ->ordered()
+            ->get();
+
+        return $this->buildMetadataFields($profiles);
+    }
+
+    /**
+     * Shared validation logic over a collection of metadata profiles.
+     *
+     * @param \Illuminate\Support\Collection $profiles
+     * @param array $metadata
+     * @return array
+     * @throws ValidationException
+     */
+    protected function validateProfiles($profiles, array $metadata): array
+    {
+        $rules = [];
+        $messages = [];
+        $attributes = [];
+
+        foreach ($profiles as $profile) {
+            $definition = $profile->metadataDefinition;
+            $fieldName = $definition->code;
+
+            $fieldRules = [];
+
+            if ($profile->mandatory) {
+                $fieldRules[] = 'required';
+            } else {
+                $fieldRules[] = 'nullable';
+            }
+
+            $fieldRules = array_merge($fieldRules, $this->getDataTypeRules($definition->data_type, $definition));
+
+            if ($profile->validation_rules) {
+                $fieldRules = array_merge($fieldRules, $profile->validation_rules);
+            }
+
+            if ($definition->validation_rules) {
+                $fieldRules = array_merge($fieldRules, $definition->validation_rules);
+            }
+
+            $rules[$fieldName] = $fieldRules;
+            $attributes[$fieldName] = $definition->name;
+        }
+
+        $validator = Validator::make($metadata, $rules, $messages, $attributes);
+
+        return $validator->validate();
+    }
+
     /**
      * Validate metadata for a document type.
      *
