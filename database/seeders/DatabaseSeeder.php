@@ -26,6 +26,7 @@ use Database\Seeders\Workplaces\OrganisationServicesSeeder;
 use Database\Seeders\Workplaces\OrganisationRoomSeeder;
 use Database\Seeders\Workplaces\WorkplaceCategorySeeder;
 use Database\Seeders\Settings\SuperAdminSeeder;
+use Database\Seeders\Settings\AdminAccountSeeder;
 use Database\Seeders\Tools\ToolActivitySeeder;
 use Database\Seeders\Tools\ToolCommunicabilitySeeder;
 use Database\Seeders\Settings\SettingSeeder;
@@ -96,6 +97,9 @@ class DatabaseSeeder extends Seeder
 
             // 6ter. TYPES UNIFIÉS (Phase 1 — dépend des utilisateurs pour created_by)
             RecordTypeSeeder::class, // Backfill record_types + profils de métadonnées
+
+            // 6quater. COMPTE ADMIN (idempotent — accès garanti)
+            AdminAccountSeeder::class, // admin@example.com / admin123
 
             // 7. ACTIVITÉS ET SERVICES (Dépendent des organisations)
             ToolActivitySeeder::class, // Seeder pour les activités
