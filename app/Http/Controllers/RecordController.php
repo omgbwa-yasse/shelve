@@ -510,6 +510,129 @@ class RecordController extends Controller
     }
 
     /**
+     * Export Excel des notices sélectionnées.
+     */
+    public function bulkExport(Request $request)
+    {
+        Gate::authorize('records_export');
+
+        $ids = $request->input('record_ids', []);
+        $records = \App\Models\Record::whereIn('id', $ids)->currentVersion()->get();
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\UnifiedRecordsExport($records),
+            'records-' . date('Ymd-His') . '.xlsx'
+        );
+    }
+
+    /**
+     * Impression PDF des notices sélectionnées.
+     */
+    public function bulkPrint(Request $request)
+    {
+        Gate::authorize('records_export');
+
+        $ids = $request->input('record_ids', []);
+        $records = \App\Models\Record::whereIn('id', $ids)->currentVersion()->with(['type', 'level', 'status', 'activity'])->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('records.print-list', compact('records'));
+
+        return $pdf->download('records-' . date('Ymd-His') . '.pdf');
+    }
+
+    /**
+     * Créer un bordereau (transfert) avec les notices sélectionnées.
+     */
+    public function bulkTransfer(Request $request)
+    {
+        Gate::authorize('records_update');
+
+        $request->validate([
+            'code' => 'required|max:20',
+            'name' => 'required|max:200',
+            'description' => 'nullable',
+            'record_ids' => 'required|array',
+        ]);
+
+        $defaultStatusId = \App\Models\SlipStatus::where('name', 'Projects')->value('id') ?? 1;
+
+        $slip = \App\Models\Slip::create([
+            'code' => $request->code,
+            'name' => $request->name,
+            'description' => $request->description,
+            'officer_organisation_id' => $request->user()->current_organisation_id,
+            'officer_id' => $request->user()->id,
+            'user_organisation_id' => $request->input('user_organisation_id', $request->user()->current_organisation_id),
+            'slip_status_id' => $defaultStatusId,
+        ]);
+
+        foreach ($request->input('record_ids') as $recordId) {
+            $record = \App\Models\Record::find($recordId);
+            if (!$record) {
+                continue;
+            }
+
+            $supportId = \App\Models\RecordMedium::where('record_id', $recordId)->value('support_id') ?? 24;
+
+            \App\Models\SlipRecord::create([
+                'slip_id' => $slip->id,
+                'code' => $record->code,
+                'name' => $record->name,
+                'date_format' => $record->date_format,
+                'date_start' => $record->start_date,
+                'date_end' => $record->end_date,
+                'date_exact' => $record->date_exact,
+                'content' => $record->content,
+                'level_id' => $record->level_id,
+                'support_id' => $supportId,
+                'activity_id' => $record->activity_id,
+                'creator_id' => $request->user()->id,
+            ]);
+        }
+
+        return redirect()->route('slips.index')
+            ->with('success', 'Bordereau créé avec ' . count($request->input('record_ids')) . ' notice(s).');
+    }
+
+    /**
+     * Créer une communication avec les notices sélectionnées.
+     */
+    public function bulkCommunicate(Request $request)
+    {
+        Gate::authorize('communications_create');
+
+        $request->validate([
+            'name' => 'required|max:200',
+            'content' => 'nullable',
+            'user_id' => 'required|exists:users,id',
+            'user_organisation_id' => 'required|exists:organisations,id',
+            'record_ids' => 'required|array',
+        ]);
+
+        $communication = \App\Models\Communication::create([
+            'code' => app(\App\Services\CodeGeneratorService::class)->generateCommunicationCode(),
+            'name' => $request->name,
+            'content' => $request->content,
+            'operator_id' => $request->user()->id,
+            'operator_organisation_id' => $request->user()->current_organisation_id,
+            'user_id' => $request->user_id,
+            'user_organisation_id' => $request->user_organisation_id,
+            'return_date' => $request->input('return_date', now()->addDays(30)->format('Y-m-d')),
+            'status' => 'pending',
+        ]);
+
+        foreach ($request->input('record_ids') as $recordId) {
+            $communication->records()->attach($recordId, [
+                'operator_id' => $request->user()->id,
+                'return_date' => $communication->return_date,
+            ]);
+        }
+
+        return redirect()->route('communications.transactions.show', $communication)
+            ->with('success', 'Communication créée.');
+    }
+
+    /**
      * Champs de métadonnées d'un type de notice (rendu dynamique du formulaire de création).
      */
     public function typeMetadataFields(Request $request)

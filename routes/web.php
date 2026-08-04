@@ -471,6 +471,10 @@ Route::group(['middleware' => 'auth'], function () {
         // Module unifié (Phase 5) — opérations sur Record / RecordMedium
         Route::get('records/terms/autocomplete', [RecordController::class, 'autocompleteTerms'])->name('records.terms.autocomplete');
         Route::get('records/type-metadata-fields', [RecordController::class, 'typeMetadataFields'])->name('records.type-metadata-fields');
+        Route::post('records/bulk-export', [RecordController::class, 'bulkExport'])->name('records.bulk-export');
+        Route::post('records/bulk-print', [RecordController::class, 'bulkPrint'])->name('records.bulk-print');
+        Route::post('records/bulk-transfer', [RecordController::class, 'bulkTransfer'])->name('records.bulk-transfer');
+        Route::post('records/bulk-communicate', [RecordController::class, 'bulkCommunicate'])->name('records.bulk-communicate');
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
         Route::post('records/{record}/move', [RecordController::class, 'move'])->name('records.move');
         Route::get('records/tree/view', [RecordController::class, 'treeView'])->name('records.tree.view');
