@@ -219,6 +219,30 @@ h2 { font-weight:600; }
     font-size: 1.4rem;
 }
 
+/* Icônes des modules dans le bandeau supérieur (sans texte) */
+.nav-modules {
+    justify-content: flex-start !important;
+    height: auto !important;
+    flex: 1 1 auto;
+    min-width: 0;
+    align-self: center;
+}
+
+.nav-modules .nav-item {
+    flex-grow: 0;
+}
+
+.nav-modules .nav-link {
+    padding: 6px 9px;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+}
+
+.nav-modules .nav-link i {
+    font-size: 1.68rem; /* 1.4rem + 20% */
+}
+
 /* Logo styles */
 .header-logo {
     display: flex;
