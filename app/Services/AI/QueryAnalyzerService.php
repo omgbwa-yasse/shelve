@@ -14,15 +14,11 @@ class QueryAnalyzerService
         $this->registry = $registry;
     }
 
-    public function analyzeQuery(string $userQuery, string $searchType = 'records'): array
+    public function analyzeQuery(string $userQuery, string $searchType = 'records', array $history = []): array
     {
-        // Utiliser le provider par défaut depuis les paramètres
-        $defaultProvider = $this->registry->getSetting('ai_default_provider', 'mistral');
-        if (is_string($defaultProvider)) {
-            $providerName = json_decode($defaultProvider, true) ?: $defaultProvider;
-        } else {
-            $providerName = $defaultProvider;
-        }
+        // Utiliser le provider et le modèle par défaut depuis les paramètres
+        $defaultValues = app(DefaultValueService::class);
+        $providerName = $defaultValues->getDefaultProvider();
 
         $this->registry->ensureConfigured($providerName);
 
@@ -30,12 +26,20 @@ class QueryAnalyzerService
 
         $messages = [
             ['role' => 'system', 'content' => $analysisPrompt],
-            ['role' => 'user', 'content' => $userQuery]
         ];
 
+        // Contexte multi-tours : on reprend les derniers échanges pour la continuité
+        foreach (array_slice($history, -6) as $turn) {
+            if (isset($turn['role'], $turn['content'])) {
+                $messages[] = ['role' => $turn['role'], 'content' => $turn['content']];
+            }
+        }
+
+        $messages[] = ['role' => 'user', 'content' => $userQuery];
+
         try {
-            // Obtenir le modèle par défaut pour le provider
-            $defaultModel = $this->getDefaultModelForProvider($providerName);
+            // Obtenir le modèle par défaut
+            $defaultModel = $defaultValues->getDefaultModel();
 
             $response = AiBridge::provider($providerName)->chat($messages, [
                 'model' => $defaultModel
@@ -51,17 +55,6 @@ class QueryAnalyzerService
                 'action' => 'error'
             ];
         }
-    }
-
-    private function getDefaultModelForProvider(string $providerName): string
-    {
-        return match($providerName) {
-            'mistral' => $this->registry->getSetting('mistral_default_model', 'mistral-large-latest'),
-            'claude' => 'claude-3-5-sonnet-20241022',
-            'openai' => 'gpt-4',
-            'ollama' => $this->registry->getSetting('ollama_default_model', 'llama3.1'),
-            default => 'mistral-large-latest'
-        };
     }
 
     private function getAnalysisPrompt(string $searchType): string

@@ -16,6 +16,7 @@ class RateLimitService
         'search' => ['max' => 100, 'decay' => 3600],              // 100 recherches par heure
         'export' => ['max' => 5, 'decay' => 3600],                // 5 exports par heure
         'api_general' => ['max' => 1000, 'decay' => 3600],        // 1000 requêtes API par heure
+        'ai' => ['max' => 30, 'decay' => 60],                     // 30 requêtes IA par minute
     ];
 
     /**

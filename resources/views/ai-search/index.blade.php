@@ -601,7 +601,8 @@ function sendMessage() {
         },
         body: JSON.stringify({
             message: message,
-            search_type: currentSearchType
+            search_type: currentSearchType,
+            history: getChatHistory()
         })
     })
     .then(response => response.json())
@@ -621,8 +622,20 @@ function sendMessage() {
     });
 }
 
-function addUserMessage(message) {
+function getChatHistory() {
     const chatMessages = document.getElementById('chatMessages');
+    const turns = [];
+    const containers = chatMessages.querySelectorAll('.ai-message, .user-message');
+    containers.forEach(function (el) {
+        const textEl = el.querySelector('.message-text');
+        if (!textEl) return;
+        const role = el.classList.contains('user-message') ? 'user' : 'assistant';
+        turns.push({ role: role, content: textEl.textContent.trim() });
+    });
+    return turns.slice(-6);
+}
+
+function addUserMessage(message) {    const chatMessages = document.getElementById('chatMessages');
     const time = new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
 
     const messageHtml = `

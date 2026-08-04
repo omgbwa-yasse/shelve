@@ -130,9 +130,9 @@
                 </a>
             </div>
             <div class="submenu-item">
-                <button class="submenu-link" id="aiSettingsBtn">
+                <a class="submenu-link" href="{{ route('settings.prompts.index') }}">
                     <i class="bi bi-gear"></i> {{ __('AI Settings') }}
-                </button>
+                </a>
             </div>
 
         </div>

@@ -179,7 +179,7 @@ class QueryExecutorService
         }
 
         $query = $this->getTableQuery($table);
-        $result = $query->where('records.id', $id)->first();
+        $result = $query->where($this->getTablePrefix($table) . '.id', $id)->first();
 
         if (!$result) {
             return [
@@ -251,12 +251,10 @@ class QueryExecutorService
             case 'mails':
                 return DB::table('mails')
                     ->leftJoin('mail_priorities', 'mails.priority_id', '=', 'mail_priorities.id')
-                    ->leftJoin('mail_types', 'mails.mail_type_id', '=', 'mail_types.id')
-                    ->leftJoin('mail_typologies', 'mails.mail_typology_id', '=', 'mail_typologies.id')
+                    ->leftJoin('mail_typologies', 'mails.typology_id', '=', 'mail_typologies.id')
                     ->select(
                         'mails.*',
                         'mail_priorities.name as priority_name',
-                        'mail_types.name as mail_type_name',
                         'mail_typologies.name as typology_name'
                     );
 
@@ -272,7 +270,7 @@ class QueryExecutorService
 
             case 'slips':
                 return DB::table('slips')
-                    ->leftJoin('slip_statuses', 'slips.status_id', '=', 'slip_statuses.id')
+                    ->leftJoin('slip_statuses', 'slips.slip_status_id', '=', 'slip_statuses.id')
                     ->leftJoin('users as officers', 'slips.officer_id', '=', 'officers.id')
                     ->leftJoin('users as slip_users', 'slips.user_id', '=', 'slip_users.id')
                     ->select(
@@ -303,7 +301,7 @@ class QueryExecutorService
 
         $query = $this->getTableQuery($table);
         $query = $this->applyFilters($query, $filters, $table);
-        $query->orderBy('records.created_at', 'desc');
+        $query->orderBy($this->getTablePrefix($table) . '.created_at', 'desc');
 
         $results = $query->limit($limit)->get();
 
@@ -359,8 +357,27 @@ class QueryExecutorService
                     break;
 
                 case 'term':
-                    // Terms relationship has been removed from the system
-                    // This filter is no longer supported
+                    if ($table === 'records') {
+                        $query->where(function ($q) use ($value) {
+                            // Mots-clés (pivot unifié record_keyword)
+                            $q->whereExists(function ($sub) use ($value) {
+                                $sub->select(DB::raw(1))
+                                    ->from('record_keyword')
+                                    ->whereColumn('record_keyword.record_id', 'records.id')
+                                    ->join('keywords', 'record_keyword.keyword_id', '=', 'keywords.id')
+                                    ->where('keywords.name', 'LIKE', "%{$value}%");
+                            });
+                            // Concepts du thésaurus (pivot unifié record_thesaurus_concept)
+                            $q->orWhereExists(function ($sub) use ($value) {
+                                $sub->select(DB::raw(1))
+                                    ->from('record_thesaurus_concept')
+                                    ->whereColumn('record_thesaurus_concept.record_id', 'records.id')
+                                    ->join('thesaurus_concepts', 'record_thesaurus_concept.concept_id', '=', 'thesaurus_concepts.id')
+                                    ->join('thesaurus_labels', 'thesaurus_labels.concept_id', '=', 'thesaurus_concepts.id')
+                                    ->where('thesaurus_labels.literal_form', 'LIKE', "%{$value}%");
+                            });
+                        });
+                    }
                     break;
 
                 case 'container':
@@ -389,7 +406,7 @@ class QueryExecutorService
 
                 case 'mail_type':
                     if ($table === 'mails') {
-                        $query->where('mail_types.name', 'LIKE', "%{$value}%");
+                        $query->where('mails.mail_type', 'LIKE', "%{$value}%");
                     }
                     break;
 
@@ -450,8 +467,10 @@ class QueryExecutorService
                     break;
 
                 case 'received_date':
-                    if (in_array($table, ['mails', 'slips'])) {
-                        $query->whereDate("{$tablePrefix}.received_date", $value);
+                    if ($table === 'mails') {
+                        $query->whereDate('mails.date', $value);
+                    } elseif ($table === 'slips') {
+                        $query->whereDate('slips.received_date', $value);
                     }
                     break;
 

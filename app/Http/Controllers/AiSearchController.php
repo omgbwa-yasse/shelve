@@ -38,7 +38,8 @@ class AiSearchController extends Controller
     {
         $message = $request->input('message');
         $searchType = $request->input('search_type', 'records');
-        
+        $history = $request->input('history', []);
+
         // Auto-détection du type de recherche basé sur le contenu
         $searchType = $this->detectSearchType($message, $searchType);
 
@@ -50,9 +51,9 @@ class AiSearchController extends Controller
         }
 
         try {
-            // Étape 1: Claude analyse la requête et retourne des instructions JSON
+            // Étape 1: l'IA analyse la requête et retourne des instructions JSON
             Log::info("Analyzing user query", ['query' => $message, 'type' => $searchType]);
-            $instructions = $this->analyzer->analyzeQuery($message, $searchType);
+            $instructions = $this->analyzer->analyzeQuery($message, $searchType, $history);
 
             if (!$instructions['success']) {
                 return response()->json([
