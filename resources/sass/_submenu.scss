@@ -113,6 +113,10 @@
     max-width: 320px;           // Enregistrement records : 3 éléments max par ligne
   }
 
+  .submenu-section:has(#thesaurusMenu) {
+    max-width: 420px;           // Thésaurus : 4 éléments max par ligne
+  }
+
   // Menu Outils : les 4 premières sections (2 boutons chacune) sont empilées
   // sur une seule colonne pour gagner de la largeur au profit de Thésaurus/Référentiels.
   .submenu-section:has(#planClassementMenu),
