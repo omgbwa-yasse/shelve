@@ -68,11 +68,11 @@ class ThesaurusConcept extends Model
     }
 
     /**
-     * Relation avec les records (pivot table)
+     * Relation avec les notices unifiées (pivot record_thesaurus_concept)
      */
     public function records(): BelongsToMany
     {
-        return $this->belongsToMany(RecordPhysical::class, 'record_physical_thesaurus_concept', 'concept_id', 'record_physical_id');
+        return $this->belongsToMany(Record::class, 'record_thesaurus_concept', 'concept_id', 'record_id');
     }
 
     /**

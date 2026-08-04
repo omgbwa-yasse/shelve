@@ -14,11 +14,11 @@ class Keyword extends Model
     ];
 
     /**
-     * Relation avec les records
+     * Relation avec les notices unifiées
      */
     public function records()
     {
-        return $this->belongsToMany(RecordPhysical::class, 'record_keyword')
+        return $this->belongsToMany(Record::class, 'record_keyword', 'keyword_id', 'record_id')
                     ->withTimestamps();
     }
 
