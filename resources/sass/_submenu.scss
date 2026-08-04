@@ -216,8 +216,18 @@
   }
 }
 
-// Settings suit le comportement par défaut du ruban (hauteur fixe 156px,
-// sections dimensionnées au contenu) comme les autres onglets.
+// Settings : boutons superposés (1 colonne) dans chaque section et passages à la
+// ligne des sections => pas de bande défilante horizontale, tout reste visible.
+.ribbon-settings {
+  flex-wrap: wrap;            // les sections passent à la ligne au lieu de défiler
+  height: auto;
+  min-height: 156px;
+  overflow: visible;
+
+  .submenu-section {
+    max-width: 116px;         // 1 colonne : boutons l'un sur l'autre
+  }
+}
 
 // Sur mobile, le ruban revient au tiroir latéral (voir #sidebar en media query du layout)
 @media (max-width: 991px) {
