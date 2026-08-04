@@ -70,7 +70,7 @@
   align-items: stretch;
   flex-wrap: nowrap;          // une seule ligne (pas de retour à la ligne => hauteur constante)
   justify-content: flex-start; // aligné à gauche
-  height: 116px;              // hauteur fixe du ruban
+  height: 156px;              // hauteur fixe du ruban (3 rangées de tuiles)
   overflow-x: auto;
   overflow-y: hidden;
   gap: 0;
@@ -97,6 +97,14 @@
     border-right: 1px solid #e1e5ea;
 
     &:last-child { border-right: none; }
+  }
+
+  // Plafonds de colonnes spécifiques (largeur du groupe = nb colonnes x tuile)
+  .submenu-section:has(#rechercheMenu) {
+    max-width: 520px;           // Recherche records : 5 éléments max par ligne
+  }
+  .submenu-section:has(#enregistrementMenu) {
+    max-width: 320px;           // Enregistrement records : 3 éléments max par ligne
   }
 
   .submenu-heading {
