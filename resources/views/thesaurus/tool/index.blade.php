@@ -92,7 +92,7 @@
                                     </thead>
                                     <tbody>
                                         @forelse($schemes as $scheme)
-                                            <tr>
+                                            <tr class="clickable-row" data-href="{{ route('thesaurus.schemes.show', $scheme->id) }}">
                                                 <td>
                                                     <span class="badge badge-primary">{{ $scheme->identifier }}</span>
                                                 </td>

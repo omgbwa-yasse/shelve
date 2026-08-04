@@ -152,12 +152,11 @@
                             <th class="border-0 text-center">Courriers</th>
                             <th class="border-0">Localisation</th>
                             <th class="border-0 text-center">Statut</th>
-                            <th class="border-0">Actions</th>
                         </tr>
                         </thead>
                         <tbody>
                         @forelse($mailBatches as $batch)
-                            <tr>
+                            <tr class="clickable-row" data-href="{{ route('batch.show', $batch) }}">
                                 <td>
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" value="{{ $batch->id }}">
@@ -242,21 +241,10 @@
                                         {{ $status['text'] }}
                                     </span>
                                 </td>
-
-                                <td>
-                                    <div class="btn-group btn-group-sm" aria-label="Actions parapheur">
-                                        <a class="btn btn-outline-secondary" href="{{ route('mails.sort') }}?categ=batch&id={{ $batch->id }}" title="Voir le contenu">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        <a class="btn btn-outline-primary" href="{{ route('batch.show', $batch) }}" title="Détails">
-                                            <i class="bi bi-info-circle"></i>
-                                        </a>
-                                    </div>
-                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-5">
+                                <td colspan="6" class="text-center py-5">
                                     <div class="text-muted">
                                         <i class="bi bi-inbox display-4"></i>
                                         <p class="mt-2">Aucun parapheur disponible</p>

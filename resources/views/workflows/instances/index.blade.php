@@ -66,12 +66,11 @@
                                 <th>{{ __('Démarré par') }}</th>
                                 <th>{{ __('Date démarrage') }}</th>
                                 <th>{{ __('Date fin') }}</th>
-                                <th class="text-end">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($instances as $instance)
-                                <tr>
+                                <tr class="clickable-row" data-href="{{ route('workflows.instances.show', $instance) }}">
                                     <td><strong>{{ $instance->name }}</strong></td>
                                     <td>{{ $instance->definition->name ?? 'N/A' }}</td>
                                     <td>
@@ -101,20 +100,6 @@
                                     <td>{{ $instance->starter->name ?? 'N/A' }}</td>
                                     <td>{{ $instance->started_at->format('d/m/Y H:i') }}</td>
                                     <td>{{ $instance->completed_at ? $instance->completed_at->format('d/m/Y H:i') : '-' }}</td>
-                                    <td class="text-end">
-                                        <a href="{{ route('workflows.instances.show', $instance) }}" class="btn btn-sm btn-info">
-                                            <i class="bi bi-eye"></i> {{ __('Voir') }}
-                                        </a>
-                                        @if($instance->status != 'completed' && $instance->status != 'cancelled')
-                                            <form action="{{ route('workflows.instances.destroy', $instance) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Annuler cette instance ?') }}')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger">
-                                                    <i class="bi bi-x-circle"></i> {{ __('Annuler') }}
-                                                </button>
-                                            </form>
-                                        @endif
-                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

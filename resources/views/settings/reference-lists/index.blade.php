@@ -34,12 +34,11 @@
                         <th>Nom</th>
                         <th style="width: 110px">Valeurs</th>
                         <th style="width: 100px">Statut</th>
-                        <th style="width: 150px">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($lists as $list)
-                        <tr>
+                        <tr class="clickable-row" data-href="{{ route('settings.reference-lists.show', $list) }}">
                             <td><code class="bg-light px-2 py-1 rounded">{{ $list->code }}</code></td>
                             <td>
                                 <strong>{{ $list->name }}</strong>
@@ -58,28 +57,10 @@
                                     <span class="badge bg-secondary">Inactif</span>
                                 @endif
                             </td>
-                            <td>
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{{ route('settings.reference-lists.show', $list) }}" class="btn btn-outline-primary" title="Voir les valeurs">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="{{ route('settings.reference-lists.edit', $list) }}" class="btn btn-outline-secondary" title="Modifier">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <form action="{{ route('settings.reference-lists.destroy', $list) }}" method="POST" class="d-inline"
-                                          onsubmit="return confirm('Supprimer ce domaine de valeurs ?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger" title="Supprimer">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center py-4">
+                            <td colspan="4" class="text-center py-4">
                                 <p class="text-muted mb-0">Aucun domaine de valeurs trouvé</p>
                             </td>
                         </tr>

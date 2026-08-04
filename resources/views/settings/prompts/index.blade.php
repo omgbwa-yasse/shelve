@@ -51,12 +51,11 @@
                                     <th>Organisation</th>
                                     <th>Créé par</th>
                                     <th>Date de création</th>
-                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($prompts as $prompt)
-                                    <tr>
+                                    <tr class="clickable-row" data-href="{{ route('settings.prompts.show', $prompt) }}">
                                         <td>{{ $prompt->title ?? 'Sans titre' }}</td>
                                         <td>
                                             @if($prompt->is_system)
@@ -68,48 +67,10 @@
                                         <td>{{ $prompt->organisation ? $prompt->organisation->name : 'Global' }}</td>
                                         <td>{{ $prompt->user ? $prompt->user->name : 'Système' }}</td>
                                         <td>{{ $prompt->created_at->format('d/m/Y H:i') }}</td>
-                                        <td>
-                                            <div class="btn-group" role="group">
-                                                <a href="{{ route('settings.prompts.show', $prompt) }}" class="btn btn-info btn-sm">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{{ route('settings.prompts.edit', $prompt) }}" class="btn btn-warning btn-sm">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal{{ $prompt->id }}">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-
-                                            <!-- Modal de confirmation de suppression -->
-                                            <div class="modal fade" id="deleteModal{{ $prompt->id }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ $prompt->id }}" aria-hidden="true">
-                                                <div class="modal-dialog" role="document">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title" id="deleteModalLabel{{ $prompt->id }}">Confirmer la suppression</h5>
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            Êtes-vous sûr de vouloir supprimer ce prompt : "{{ $prompt->title ?? 'Sans titre' }}" ?
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                                            <form action="{{ route('settings.prompts.destroy', $prompt) }}" method="POST" style="display: inline-block;">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="btn btn-danger">Supprimer</button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center">Aucun prompt trouvé</td>
+                                        <td colspan="5" class="text-center">Aucun prompt trouvé</td>
                                     </tr>
                                 @endforelse
                             </tbody>

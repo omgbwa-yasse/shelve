@@ -74,7 +74,7 @@
                 </thead>
                 <tbody>
                     @forelse($records as $record)
-                        <tr>
+                        <tr class="clickable-row" data-href="{{ route('records.show', $record) }}">
                             <td><span class="badge bg-secondary">{{ $record->code }}</span></td>
                             <td><a href="{{ route('records.show', $record) }}">{{ $record->name }}</a></td>
                             <td>
@@ -99,12 +99,6 @@
                                 @endif
                             </td>
                             <td>{{ $record->updated_at?->format('d/m/Y') }}</td>
-                            <td class="text-end">
-                                <a href="{{ route('records.show', $record) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
-                                @can('records_update')
-                                    <a href="{{ route('records.edit', $record) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
-                                @endcan
-                            </td>
                         </tr>
                     @empty
                         <tr><td colspan="9" class="text-center text-muted py-4">Aucune notice trouvée.</td></tr>

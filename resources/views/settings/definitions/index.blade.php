@@ -89,14 +89,11 @@
                                     <th class="border-0">
                                         <i class="bi bi-shield me-1"></i>{{ __('Status') }}
                                     </th>
-                                    <th class="border-0 text-end">
-                                        <i class="bi bi-eye me-1"></i>{{ __('View') }}
-                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($categorySettings as $setting)
-                                    <tr class="parameter-row" data-name="{{ strtolower($setting->name) }}">
+                                    <tr class="parameter-row clickable-row" data-name="{{ strtolower($setting->name) }}" data-href="{{ route('settings.definitions.show', $setting) }}">
                                         <td class="ps-4">
                                             <div class="d-flex align-items-center">
                                                 <div class="parameter-icon me-3">
@@ -123,11 +120,6 @@
                                                     <i class="bi bi-person me-1"></i>{{ __('User') }}
                                                 </span>
                                             @endif
-                                        </td>
-                                        <td class="text-end">
-                                            <a href="{{ route('settings.definitions.show', $setting) }}" class="btn btn-sm btn-outline-info" title="{{ __('View') }}">
-                                                <i class="bi bi-eye me-1"></i>{{ __('View') }}
-                                            </a>
                                         </td>
                                     </tr>
                                 @endforeach

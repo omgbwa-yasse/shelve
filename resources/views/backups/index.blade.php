@@ -14,12 +14,11 @@
                     <th>Utilisateur</th>
                     <th>Taille</th>
                     <th>Fichier de sauvegarde</th>
-                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($backups as $backup)
-                    <tr>
+                    <tr class="clickable-row" data-href="{{ route('backups.show', $backup->id) }}">
                         <td>{{ $backup->date_time }}</td>
                         <td>{{ ucfirst($backup->type) }}</td>
                         <td>{{ $backup->description ?? 'Aucune description' }}</td>
@@ -33,14 +32,11 @@
                                 Fichier non disponible
                             @endif
                         </td>
-                        <td>
-                            <a href="{{ route('backups.show', $backup->id) }}" class="btn btn-sm btn-info">Voir</a>
-                        </td>
                     </tr>
                     <!-- Afficher les fichiers et les plannings de la sauvegarde -->
                     @if($backup->backupFiles->isNotEmpty())
                         <tr>
-                            <td colspan="8">
+                            <td colspan="7">
                                 <strong>Fichiers de sauvegarde :</strong>
                                 <ul>
                                     @foreach ($backup->backupFiles as $file)
@@ -53,7 +49,7 @@
 
                     @if($backup->backupPlannings->isNotEmpty())
                         <tr>
-                            <td colspan="8">
+                            <td colspan="7">
                                 <strong>Plannings de sauvegarde :</strong>
                                 <ul>
                                     @foreach ($backup->backupPlannings as $planning)

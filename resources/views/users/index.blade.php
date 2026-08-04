@@ -94,30 +94,16 @@
                                     <th>Surname</th>
                                     <th>Birthday</th>
                                     <th>Email</th>
-                                    <th>Actions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 @foreach ($users as $user)
-                                    <tr>
+                                    <tr class="clickable-row" data-href="{{ route('users.show', $user->id) }}">
                                         <td>{{ $user->id }}</td>
                                         <td>{{ $user->name }}</td>
                                         <td>{{ $user->surname }}</td>
                                         <td>{{ $user->birthday }}</td>
                                         <td>{{ $user->email }}</td>
-                                        <td>
-                                            <div class="btn-group" role="group">
-                                                <a href="{{ route('users.show', $user->id) }}" class="btn btn-info btn-sm">
-                                                    <i class="bi bi-eye"></i>
-                                                </a>
-                                                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary btn-sm">
-                                                    <i class="bi bi-pencil"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete({{ $user->id }})">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </div>
-                                        </td>
                                     </tr>
                                 @endforeach
                                 </tbody>

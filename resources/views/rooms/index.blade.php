@@ -60,12 +60,11 @@
                     <th>Étagères</th>
                     <th>Description</th>
                     <th>Créée le</th>
-                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($rooms as $room)
-                <tr>
+                <tr class="clickable-row" data-href="{{ route('rooms.show', $room) }}">
                     <td>
                         <a href="{{ route('rooms.show', $room) }}" class="fw-semibold text-decoration-none">
                             <i class="bi bi-house-door text-info me-1"></i>{{ $room->name ?? 'Sans nom' }}
@@ -90,21 +89,10 @@
                     <td><span class="badge bg-warning text-dark">{{ $room->shelves_count ?? 0 }}</span></td>
                     <td><small class="text-muted">{{ Str::limit($room->description, 50) }}</small></td>
                     <td><small>{{ $room->created_at?->format('d/m/Y') ?? '—' }}</small></td>
-                    <td>
-                        <div class="btn-group btn-group-sm">
-                            <a href="{{ route('rooms.show', $room) }}" class="btn btn-outline-primary" title="Voir"><i class="bi bi-eye"></i></a>
-                            <a href="{{ route('rooms.edit', $room) }}" class="btn btn-outline-warning" title="Modifier"><i class="bi bi-pencil"></i></a>
-                            <form action="{{ route('rooms.destroy', $room) }}" method="POST" class="d-inline"
-                                  onsubmit="return confirm('Supprimer cette salle ?')">
-                                @csrf @method('DELETE')
-                                <button class="btn btn-outline-danger btn-sm" title="Supprimer"><i class="bi bi-trash"></i></button>
-                            </form>
-                        </div>
-                    </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="text-center py-4">
+                    <td colspan="6" class="text-center py-4">
                         <div class="deposit-empty">
                             <i class="bi bi-house-door d-block"></i>
                             <h6>Aucune salle</h6>

@@ -29,12 +29,11 @@
                                 <th>Original</th>
                                 <th>Date de retour</th>
                                 <th>Retour effectif</th>
-                                <th class="text-end">Actions</th>
                             </tr>
                             </thead>
                             <tbody>
                             @foreach ($communicationRecords as $record)
-                                <tr>
+                                <tr class="clickable-row" data-href="{{ route('communications.records.show', [$communication->id, $record->id]) }}">
                                     <td>{{ $record->id }}</td>
                                     <td>{{ $record->communication->name }}</td>
                                     <td>{{ $record->record->name }}</td>
@@ -62,15 +61,6 @@
                                         @else
                                             <span class="text-muted">-</span>
                                         @endif
-                                    </td>
-                                    <td>
-                                        <div class="d-flex justify-content-end gap-2">
-                                            <a href="{{ route('communications.records.show', [$communication->id, $record->id]) }}"
-                                               class="btn btn-sm btn-outline-primary">
-                                                <i class="bi bi-eye me-1"></i>Voir
-                                            </a>
-
-                                        </div>
                                     </td>
                                 </tr>
                             @endforeach

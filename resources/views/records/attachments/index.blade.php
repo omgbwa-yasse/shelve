@@ -64,12 +64,11 @@
                                         <th class="border-0">
                                             <i class="fas fa-info-circle me-2 text-muted"></i>{{ __('information') }}
                                         </th>
-                                        <th class="border-0 text-end pe-4">{{ __('actions') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($attachments as $attachment)
-                                    <tr class="align-middle">
+                                    <tr class="clickable-row align-middle" data-href="{{ route('records.attachments.show', [$record, $attachment]) }}">
                                         <td class="ps-4">
                                             <div class="d-flex align-items-center">
                                                 <div class="attachment-icon me-3">
@@ -98,20 +97,6 @@
                                                     {{ number_format($attachment->file_size / 1024, 2) }} KB
                                                 </small>
                                                 @endif
-                                            </div>
-                                        </td>
-                                        <td class="text-end pe-4">
-                                            <div class="btn-group" role="group">
-                                                <a href="#" class="btn btn-outline-primary btn-sm" title="{{ __('download') }}">
-                                                    <i class="fas fa-download"></i>
-                                                </a>
-                                                <a href="#" class="btn btn-outline-info btn-sm" title="{{ __('preview') }}">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-outline-danger btn-sm" title="{{ __('delete_attachment') }}" 
-                                                        onclick="confirmDelete('{{ $attachment->id }}', '{{ $attachment->name }}')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
                                             </div>
                                         </td>
                                     </tr>

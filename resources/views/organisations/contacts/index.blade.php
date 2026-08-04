@@ -25,12 +25,11 @@
                             <th style="width: 140px">{{ __('Type') }}</th>
                             <th>{{ __('Value') }}</th>
                             <th style="width: 200px">{{ __('Label') }}</th>
-                            <th style="width: 160px" class="text-end">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($contacts as $contact)
-                            <tr>
+                            <tr class="clickable-row" data-href="{{ route('organisations.contacts.show', [$organisation, $contact]) }}">
                                 <td><span class="badge bg-secondary">{{ $contact->type }}</span></td>
                                 <td class="text-break">
                                     <span class="me-2" id="contact-val-{{ $contact->id }}">{{ $contact->value }}</span>
@@ -39,19 +38,9 @@
                                     </button>
                                 </td>
                                 <td>{{ $contact->label }}</td>
-                                <td class="text-end">
-                                    <a class="btn btn-sm btn-outline-primary" href="{{ route('organisations.contacts.edit', [$organisation, $contact]) }}">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <form action="{{ route('organisations.contacts.destroy', [$organisation, $contact]) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Are you sure?') }}')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                                    </form>
-                                </td>
                             </tr>
                         @empty
-                            <tr><td colspan="4" class="text-center text-muted py-4">{{ __('No contacts yet.') }}</td></tr>
+                            <tr><td colspan="3" class="text-center text-muted py-4">{{ __('No contacts yet.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>

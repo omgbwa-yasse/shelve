@@ -69,12 +69,11 @@
                             <th class="text-center">Salles</th>
                             <th>Description</th>
                             <th>Créé le</th>
-                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($buildings as $building)
-                            <tr>
+                            <tr class="clickable-row" data-href="{{ route('buildings.show', $building->id) }}">
                                 <td>
                                     <a href="{{ route('buildings.show', $building->id) }}" class="fw-bold text-decoration-none">
                                         <i class="bi bi-building text-primary me-1"></i>
@@ -94,27 +93,10 @@
                                 </td>
                                 <td class="text-muted">{{ Str::limit($building->description, 50) }}</td>
                                 <td class="text-muted">{{ $building->created_at?->format('d/m/Y') ?? '-' }}</td>
-                                <td class="text-end">
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="{{ route('buildings.show', $building->id) }}" class="btn btn-outline-primary" title="Voir">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        <a href="{{ route('buildings.edit', $building->id) }}" class="btn btn-outline-secondary" title="Modifier">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <form action="{{ route('buildings.destroy', $building->id) }}" method="POST" class="d-inline"
-                                              onsubmit="return confirm('Supprimer ce bâtiment ?')">
-                                            @csrf @method('DELETE')
-                                            <button class="btn btn-outline-danger btn-sm" title="Supprimer">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-4">
+                                <td colspan="6" class="text-center py-4">
                                     <i class="bi bi-building display-4 text-muted d-block mb-2"></i>
                                     <p class="text-muted mb-2">Aucun bâtiment trouvé</p>
                                     <a href="{{ route('buildings.create') }}" class="btn btn-primary btn-sm">

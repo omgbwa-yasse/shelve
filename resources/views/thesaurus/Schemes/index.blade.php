@@ -35,12 +35,11 @@
                                     <th>Langue</th>
                                     <th>Concepts</th>
                                     <th>Namespace</th>
-                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($schemes as $scheme)
-                                    <tr>
+                                    <tr class="clickable-row" data-href="{{ route('thesaurus.schemes.show', $scheme->id) }}">
                                         <td>{{ $scheme->id }}</td>
                                         <td><span class="badge badge-info">{{ $scheme->identifier }}</span></td>
                                         <td>{{ $scheme->title }}</td>
@@ -55,26 +54,10 @@
                                                 <span class="badge badge-light">Aucun</span>
                                             @endif
                                         </td>
-                                        <td>
-                                            <div class="btn-group">
-                                                <a href="{{ route('thesaurus.schemes.show', $scheme->id) }}"
-                                                   class="btn btn-sm btn-info" title="Détails">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{{ route('thesaurus.schemes.edit', $scheme->id) }}"
-                                                   class="btn btn-sm btn-primary" title="Modifier">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-sm btn-danger"
-                                                        onclick="confirmDelete({{ $scheme->id }})" title="Supprimer">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center">
+                                        <td colspan="6" class="text-center">
                                             <p class="text-muted">Aucun schéma de thésaurus trouvé</p>
                                         </td>
                                     </tr>

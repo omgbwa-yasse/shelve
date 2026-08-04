@@ -47,12 +47,11 @@
                                 <th scope="col"><i class="bi bi-text-left me-1"></i>{{ __('Name') }}</th>
                                 <th scope="col"><i class="bi bi-chat me-1"></i>{{ __('Observation') }}</th>
                                 <th scope="col"><i class="bi bi-diagram-2 me-1"></i>{{ __('Parent') }}</th>
-                                <th scope="col" class="text-end">{{ __('Actions') }}</th>
                             </tr>
                             </thead>
                             <tbody>
                             @forelse ($activities as $activity)
-                                <tr>
+                                <tr class="clickable-row" data-href="{{ route('activities.show', $activity->id) }}">
                                     <td>{{ $activity->code }}</td>
                                     <td>{{ $activity->name }}</td>
                                     <td>{{ $activity->observation }}</td>
@@ -64,16 +63,10 @@
                                             <span class="badge bg-primary">{{ __('Mission') }}</span>
                                         @endif
                                     </td>
-                                    <td class="text-end">
-                                        <a href="{{ route('activities.show', $activity->id) }}"
-                                           class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-gear me-1"></i>{{ __('Settings') }}
-                                        </a>
-                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center py-4">
+                                    <td colspan="4" class="text-center py-4">
                                         <p class="text-muted mb-0">{{ __('No activities found.') }}</p>
                                     </td>
                                 </tr>

@@ -34,12 +34,11 @@
                                     <th>Email</th>
                                     <th>Téléphone</th>
                                     <th>Statut</th>
-                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($contacts as $contact)
-                                    <tr>
+                                    <tr class="clickable-row" data-href="{{ route('external.contacts.show', $contact->id) }}">
                                         <td>
                                             <a href="{{ route('external.contacts.show', $contact->id) }}">
                                                 {{ $contact->first_name }} {{ $contact->last_name }}
@@ -67,23 +66,10 @@
                                                 <span class="badge bg-warning">Non vérifié</span>
                                             @endif
                                         </td>
-                                        <td>
-                                            <div class="btn-group">
-                                                <a href="{{ route('external.contacts.show', $contact->id) }}" class="btn btn-info btn-sm">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{{ route('external.contacts.edit', $contact->id) }}" class="btn btn-primary btn-sm">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $contact->id }}">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center">Aucun contact externe trouvé</td>
+                                        <td colspan="6" class="text-center">Aucun contact externe trouvé</td>
                                     </tr>
                                 @endforelse
                             </tbody>

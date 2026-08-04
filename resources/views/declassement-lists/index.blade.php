@@ -42,27 +42,21 @@
                         <th>Dossiers</th>
                         <th>Créée par</th>
                         <th>Créée le</th>
-                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($declassementLists as $list)
-                        <tr>
+                        <tr class="clickable-row" data-href="{{ route('declassement-lists.show', $list) }}">
                             <td>{{ $list->code }}</td>
                             <td><a href="{{ route('declassement-lists.show', $list) }}">{{ $list->name }}</a></td>
                             <td><span class="badge bg-info">{{ $list->status->name ?? '' }}</span></td>
                             <td>{{ $list->records->count() }}</td>
                             <td>{{ $list->creator->name ?? '' }}</td>
                             <td>{{ $list->created_at->format('d/m/Y') }}</td>
-                            <td>
-                                <a href="{{ route('declassement-lists.show', $list) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted">Aucune liste de déclassement.</td>
+                            <td colspan="6" class="text-center text-muted">Aucune liste de déclassement.</td>
                         </tr>
                     @endforelse
                 </tbody>

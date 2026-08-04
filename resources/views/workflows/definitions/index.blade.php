@@ -66,12 +66,11 @@
                                 <th>{{ __('Statut') }}</th>
                                 <th>{{ __('Créé par') }}</th>
                                 <th>{{ __('Date création') }}</th>
-                                <th class="text-end">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($definitions as $definition)
-                                <tr>
+                                <tr class="clickable-row" data-href="{{ route('workflows.definitions.show', $definition) }}">
                                     <td>
                                         <strong>{{ $definition->name }}</strong>
                                     </td>
@@ -94,23 +93,6 @@
                                     </td>
                                     <td>{{ $definition->creator->name ?? 'N/A' }}</td>
                                     <td>{{ $definition->created_at->format('d/m/Y H:i') }}</td>
-                                    <td class="text-end">
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <a href="{{ route('workflows.definitions.show', $definition) }}" class="btn btn-info" title="{{ __('Voir') }}">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            <a href="{{ route('workflows.definitions.edit', $definition) }}" class="btn btn-warning" title="{{ __('Modifier') }}">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <form action="{{ route('workflows.definitions.destroy', $definition) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Êtes-vous sûr de vouloir supprimer cette définition ?') }}')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger" title="{{ __('Supprimer') }}">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

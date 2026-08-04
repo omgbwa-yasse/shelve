@@ -33,12 +33,11 @@
                                     <th>{{ __('level') }}</th>
                                     <th>{{ __('status') }}</th>
                                     <th>{{ __('date') }}</th>
-                                    <th class="text-end">{{ __('actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($parent->children as $child)
-                                    <tr>
+                                    <tr class="clickable-row" data-href="{{ route('records.show', $child) }}">
                                         <td>
                                             <a href="{{ route('records.show', $child) }}" class="text-decoration-none fw-semibold">
                                                 {{ $child->code }}
@@ -54,11 +53,6 @@
                                             @endif
                                         </td>
                                         <td>{{ $child->date_exact ?? $child->date_start ?? '—' }}</td>
-                                        <td class="text-end">
-                                            <a href="{{ route('records.show', $child) }}" class="btn btn-outline-primary btn-sm" title="{{ __('show') }}">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>

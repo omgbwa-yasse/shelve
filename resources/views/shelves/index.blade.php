@@ -71,7 +71,6 @@
                     <th>Occupation</th>
                     <th>ML</th>
                     <th>Observation</th>
-                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -82,7 +81,7 @@
                     $pct = $cap > 0 ? round(($occ / $cap) * 100) : 0;
                     $color = $pct >= 90 ? 'danger' : ($pct >= 70 ? 'warning' : 'success');
                 @endphp
-                <tr>
+                <tr class="clickable-row" data-href="{{ route('shelves.show', $shelf) }}">
                     <td>
                         <a href="{{ route('shelves.show', $shelf) }}" class="fw-semibold text-decoration-none">
                             <i class="bi bi-bookshelf text-warning me-1"></i>{{ $shelf->code }}
@@ -111,21 +110,10 @@
                     </td>
                     <td><small>{{ $shelf->volumetry_ml ?? 0 }}</small></td>
                     <td><small class="text-muted">{{ Str::limit($shelf->observation, 40) }}</small></td>
-                    <td>
-                        <div class="btn-group btn-group-sm">
-                            <a href="{{ route('shelves.show', $shelf) }}" class="btn btn-outline-primary" title="Voir"><i class="bi bi-eye"></i></a>
-                            <a href="{{ route('shelves.edit', $shelf) }}" class="btn btn-outline-warning" title="Modifier"><i class="bi bi-pencil"></i></a>
-                            <form action="{{ route('shelves.destroy', $shelf) }}" method="POST" class="d-inline"
-                                  onsubmit="return confirm('Supprimer cette étagère ?')">
-                                @csrf @method('DELETE')
-                                <button class="btn btn-outline-danger btn-sm" title="Supprimer"><i class="bi bi-trash"></i></button>
-                            </form>
-                        </div>
-                    </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="text-center py-4">
+                    <td colspan="6" class="text-center py-4">
                         <div class="deposit-empty">
                             <i class="bi bi-bookshelf d-block"></i>
                             <h6>Aucune étagère</h6>

@@ -1251,5 +1251,19 @@
         });
 
     </script>
+
+    <script>
+        // Lignes de tableau cliquables (navigation vers la fiche show)
+        document.addEventListener('click', function (e) {
+            const row = e.target.closest('tr.clickable-row');
+            if (row && row.dataset.href) {
+                // Ne pas déclencher si on clique sur un lien/bouton/formulaire interne
+                if (e.target.closest('a, button, form, input, select, textarea, .no-click')) {
+                    return;
+                }
+                window.location = row.dataset.href;
+            }
+        });
+    </script>
 </body>
 </html>

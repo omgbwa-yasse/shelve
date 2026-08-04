@@ -56,12 +56,11 @@
                         <th>Nom</th>
                         <th>Description</th>
                         <th style="width: 100px">Statut</th>
-                        <th style="width: 200px">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($folderTypes as $type)
-                        <tr>
+                        <tr class="clickable-row" data-href="{{ route('settings.folder-types.show', $type) }}">
                             <td>
                                 <span class="badge bg-secondary">{{ $type->code }}</span>
                             </td>
@@ -84,37 +83,10 @@
                                     <span class="badge bg-info ms-1">Système</span>
                                 @endif
                             </td>
-                            <td>
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{{ route('settings.folder-types.show', $type) }}" class="btn btn-outline-primary"
-                                       title="Voir les détails">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="{{ route('settings.folder-types.edit', $type) }}" class="btn btn-outline-secondary"
-                                       title="Modifier" @if($type->is_system) disabled @endif>
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <a href="{{ route('settings.folder-types.metadata-profiles.index', $type) }}"
-                                       class="btn btn-outline-info" title="Gérer les métadonnées">
-                                        <i class="bi bi-gear"></i>
-                                    </a>
-                                    @if(!$type->is_system)
-                                        <form action="{{ route('settings.folder-types.destroy', $type) }}"
-                                              method="POST" class="d-inline"
-                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce type ?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-outline-danger" title="Supprimer">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    @endif
-                                </div>
-                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center py-4">
+                            <td colspan="4" class="text-center py-4">
                                 <p class="text-muted mb-0">Aucun type de dossier trouvé</p>
                             </td>
                         </tr>

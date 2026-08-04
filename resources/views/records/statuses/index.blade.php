@@ -18,18 +18,14 @@
                         <th scope="col">#</th>
                         <th scope="col">Nom</th>
                         <th scope="col">Description</th>
-                        <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($recordStatuses as $recordStatus)
-                    <tr>
+                    <tr class="clickable-row" data-href="{{ route('record-statuses.show', $recordStatus->id) }}">
                         <th scope="row">{{ $recordStatus->id }}</th>
                         <td>{{ $recordStatus->name }}</td>
                         <td>{{ $recordStatus->description }}</td>
-                        <td>
-                            <a href="{{ route('record-statuses.show', $recordStatus->id) }}" class="btn btn-info btn-sm">Voir</a>
-                        </td>
                     </tr>
                     @endforeach
                 </tbody>

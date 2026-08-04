@@ -40,12 +40,11 @@
                                     <th>Téléphone</th>
                                     <th>Ville</th>
                                     <th>Statut</th>
-                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($organizations as $org)
-                                <tr>
+                                <tr class="clickable-row" data-href="{{ route('external.organizations.show', $org->id) }}">
                                     <td>{{ $org->name }}</td>
                                     <td>{{ $org->legal_form ?? '-' }}</td>
                                     <td>
@@ -67,27 +66,10 @@
                                             <span class="badge bg-warning">Non vérifié</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="{{ route('external.organizations.show', $org->id) }}" class="btn btn-sm btn-info">
-                                                <i class="fa fa-eye"></i>
-                                            </a>
-                                            <a href="{{ route('external.organizations.edit', $org->id) }}" class="btn btn-sm btn-primary">
-                                                <i class="fa fa-edit"></i>
-                                            </a>
-                                            <form action="{{ route('external.organizations.destroy', $org->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette organisation ?')">
-                                                    <i class="fa fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="8" class="text-center">Aucune organisation externe trouvée</td>
+                                    <td colspan="7" class="text-center">Aucune organisation externe trouvée</td>
                                 </tr>
                                 @endforelse
                             </tbody>

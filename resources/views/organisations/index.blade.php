@@ -49,12 +49,11 @@
                             <th><i class="bi bi-building me-1"></i>Nom</th>
                             <th><i class="bi bi-text-left me-1"></i>Description</th>
                             <th><i class="bi bi-diagram-2 me-1"></i>Parent</th>
-                            <th class="text-end">Actions</th>
                         </tr>
                         </thead>
                         <tbody>
                         @foreach($organisations as $organisation)
-                            <tr>
+                            <tr class="clickable-row" data-href="{{ route('organisations.show', $organisation->id) }}">
                                 <td>{{ $organisation->code }}</td>
                                 <td>{{ $organisation->name }}</td>
                                 <td>{{ $organisation->description }}</td>
@@ -65,12 +64,6 @@
                                     @else
                                         <span class="badge bg-primary">Direction</span>
                                     @endif
-                                </td>
-                                <td class="text-end">
-                                    <a href="{{ route('organisations.show', $organisation->id) }}"
-                                       class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-eye me-1"></i>Voir
-                                    </a>
                                 </td>
                             </tr>
                         @endforeach

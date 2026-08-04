@@ -26,12 +26,11 @@
                         <tr>
                             <th>Terme</th>
                             <th>Langue</th>
-                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($translations as $translation)
-                            <tr>
+                            <tr class="clickable-row" data-href="{{ route('thesaurus.show', $translation->id) }}">
                                 <td>
                                     <a href="{{ route('thesaurus.show', $translation->id) }}">
                                         {{ $translation->preferred_label }}
@@ -61,19 +60,10 @@
                                             <span class="badge bg-secondary">{{ $translation->language }}</span>
                                     @endswitch
                                 </td>
-                                <td>
-                                    <form action="{{ route('thesaurus.translations.destroy', [$term->id, $translation->id]) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette traduction?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="text-center">Aucune traduction trouvée.</td>
+                                <td colspan="2" class="text-center">Aucune traduction trouvée.</td>
                             </tr>
                         @endforelse
                     </tbody>

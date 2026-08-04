@@ -89,12 +89,11 @@
                                 <th>{{ __('Assigné à') }}</th>
                                 <th>{{ __('Date limite') }}</th>
                                 <th>{{ __('Type') }}</th>
-                                <th class="text-end">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($tasks as $task)
-                                <tr class="{{ $task->isOverdue ? 'table-danger' : '' }}">
+                                <tr class="clickable-row {{ $task->isOverdue ? 'table-danger' : '' }}" data-href="{{ route('tasks.show', $task) }}">
                                     <td>
                                         <strong>{{ $task->title }}</strong>
                                         @if($task->isOverdue)
@@ -145,23 +144,6 @@
                                                 <i class="bi bi-list-task"></i> {{ __('Générale') }}
                                             </span>
                                         @endif
-                                    </td>
-                                    <td class="text-end">
-                                        <a href="{{ route('tasks.show', $task) }}" class="btn btn-sm btn-info">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        @if($task->status != 'completed')
-                                            <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-warning">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                        @endif
-                                        <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Supprimer cette tâche ?') }}')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
                                     </td>
                                 </tr>
                             @endforeach

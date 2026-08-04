@@ -35,12 +35,11 @@
                         <th>Nom</th>
                         <th>Type</th>
                         <th style="width: 100px">Statut</th>
-                        <th style="width: 150px">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($definitions as $definition)
-                        <tr>
+                        <tr class="clickable-row" data-href="{{ route('settings.metadata-definitions.show', $definition) }}">
                             <td>
                                 <code class="bg-light px-2 py-1 rounded">{{ $definition->code }}</code>
                             </td>
@@ -61,28 +60,10 @@
                                     <span class="badge bg-secondary">Inactif</span>
                                 @endif
                             </td>
-                            <td>
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{{ route('settings.metadata-definitions.edit', $definition) }}"
-                                       class="btn btn-outline-secondary"
-                                       title="Modifier">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <form action="{{ route('settings.metadata-definitions.destroy', $definition) }}"
-                                          method="POST" class="d-inline"
-                                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette définition ?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger" title="Supprimer">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center py-4">
+                            <td colspan="4" class="text-center py-4">
                                 <p class="text-muted mb-0">Aucune définition de métadonnée trouvée</p>
                             </td>
                         </tr>
