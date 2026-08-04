@@ -67,36 +67,45 @@
 // ============================================================
 .office-ribbon {
   display: flex;
-  flex-wrap: wrap;
   align-items: stretch;
-  gap: 2px;
+  flex-wrap: nowrap;          // une seule ligne (pas de retour à la ligne => hauteur constante)
+  justify-content: safe center; // centré si peu de groupes, sinon aligné à gauche + scroll
+  overflow-x: auto;
+  gap: 0;
   background: linear-gradient(180deg, #fafbfc 0%, #eef0f3 100%);
   border: 1px solid #d9dde3;
   border-radius: 8px;
-  padding: 6px 8px;
+  padding: 5px 8px;
   box-shadow: 0 1px 3px rgba(0,0,0,.08);
 
   .submenu-container {
     display: contents; // les sections deviennent des groupes directs du ruban
   }
 
+  // Chaque groupe a une hauteur identique (stretch) et une largeur
+  // proportionnelle à son nombre de boutons (2 à 4 colonnes max).
   .submenu-section {
     display: flex;
     flex-direction: column;
-    min-width: 128px;
-    padding: 6px 10px;
+    flex: 0 1 auto;
+    align-self: stretch;
+    min-width: 104px;
+    max-width: 330px;
+    padding: 4px 10px;
     border-right: 1px solid #e1e5ea;
 
     &:last-child { border-right: none; }
   }
 
   .submenu-heading {
+    flex: none;
+    height: 20px;
     background: transparent;
     color: #3c4043;
     box-shadow: none;
     border-radius: 0;
-    padding: 2px 0 5px 0;
-    margin-bottom: 6px;
+    padding: 0;
+    margin: 0 0 5px 0;
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
@@ -104,17 +113,25 @@
     text-align: center;
     border-bottom: 1px solid #d9dde3;
     cursor: default;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 
     &::after { display: none; }
     &:hover { background: transparent; }
     i { margin: 0 4px 0 0; font-size: 12px; }
   }
 
+  // Grille de boutons : les boutons s'alignent horizontalement et passent
+  // à la colonne suivante (le groupe s'élargit, pas s'allonge).
   .submenu-content,
   .submenu-section-content {
+    flex: 1 1 auto;
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    flex-wrap: wrap;
+    align-content: center;      // grille centrée verticalement dans le groupe
+    justify-content: center;
+    gap: 3px;
     padding: 0;
     margin: 0;
     overflow: visible;
@@ -132,24 +149,26 @@
     margin: 0;
   }
 
+  // Bouton tuile Office : icône au-dessus, libellé en dessous, taille fixe.
   .submenu-link {
+    flex: 0 0 78px;
+    min-height: 40px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    text-align: center;
+    justify-content: center;
     gap: 3px;
-    padding: 7px 5px;
-    font-size: 11px;
+    padding: 5px 4px;
+    font-size: 10.5px;
     line-height: 1.15;
-    min-height: 50px;
     border-radius: 5px;
     color: #3c4043;
+    text-align: center;
     white-space: normal;
 
     i {
       margin: 0;
-      font-size: 20px;
+      font-size: 19px;
       color: var(--primary, #0d6efd);
     }
 
@@ -171,8 +190,10 @@
 @media (max-width: 991px) {
   .office-ribbon {
     display: block;
-    .submenu-section { border-right: none; min-width: 0; }
-    .submenu-link { flex-direction: row; justify-content: flex-start; text-align: left; min-height: 0; }
+    justify-content: flex-start;
+    .submenu-section { max-width: none; border-right: none; }
+    .submenu-content { align-content: flex-start; justify-content: flex-start; }
+    .submenu-link { flex: none; width: auto; flex-direction: row; justify-content: flex-start; text-align: left; min-height: 0; }
     .submenu-link i { margin-right: 8px; }
   }
 }
