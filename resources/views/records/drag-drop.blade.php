@@ -2,10 +2,8 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
                         <i class="bi bi-cloud-upload me-2"></i>
                         {{ __('Drag & Drop - Création automatique de records') }}
@@ -117,8 +115,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 </div>
 
 <!-- Modal de confirmation -->
