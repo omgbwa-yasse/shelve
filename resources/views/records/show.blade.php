@@ -155,22 +155,7 @@
                 @endif
 
                 {{-- Versions --}}
-                @if($record->version_number > 1 || $record->getAllVersions()->count() > 1)
-                    <div class="card mb-4">
-                        <div class="card-header"><i class="bi bi-clock-history"></i> Historique des versions</div>
-                        <ul class="list-group list-group-flush">
-                            @foreach($record->getAllVersions() as $version)
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <a href="{{ route('records.show', $version) }}">v{{ $version->version_number }} — {{ $version->name }}</a>
-                                    @if($version->is_current_version)
-                                        <span class="badge bg-success">Courante</span>
-                                    @endif
-                                </li>
-                            @endforeach
-                        </ul>
-                        <div class="card-body"><a href="{{ route('records.versions', $record) }}">Gérer les versions</a></div>
-                    </div>
-                @endif
+                @include('records.partials.version-history', ['record' => $record])
             </div>
 
             {{-- Supports --}}

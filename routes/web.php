@@ -822,6 +822,21 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/barcodes', [BarcodeController::class, 'index'])->name('barcode.index');
         Route::post('/barcodes/generate', [BarcodeController::class, 'generate'])->name('barcode.generate');
 
+        // Référentiels / configuration (URL canonique sous /tools — le menu Outils les affiche ici)
+        Route::resource('reference-lists', \App\Http\Controllers\Settings\ReferenceListController::class)->names('tools.reference-lists');
+        Route::post('reference-lists/{referenceList}/values', [\App\Http\Controllers\Settings\ReferenceListController::class, 'addValue'])->name('tools.reference-lists.values.store');
+        Route::put('reference-lists/{referenceList}/values/{value}', [\App\Http\Controllers\Settings\ReferenceListController::class, 'updateValue'])->name('tools.reference-lists.values.update');
+        Route::delete('reference-lists/{referenceList}/values/{value}', [\App\Http\Controllers\Settings\ReferenceListController::class, 'deleteValue'])->name('tools.reference-lists.values.destroy');
+        Route::resource('record-types', \App\Http\Controllers\Settings\RecordTypeController::class)->except(['show'])->names('tools.record-types');
+        Route::resource('metadata-definitions', \App\Http\Controllers\Settings\MetadataDefinitionController::class)->names('tools.metadata-definitions');
+        Route::resource('folder-types', \App\Http\Controllers\Settings\RecordDigitalFolderTypeController::class)->names('tools.folder-types');
+        Route::post('folder-types/order/update', [\App\Http\Controllers\Settings\RecordDigitalFolderTypeController::class, 'updateOrder'])->name('tools.folder-types.update-order');
+        Route::resource('document-types', \App\Http\Controllers\Settings\RecordDigitalDocumentTypeController::class)->names('tools.document-types');
+        Route::post('document-types/order/update', [\App\Http\Controllers\Settings\RecordDigitalDocumentTypeController::class, 'updateOrder'])->name('tools.document-types.update-order');
+        Route::resource('record-supports', \App\Http\Controllers\RecordSupportController::class)->names('tools.record-supports');
+        Route::resource('record-statuses', \App\Http\Controllers\RecordStatusController::class)->names('tools.record-statuses');
+        Route::resource('sorts', \App\Http\Controllers\SortController::class)->names('tools.sorts');
+
         // Groupe de routes pour la gestion du thésaurus (intégré dans tools)
         Route::prefix('thesaurus')->group(function () {
             // Page d'accueil du module
