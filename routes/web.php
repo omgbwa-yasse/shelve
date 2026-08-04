@@ -499,6 +499,7 @@ Route::group(['middleware' => 'auth'], function () {
         // Routes spécifiques AVANT la route resource (pour éviter les conflits)
         // Module unifié (Phase 5) — opérations sur Record / RecordMedium
         Route::get('records/terms/autocomplete', [RecordController::class, 'autocompleteTerms'])->name('records.terms.autocomplete');
+        Route::get('records/type-metadata-fields', [RecordController::class, 'typeMetadataFields'])->name('records.type-metadata-fields');
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
         Route::post('records/{record}/move', [RecordController::class, 'move'])->name('records.move');
         Route::get('records/tree/view', [RecordController::class, 'treeView'])->name('records.tree.view');

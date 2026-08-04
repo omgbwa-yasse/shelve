@@ -132,8 +132,12 @@
     </div>
 </div>
 
-{{-- Champs dynamiques du profil du type --}}
-@include('records.partials.metadata-fields', ['record' => $record ?? null, 'metadataFields' => $metadataFields])
+{{-- Champs dynamiques du profil du type (serveur en édition, AJAX en création) --}}
+<div id="dynamicMetadataFields">
+    @if($record)
+        @include('records.partials.metadata-fields', ['record' => $record, 'metadataFields' => $metadataFields])
+    @endif
+</div>
 
 {{-- Support à la création --}}
 @if(!$record)

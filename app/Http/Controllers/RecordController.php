@@ -510,6 +510,22 @@ class RecordController extends Controller
     }
 
     /**
+     * Champs de métadonnées d'un type de notice (rendu dynamique du formulaire de création).
+     */
+    public function typeMetadataFields(Request $request)
+    {
+        Gate::authorize('records_create');
+
+        $request->validate(['type_id' => 'required|exists:record_types,id']);
+
+        $type = RecordType::findOrFail($request->input('type_id'));
+
+        return response()->json(
+            app(\App\Services\MetadataValidationService::class)->getRecordMetadataFields($type)
+        );
+    }
+
+    /**
      * Autocomplétion du thésaurus (utilisée par le champ termes des formulaires).
      */
     public function autocompleteTerms(Request $request)
