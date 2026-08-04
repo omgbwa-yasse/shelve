@@ -18,7 +18,7 @@
         <div class="submenu-heading">
             <i class="bi bi-sliders"></i> {{ __('settings') }}
         </div>
-        <div class="submenu-content">
+        <div class="submenu-content" id="settingsSection">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('settings.categories.index') }}">
                     <i class="bi bi-folder"></i> {{ __('Categories') }}
@@ -37,7 +37,7 @@
         <div class="submenu-heading">
             <i class="bi bi-people"></i> {{ __('authorizations_and_positions') }}
         </div>
-        <div class="submenu-content">
+        <div class="submenu-content" id="authorizationsSection">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('users.index') }}">
                     <i class="bi bi-person"></i> {{ __('users') }}
@@ -85,7 +85,7 @@
         <div class="submenu-heading">
             <i class="bi bi-envelope"></i> {{ __('mail') }}
         </div>
-        <div class="submenu-content">
+        <div class="submenu-content" id="mailSection">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-typology.index') }}">
                     <i class="bi bi-tags"></i> {{ __('typologies') }}
@@ -109,7 +109,7 @@
         <div class="submenu-heading">
             <i class="bi bi-file-text"></i> {{ __('directory') }}
         </div>
-        <div class="submenu-content">
+        <div class="submenu-content" id="directorySection">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('record-supports.index') }}">
                     <i class="bi bi-hdd"></i> {{ __('supports') }}
@@ -128,7 +128,7 @@
         <div class="submenu-heading">
             <i class="bi bi-file-earmark-binary"></i> {{ __('Records') }}
         </div>
-        <div class="submenu-content">
+        <div class="submenu-content" id="recordsSection">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('settings.folder-types.index') }}">
                     <i class="bi bi-folder-2"></i> Gestion des types de dossiers
