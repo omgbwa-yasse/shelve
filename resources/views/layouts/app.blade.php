@@ -32,6 +32,11 @@
     </script>
 
     <style>
+        /* Les pages de contenu occupent toute la largeur (comme container-fluid) */
+        #container .container {
+            max-width: 100%;
+        }
+
         /* Styles critiques pour éviter FOUC */
         .header-logo img {
             background-color: #f8f9fa !important;
