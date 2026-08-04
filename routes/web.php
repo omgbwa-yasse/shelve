@@ -1208,6 +1208,15 @@ Route::prefix('workplaces')->name('workplaces.')->middleware('auth')->group(func
         Route::post('/documents/{document}/feature', [\App\Http\Controllers\WorkplaceContentController::class, 'featureDocument'])->name('featureDocument');
         Route::get('/documents/{document}/view', [\App\Http\Controllers\WorkplaceContentController::class, 'viewDocument'])->name('viewDocument');
     });
+
+    // Message Management Routes
+    Route::prefix('{workplace}/messages')->name('messages.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\WorkplaceMessageController::class, 'index'])->name('index');
+        Route::get('/{conversation}', [\App\Http\Controllers\WorkplaceMessageController::class, 'show'])->name('show');
+        Route::post('/', [\App\Http\Controllers\WorkplaceMessageController::class, 'store'])->name('store');
+        Route::post('/{conversation}/messages', [\App\Http\Controllers\WorkplaceMessageController::class, 'storeMessage'])->name('send');
+        Route::delete('/{conversation}', [\App\Http\Controllers\WorkplaceMessageController::class, 'destroy'])->name('destroy');
+    });
 });
 
 

@@ -22,11 +22,6 @@
     <div id="app">
         <main class="py-3">
             <div class="container-fluid">
-                <div class="d-flex justify-content-end mb-3">
-                    <a href="{{ route('report.dashboard') }}" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-box-arrow-left me-1"></i>Retour à l'application principale
-                    </a>
-                </div>
                 @yield('content')
             </div>
         </main>

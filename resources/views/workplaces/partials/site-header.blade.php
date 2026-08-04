@@ -21,7 +21,10 @@
                 </div>
             </div>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+            <a href="{{ route('report.dashboard') }}" class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3);" title="Retour à l'application principale">
+                <i class="bi bi-box-arrow-left me-1"></i>Retour
+            </a>
             @can('update', $workplace)
             <a href="{{ route('workplaces.edit', $workplace) }}" class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3);">
                 <i class="bi bi-pencil-square me-1"></i>Modifier
@@ -60,6 +63,20 @@
             <i class="bi bi-file-earmark-text me-1"></i>Documents
             @if($workplace->documents_count > 0)
                 <span class="badge bg-secondary rounded-pill ms-1">{{ $workplace->documents_count }}</span>
+            @endif
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {{ $activeTab === 'messages' ? 'active' : '' }}" href="{{ route('workplaces.messages.index', $workplace) }}">
+            <i class="bi bi-chat-left-text me-1"></i>Messages
+            @php
+                $myConversations = \App\Models\WorkplaceConversation::where('workplace_id', $workplace->id)
+                    ->whereHas('participants', fn ($q) => $q->where('user_id', auth()->id()))
+                    ->get();
+                $messagesUnread = $myConversations->sum(fn ($c) => $c->unreadCountFor(auth()->id()));
+            @endphp
+            @if($messagesUnread > 0)
+                <span class="badge bg-danger rounded-pill ms-1">{{ $messagesUnread }}</span>
             @endif
         </a>
     </li>
