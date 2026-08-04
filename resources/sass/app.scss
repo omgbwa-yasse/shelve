@@ -295,8 +295,7 @@ h2 { font-weight:600; }
     background-color: white;
     border-radius: 4px;
     height: 36px;
-    min-width: 600px;
-    /* Doublé de 300px à 600px */
+    min-width: 300px; /* 600px réduit de 50% */
     border: 1px solid rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.15s ease-in-out;
 }
