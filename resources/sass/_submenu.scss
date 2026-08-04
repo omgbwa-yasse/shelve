@@ -216,15 +216,15 @@
   }
 }
 
-// Paramètres : boutons empilés dans chaque section (1 colonne) pour gagner de la
-// largeur. La hauteur s'adapte à la section la plus haute (pas de troncature).
+// Paramètres : 2 boutons par ligne dans chaque section (comme les autres menus),
+// jamais plus. La hauteur s'adapte à la section la plus haute (pas de troncature).
 .ribbon-settings {
   height: auto;
   min-height: 156px;
   overflow-y: visible;
 
   .submenu-section {
-    max-width: 116px;   // 1 colonne : boutons les uns sur les autres
+    max-width: 215px;   // 2 colonnes max : les boutons passent à la ligne après 2
   }
 }
 
