@@ -228,6 +228,7 @@ h2 { font-weight:600; }
     align-self: center;
     margin: 0 12px;             /* marges légères à gauche et à droite des icônes */
     padding: 0 4px;
+    gap: 14px;                  /* espacement augmenté entre les icônes */
 }
 
 .nav-modules .nav-item {
