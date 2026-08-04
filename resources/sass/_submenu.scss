@@ -226,9 +226,11 @@
     justify-content: flex-start;
   }
 
-  // Sections 2 et 3 : boutons superposés (1 colonne)
+  // Sections 2-3 et 5-6 : boutons superposés (1 colonne)
   .submenu-section:has(#settingsSection),
-  .submenu-section:has(#authorizationsSection) {
+  .submenu-section:has(#authorizationsSection),
+  .submenu-section:has(#mailSection),
+  .submenu-section:has(#directorySection) {
     max-width: 116px;   // 1 colonne : boutons l'un sur l'autre
   }
 }
