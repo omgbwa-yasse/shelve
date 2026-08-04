@@ -127,35 +127,29 @@
   }
 
   .submenu-heading {
-    order: 0;                   // icône en haut du groupe
+    order: 2;                   // titre déplacé en bas du groupe
     flex: none;
     height: auto;
     background: transparent;
-    color: transparent;         // cache le texte du titre
+    color: #8a9099;
     box-shadow: none;
     border-radius: 0;
     padding: 0;
-    margin: 0 0 4px 0;
-    font-size: 0;               // cache le texte du titre
-    line-height: 0;
-    font-weight: 700;
+    margin: 3px 0 0 0;
+    font-size: 7.15px;          // 5.5px + 30%
+    font-weight: 700;           // gras
     text-transform: none;
     letter-spacing: .3px;
     text-align: center;
     border-bottom: none;
     cursor: default;
-    overflow: visible;
-    white-space: normal;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 
     &::after { display: none; }
     &:hover { background: transparent; }
-    i {
-      display: inline-block;
-      font-size: 21.6px;        // 18px + 20% : logo de la section seul
-      line-height: 1;
-      color: var(--primary, #0d6efd);
-      margin: 0;
-    }
+    i { display: none; }        // retire le logo du titre
   }
 
   // Grille de boutons : les boutons s'alignent horizontalement et passent
