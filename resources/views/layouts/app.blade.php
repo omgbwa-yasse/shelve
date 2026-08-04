@@ -183,7 +183,7 @@
             }
 
             /* Sidebar mobile */
-            .col-md-2 {
+            #sidebar {
                 position: fixed;
                 top: 0;
                 left: -100%;
@@ -197,7 +197,7 @@
                 box-shadow: 2px 0 10px rgba(0,0,0,0.1);
             }
 
-            .col-md-2.show {
+            #sidebar.show {
                 left: 0;
             }
 
@@ -283,7 +283,7 @@
             }
 
             /* Sidebar mobile pleine largeur */
-            .col-md-2 {
+            #sidebar {
                 width: 85%;
                 max-width: 300px;
             }
@@ -862,70 +862,61 @@
 
         <main class="py-3">
             <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-2" id="sidebar">
-                        <div class="card submenu-card h-100">
-                            <div class="card-body p-3">
-                                <div class="nav flex-column nav-pills">
-                                    @switch(Request::segment(1))
-                                        @case('public')
-                                            @include('submenu.public')
-                                            @break
-                                        @case('')
-                                        @case('mails')
-                                            @include('submenu.mails')
-                                            @break
-                                        @case('external')
-                                            @include('submenu.external')
-                                            @break
-                                        @case('repositories')
-                                            @include('submenu.repositories')
-                                            @break
-                                        @case('communications')
-                                            @include('submenu.communications')
-                                            @break
-                                        @case('settings')
-                                            @include('submenu.settings')
-                                            @break
-                                        @case('deposits')
-                                            @include('submenu.deposits')
-                                            @break
-                                        @case('tools')
-                                            @include('submenu.tools')
-                                            @break
-                                        @case('transferrings')
-                                            @include('submenu.transferrings')
-                                            @break
-                                        @case('dollies')
-                                            @include('submenu.dollies')
-                                            @break
-                                        @case('ai-search')
-                                            @include('submenu.ai-search')
-                                            @break
-                                        @case('library')
-                                            @include('submenu.library')
-                                            @break
-                                        @case('museum')
-                                            @include('submenu.museum')
-                                            @break
-                                        @case('workflows')
-                                        @case('tasks')
-                                            @include('submenu.workflow')
-                                            @break
-                                        @case('workplaces')
-                                            @include('submenu.workplaces')
-                                            @break
-                                    @endswitch
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Ruban façon Office : commandes du module actif en groupes horizontaux -->
+                <div class="office-ribbon mb-3" id="sidebar">
+                    @switch(Request::segment(1))
+                        @case('public')
+                            @include('submenu.public')
+                            @break
+                        @case('')
+                        @case('mails')
+                            @include('submenu.mails')
+                            @break
+                        @case('external')
+                            @include('submenu.external')
+                            @break
+                        @case('repositories')
+                            @include('submenu.repositories')
+                            @break
+                        @case('communications')
+                            @include('submenu.communications')
+                            @break
+                        @case('settings')
+                            @include('submenu.settings')
+                            @break
+                        @case('deposits')
+                            @include('submenu.deposits')
+                            @break
+                        @case('tools')
+                            @include('submenu.tools')
+                            @break
+                        @case('transferrings')
+                            @include('submenu.transferrings')
+                            @break
+                        @case('dollies')
+                            @include('submenu.dollies')
+                            @break
+                        @case('ai-search')
+                            @include('submenu.ai-search')
+                            @break
+                        @case('library')
+                            @include('submenu.library')
+                            @break
+                        @case('museum')
+                            @include('submenu.museum')
+                            @break
+                        @case('workflows')
+                        @case('tasks')
+                            @include('submenu.workflow')
+                            @break
+                        @case('workplaces')
+                            @include('submenu.workplaces')
+                            @break
+                    @endswitch
+                </div>
 
-                    <div class="col-md-10">
-                        <div id="container" class="card">
-                            @yield('content')
-                        </div>
-                    </div>
+                <div id="container" class="card">
+                    @yield('content')
                 </div>
             </div>
         </main>

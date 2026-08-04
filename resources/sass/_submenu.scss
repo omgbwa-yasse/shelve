@@ -59,3 +59,120 @@
 
 // Badge générique dans les sous-menus
 .submenu-link .badge { font-size:.65rem; padding:.2rem .4rem; border-radius:10px; margin-left:auto; }
+
+// ============================================================
+// Ruban façon Office (remplace le sous-menu latéral)
+// Le sous-menu du module actif s'affiche en groupes horizontaux
+// en haut de la page, comme Word / Excel.
+// ============================================================
+.office-ribbon {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 2px;
+  background: linear-gradient(180deg, #fafbfc 0%, #eef0f3 100%);
+  border: 1px solid #d9dde3;
+  border-radius: 8px;
+  padding: 6px 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+
+  .submenu-container {
+    display: contents; // les sections deviennent des groupes directs du ruban
+  }
+
+  .submenu-section {
+    display: flex;
+    flex-direction: column;
+    min-width: 128px;
+    padding: 6px 10px;
+    border-right: 1px solid #e1e5ea;
+
+    &:last-child { border-right: none; }
+  }
+
+  .submenu-heading {
+    background: transparent;
+    color: #3c4043;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 2px 0 5px 0;
+    margin-bottom: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    text-align: center;
+    border-bottom: 1px solid #d9dde3;
+    cursor: default;
+
+    &::after { display: none; }
+    &:hover { background: transparent; }
+    i { margin: 0 4px 0 0; font-size: 12px; }
+  }
+
+  .submenu-content,
+  .submenu-section-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    max-height: none !important;
+    opacity: 1 !important;
+
+    &.collapsed {
+      max-height: none !important;
+      padding: 0;
+      opacity: 1 !important;
+    }
+  }
+
+  .submenu-item {
+    margin: 0;
+  }
+
+  .submenu-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 3px;
+    padding: 7px 5px;
+    font-size: 11px;
+    line-height: 1.15;
+    min-height: 50px;
+    border-radius: 5px;
+    color: #3c4043;
+    white-space: normal;
+
+    i {
+      margin: 0;
+      font-size: 20px;
+      color: var(--primary, #0d6efd);
+    }
+
+    &:hover {
+      background: #e7edf6;
+      color: var(--primary, #0d6efd);
+    }
+
+    .badge { margin-left: 0; }
+  }
+
+  .submenu-divider,
+  .submenu-category-title {
+    display: none;
+  }
+}
+
+// Sur mobile, le ruban revient au tiroir latéral (voir #sidebar en media query du layout)
+@media (max-width: 991px) {
+  .office-ribbon {
+    display: block;
+    .submenu-section { border-right: none; min-width: 0; }
+    .submenu-link { flex-direction: row; justify-content: flex-start; text-align: left; min-height: 0; }
+    .submenu-link i { margin-right: 8px; }
+  }
+}
