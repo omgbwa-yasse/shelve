@@ -165,12 +165,12 @@ class RecordPhysical extends Model
 
     public function declassementRecords()
     {
-        return $this->hasMany(DeclassementRecord::class, 'record_physical_id');
+        return $this->hasMany(DeclassementRecord::class, 'record_id');
     }
 
     public function reactivations()
     {
-        return $this->hasMany(RecordReactivation::class, 'record_physical_id');
+        return $this->hasMany(RecordReactivation::class, 'record_id');
     }
 
     public function toSearchableArray()

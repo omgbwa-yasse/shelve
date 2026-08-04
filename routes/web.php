@@ -497,19 +497,23 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('shelve', [SearchRecordController::class, 'selectShelve'])->name('record-select-shelve');
         Route::post('dolly/create-with-records', [DollyController::class, 'createWithRecords'])->name('dolly.createWithRecords');
         // Routes spécifiques AVANT la route resource (pour éviter les conflits)
-        // Export/import routes for records
-        Route::get('records/exportButton', [RecordController::class, 'exportButton'])->name('records.exportButton');
-        Route::post('records/print', [RecordController::class, 'printRecords'])->name('records.print');
-        Route::post('records/export', [RecordController::class, 'export'])->name('records.export');
-        Route::get('records/export', [RecordController::class, 'exportForm'])->name('records.export.form');
-        Route::get('records/import', [RecordController::class, 'importForm'])->name('records.import.form');
-        Route::post('records/import', [RecordController::class, 'import'])->name('records.import');
-        Route::post('records/analyze-file', [RecordController::class, 'analyzeFile'])->name('records.analyze-file');
+        // Module unifié (Phase 5) — opérations sur Record / RecordMedium
         Route::get('records/terms/autocomplete', [RecordController::class, 'autocompleteTerms'])->name('records.terms.autocomplete');
-        Route::get('records/{record}/attachments', [RecordController::class, 'getAttachments'])->name('records.attachments.list');
-        Route::get('records/create/full', [RecordController::class, 'createFull'])->name('records.create.full');
-        Route::get('records/{record}/full', [RecordController::class, 'showFull'])->name('records.showFull');
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
+        Route::post('records/{record}/move', [RecordController::class, 'move'])->name('records.move');
+        Route::get('records/tree/view', [RecordController::class, 'treeView'])->name('records.tree.view');
+        Route::get('records/tree/data', [RecordController::class, 'tree'])->name('records.tree');
+        Route::post('records/{record}/add-medium', [RecordController::class, 'addMedium'])->name('records.add-medium');
+        Route::delete('records/{record}/mediums/{medium}', [RecordController::class, 'removeMedium'])->name('records.remove-medium');
+        Route::post('records/{record}/mediums/{medium}/checkout', [RecordController::class, 'checkout'])->name('records.mediums.checkout');
+        Route::post('records/{record}/mediums/{medium}/checkin', [RecordController::class, 'checkin'])->name('records.mediums.checkin');
+        Route::post('records/{record}/mediums/{medium}/cancel-checkout', [RecordController::class, 'cancelCheckout'])->name('records.mediums.cancel-checkout');
+        Route::post('records/{record}/mediums/{medium}/sign', [RecordController::class, 'sign'])->name('records.mediums.sign');
+        Route::post('records/{record}/mediums/{medium}/verify-signature', [RecordController::class, 'verifySignature'])->name('records.mediums.verify-signature');
+        Route::post('records/{record}/mediums/{medium}/revoke-signature', [RecordController::class, 'revokeSignature'])->name('records.mediums.revoke-signature');
+        Route::get('records/{record}/mediums/{medium}/download', [RecordController::class, 'download'])->name('records.mediums.download');
+        Route::post('records/{record}/versions', [RecordController::class, 'createVersion'])->name('records.create-version');
+        Route::get('records/{record}/versions', [RecordController::class, 'versions'])->name('records.versions');
 
         // Export SEDA 2.1
         Route::get('records/{record}/export/seda', [SEDAExportController::class, 'exportRecord'])->name('records.export.seda');

@@ -527,6 +527,16 @@ class Record extends Model
         return $path->implode($separator);
     }
 
+    /**
+     * Vérifie si un record donné est un descendant de la notice courante.
+     */
+    public function isDescendantOf(int $recordId): bool
+    {
+        $ancestors = $this->getAncestors();
+
+        return $ancestors->contains(fn ($ancestor) => $ancestor->id === $recordId);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Comportement métier
@@ -611,7 +621,7 @@ class Record extends Model
             'note' => $this->note,
             'archivist_note' => $this->archivist_note,
             'rule_convention' => $this->rule_convention,
-            'metadata' => $this->metadata,
+            'metadata' => $this->metadata ? json_encode($this->metadata) : null,
         ];
     }
 }

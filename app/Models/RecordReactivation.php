@@ -11,7 +11,7 @@ class RecordReactivation extends Model
     use HasFactory, BelongsToOrganisation;
 
     protected $fillable = [
-        'record_physical_id',
+        'record_id',
         'organisation_id',
         'previous_status_id',
         'previous_transfer_date',
@@ -33,7 +33,7 @@ class RecordReactivation extends Model
 
     public function record()
     {
-        return $this->belongsTo(RecordPhysical::class, 'record_physical_id');
+        return $this->belongsTo(Record::class, 'record_id');
     }
 
     public function previousStatus()

@@ -140,17 +140,10 @@
             <i class="bi bi-arrow-down-up"></i> {{ __('import_export') }} (EAD, Excel, SEDA)
         </div>
         <div class="submenu-content" id="importExportMenu">
-            @can('records_import')
+            @can('viewAny', App\Models\Record::class)
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('records.import.form') }}">
-                    <i class="bi bi-download"></i> {{ __('record_import') }}
-                </a>
-            </div>
-            @endcan
-            @can('records_export')
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('records.export.form') }}">
-                    <i class="bi bi-upload"></i> {{ __('record_export') }}
+                <a class="submenu-link" href="{{ route('records.tree.view') }}">
+                    <i class="bi bi-diagram-3"></i> {{ __('Arbre des notices') }}
                 </a>
             </div>
             @endcan

@@ -58,7 +58,7 @@ class DeclassementList extends Model
 
     public function recordPhysicals()
     {
-        return $this->belongsToMany(RecordPhysical::class, 'declassement_records', 'declassement_list_id', 'record_physical_id')
+        return $this->belongsToMany(Record::class, 'declassement_records', 'declassement_list_id', 'record_id')
             ->withPivot(['added_by', 'comment']);
     }
 

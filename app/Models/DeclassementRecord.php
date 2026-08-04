@@ -11,7 +11,7 @@ class DeclassementRecord extends Model
 
     protected $fillable = [
         'declassement_list_id',
-        'record_physical_id',
+        'record_id',
         'added_by',
         'comment',
     ];
@@ -23,7 +23,7 @@ class DeclassementRecord extends Model
 
     public function record()
     {
-        return $this->belongsTo(RecordPhysical::class, 'record_physical_id');
+        return $this->belongsTo(Record::class, 'record_id');
     }
 
     public function addedBy()
