@@ -9,9 +9,6 @@
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('favicon-v2.ico') }}" type="image/x-icon">
 
-    <!-- Preload des assets critiques -->
-    <link rel="preload" href="{{ asset('linear.svg') }}" as="image">
-
     <!-- Scripts PDF uniquement (avant Vite) -->
     <script src="{{ asset('js/vendor/pdf.min.js') }}"></script>
 
@@ -635,11 +632,6 @@
                 <div class="top-band-container">
                     <!-- Logo et SAI -->
                     <div class="left-section">
-                        <a href="{{ url('/') }}" class="header-logo">
-                            <img src="{{ asset('linear.svg') }}" alt="Shelve Logo"
-                                 class="bg-light p-1 rounded"
-                                 style="background-color: #f8f9fa !important; padding: 0.25rem !important; border-radius: 0.25rem !important; transition: none !important;">
-                        </a>
                         <div class="header-sai">
                             <span>{{ __('intelligent_archiving_system') }}</span>
                         </div>

@@ -226,6 +226,8 @@ h2 { font-weight:600; }
     flex: 1 1 auto;
     min-width: 0;
     align-self: center;
+    margin: 0 12px;             /* marges légères à gauche et à droite des icônes */
+    padding: 0 4px;
 }
 
 .nav-modules .nav-item {
