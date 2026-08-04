@@ -216,13 +216,12 @@
   }
 }
 
-// Settings : les sections restent côte à côte (comme les autres onglets) ;
-// ce sont les boutons À L'INTÉRIEUR de chaque section qui sont superposés
-// sur deux lignes (2 par ligne) pour gagner de la largeur.
+// Settings : sections de hauteur identique mais de largeur adaptée au contenu
+// (max 215px = 2 boutons/ligne). Une section à 1 bouton reste compacte.
 .ribbon-settings {
   .submenu-section {
-    flex: 0 0 215px;    // largeur fixe = 2 boutons par ligne
-    max-width: 215px;
+    flex: 0 0 auto;     // largeur selon le contenu (pas de rétrécissement)
+    max-width: 215px;   // 2 boutons par ligne au maximum
     height: 156px;      // hauteur identique pour toutes les sections
     justify-content: flex-start;
   }
