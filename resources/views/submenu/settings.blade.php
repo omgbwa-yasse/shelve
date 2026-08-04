@@ -140,6 +140,16 @@
                 </a>
             </div>
             <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('settings.record-types.index') }}">
+                    <i class="bi bi-tags"></i> Typologies de notices
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('settings.reference-lists.index') }}">
+                    <i class="bi bi-collection"></i> Domaines de valeurs
+                </a>
+            </div>
+            <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('settings.metadata-definitions.index') }}">
                     <i class="bi bi-list-check"></i> Définitions de métadonnées
                 </a>

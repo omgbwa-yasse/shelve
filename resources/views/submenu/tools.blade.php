@@ -138,6 +138,57 @@
         </div>
     </div>
 
+    <!-- Référentiels / Configuration Section -->
+    @auth
+    <div class="submenu-section">
+        <div class="submenu-heading" >
+            <i class="bi bi-sliders"></i> {{ __('Référentiels') }}
+        </div>
+        <div class="submenu-content" id="referentialsMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('settings.reference-lists.index') }}">
+                    <i class="bi bi-collection"></i> Domaines de valeurs
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('settings.record-types.index') }}">
+                    <i class="bi bi-tags"></i> Typologies de notices
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('settings.metadata-definitions.index') }}">
+                    <i class="bi bi-list-check"></i> Définitions de métadonnées
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('settings.folder-types.index') }}">
+                    <i class="bi bi-folder2"></i> Types de dossiers numériques
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('settings.document-types.index') }}">
+                    <i class="bi bi-file-earmark"></i> Types de documents numériques
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('record-statuses.index') }}">
+                    <i class="bi bi-flag"></i> Statuts des notices
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('record-supports.index') }}">
+                    <i class="bi bi-hdd"></i> Supports
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('sorts.index') }}">
+                    <i class="bi bi-sort-alpha-down"></i> Sorts finaux
+                </a>
+            </div>
+        </div>
+    </div>
+    @endauth
+
     @auth
     <div class="submenu-section">
         <div class="submenu-heading" >

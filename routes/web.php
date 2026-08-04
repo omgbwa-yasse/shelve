@@ -688,6 +688,7 @@ Route::group(['middleware' => 'auth'], function () {
         // Routes pour les métadonnées
         Route::resource('metadata-definitions', \App\Http\Controllers\Settings\MetadataDefinitionController::class)->names('settings.metadata-definitions');
         Route::resource('reference-lists', \App\Http\Controllers\Settings\ReferenceListController::class)->names('settings.reference-lists');
+        Route::resource('record-types', \App\Http\Controllers\Settings\RecordTypeController::class)->except(['show'])->names('settings.record-types');
 
         // Routes pour les valeurs de référence
         Route::post('reference-lists/{referenceList}/values', [\App\Http\Controllers\Settings\ReferenceListController::class, 'addValue'])->name('settings.reference-lists.values.store');
