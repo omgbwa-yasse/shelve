@@ -57,9 +57,9 @@ class RecordController extends Controller
 
         if ($medium = $request->input('medium_filter')) {
             if ($medium === 'physical') {
-                $query->whereHas('mediums.physical');
+                $query->whereHas('mediums', fn ($q) => $q->physical());
             } elseif ($medium === 'digital') {
-                $query->whereHas('mediums.digital');
+                $query->whereHas('mediums', fn ($q) => $q->digital());
             }
         }
 
@@ -127,7 +127,7 @@ class RecordController extends Controller
         $query = Record::query()
             ->with(['type', 'level', 'status', 'organisation', 'mediums.support', 'mediums.attachment'])
             ->currentVersion()
-            ->whereHas('mediums.physical');
+            ->whereHas('mediums', fn ($q) => $q->physical());
 
         $this->applyOrganisationScope($query);
 
