@@ -675,7 +675,7 @@
                         @endcan
                         @can('module_communications_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'communications') active @endif" href="{{ route('communications.transactions.index') }}" title="Communications"><i class="bi bi-chat-dots"></i><span class="nav-module-label">Comms</span></a>
+                            <a class="nav-link @if (Request::segment(1) == 'communications') active @endif" href="{{ route('communications.transactions.index') }}" title="Communications"><i class="bi bi-chat-dots"></i><span class="nav-module-label">Communications</span></a>
                         </div>
                         @endcan
                         @can('module_transferrings_access')
