@@ -80,8 +80,14 @@
   padding: 5px 8px;
   box-shadow: 0 1px 3px rgba(0,0,0,.08);
 
-  .submenu-container {
+  .submenu-container,
+  .communications-submenu {
     display: contents; // les sections deviennent des groupes directs du ruban
+  }
+
+  // Communications : sections plus larges (le sous-menu n'utilisait pas la classe standard)
+  .communications-submenu .submenu-section {
+    min-width: 180px;
   }
 
   // Chaque groupe a une hauteur identique (stretch) et une largeur
