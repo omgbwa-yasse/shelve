@@ -16,6 +16,7 @@ use Database\Seeders\Records\Configuration\RecordStatusSeeder;
 use Database\Seeders\Records\Configuration\RecordLevelSeeder;
 use Database\Seeders\Records\Configuration\RecordSupportSeeder;
 use Database\Seeders\Records\Configuration\DeclassementStatusSeeder;
+use Database\Seeders\Records\Types\RecordTypeSeeder;
 use Database\Seeders\Records\DeclassementPermissionsSeeder;
 use Database\Seeders\Deposits\ContainerStatusSeeder;
 use Database\Seeders\Deposits\SortSeeder;
@@ -92,6 +93,9 @@ class DatabaseSeeder extends Seeder
 
             // 6bis. PERMISSIONS COMPLÉMENTAIRES (Dépendent du rôle superadmin)
             DeclassementPermissionsSeeder::class, // Permissions déclassement/réactivation
+
+            // 6ter. TYPES UNIFIÉS (Phase 1 — dépend des utilisateurs pour created_by)
+            RecordTypeSeeder::class, // Backfill record_types + profils de métadonnées
 
             // 7. ACTIVITÉS ET SERVICES (Dépendent des organisations)
             ToolActivitySeeder::class, // Seeder pour les activités
