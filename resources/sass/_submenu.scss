@@ -216,23 +216,15 @@
   }
 }
 
-// Paramètres : les sections non listées passent en 1 colonne (gain de largeur),
-// les 5 sections ci-dessous s'affichent sur deux lignes (2 boutons par ligne).
+// Paramètres : toutes les sections affichent les boutons sur deux lignes
+// (2 par ligne, jamais plus), comme les autres sous-menus.
 .ribbon-settings {
   height: auto;
   min-height: 156px;
   overflow-y: visible;
 
   .submenu-section {
-    max-width: 116px;   // 1 colonne par défaut : boutons empilés
-  }
-
-  .submenu-section:has(#settingsSection),
-  .submenu-section:has(#authorizationsSection),
-  .submenu-section:has(#mailSection),
-  .submenu-section:has(#directorySection),
-  .submenu-section:has(#recordsSection) {
-    max-width: 215px;   // 2 colonnes : boutons sur deux lignes
+    max-width: 215px;   // 2 colonnes : les boutons passent à la ligne après 2
   }
 }
 
