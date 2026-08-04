@@ -66,7 +66,10 @@ return new class extends Migration
             $suffix = 2;
             foreach ($ids as $id) {
                 do {
-                    $candidate = $code . '-D' . $suffix;
+                    $marque = '-D' . $suffix;
+                    // La colonne est un varchar(30) : on rogne la base plutôt que
+                    // de laisser MySQL tronquer ou rejeter la valeur.
+                    $candidate = mb_substr($code, 0, 30 - mb_strlen($marque)) . $marque;
                     $suffix++;
                 } while (DB::table('mails')->where('code', $candidate)->exists());
 
@@ -75,19 +78,23 @@ return new class extends Migration
         }
     }
 
+    /**
+     * L'index existe-t-il déjà ?
+     *
+     * Volontairement agnostique du SGBD : la production tourne sous MySQL et le
+     * développement sous SQLite. On passe donc par l'introspection de schéma de
+     * Laravel plutôt que par une table système propre à un moteur.
+     */
     private function indexExists(): bool
     {
-        foreach (DB::select("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='mails'") as $index) {
-            if ($index->name === 'mails_code_unique') {
+        foreach (Schema::getIndexes('mails') as $index) {
+            $name = is_array($index) ? ($index['name'] ?? null) : ($index->name ?? null);
+
+            if ($name === 'mails_code_unique') {
                 return true;
             }
         }
 
-        // Sur un SGBD autre que SQLite, on s'appuie sur le schéma Doctrine.
-        try {
-            return Schema::hasIndex('mails', 'mails_code_unique');
-        } catch (\Throwable) {
-            return false;
-        }
+        return false;
     }
 };
