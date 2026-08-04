@@ -177,12 +177,21 @@
                         default => route('mail-received.index'),
                     };
 
+                    // Les fiches ouvertes depuis le tableau de bord passent par les routes
+                    // « incoming » / « outgoing » : sans branche dédiée, le bouton Modifier
+                    // retombait sur '#' et ne menait nulle part.
                     $editRoute = match(true) {
                         request()->routeIs('*received.external*') => route('mails.received.external.edit', $mail->id),
                         request()->routeIs('*send.external*') => route('mails.send.external.edit', $mail->id),
                         request()->routeIs('*received*') => route('mail-received.edit', $mail->id),
                         request()->routeIs('*send*') => route('mail-send.edit', $mail->id),
-                        default => '#'
+                        request()->routeIs('*incoming*') => $mail->sender_type === 'user'
+                            ? route('mail-received.edit', $mail->id)
+                            : route('mails.received.external.edit', $mail->id),
+                        request()->routeIs('*outgoing*') => $mail->recipient_type === 'user' || $mail->recipient_type === 'organisation'
+                            ? route('mail-send.edit', $mail->id)
+                            : route('mails.send.external.edit', $mail->id),
+                        default => route('mail-send.edit', $mail->id),
                     };
                 @endphp
 
@@ -195,7 +204,6 @@
                 <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
                     <i class="bi bi-trash"></i> Supprimer
                 </button>
-                </a>
             </div>
         </div>
 

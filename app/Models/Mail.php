@@ -435,6 +435,23 @@ class Mail extends Model
     }
 
     /**
+     * URL de la fiche de ce courrier, selon son type.
+     *
+     * Plusieurs vues construisaient ce lien à la main en supposant « incoming »,
+     * ce qui envoyait les notes internes et les sortants sur la mauvaise route.
+     */
+    public function showUrl(): string
+    {
+        $route = match ($this->mail_type) {
+            self::TYPE_INCOMING => 'mails.incoming.show',
+            self::TYPE_OUTGOING => 'mails.outgoing.show',
+            default => 'mail-send.show',
+        };
+
+        return route($route, $this->id);
+    }
+
+    /**
      * Remonte jusqu'au courrier d'origine de la chaîne.
      */
     public function rootMail(): self
@@ -499,21 +516,9 @@ class Mail extends Model
      */
     protected static function generateReplyCode(string $type): string
     {
-        $prefix = match ($type) {
-            self::TYPE_OUTGOING => 'OUT',
-            self::TYPE_INCOMING => 'IN',
-            default => 'INT',
-        };
-
-        $year = now()->format('Y');
-        $count = static::where('code', 'like', "$prefix-$year-%")->count() + 1;
-
-        do {
-            $code = sprintf('%s-%s-%03d', $prefix, $year, $count);
-            $count++;
-        } while (static::where('code', $code)->exists());
-
-        return $code;
+        // Attribution transactionnelle : le format IN-AAAA-001 est inchangé, mais
+        // deux réponses créées simultanément ne peuvent plus obtenir le même numéro.
+        return app(\App\Services\Mail\MailCodeService::class)->nextForReply($type);
     }
 
     /**
@@ -550,12 +555,13 @@ class Mail extends Model
             }
 
             if ($existing) {
-                $existing->update([
+                // Re-coter pour AJOUTER une direction ne doit rien effacer chez les
+                // autres : on n'écrase une consigne que si une nouvelle est fournie.
+                $existing->update(array_filter([
                     'action_id' => $actionId,
                     'activity_id' => $activityId,
                     'instruction' => $instruction,
-                    'coted_by' => $cotedBy,
-                ]);
+                ], fn ($value) => $value !== null && $value !== '') + ['coted_by' => $cotedBy]);
 
                 continue;
             }
@@ -933,30 +939,69 @@ class Mail extends Model
 
     // === BOOT METHOD FOR MODEL EVENTS ===
 
+    /**
+     * Champs dont la modification est journalisée automatiquement.
+     *
+     * Le statut en est volontairement absent : les méthodes de workflow le tracent
+     * déjà avec un libellé métier (« Signé par le DG », « Visa hiérarchique »),
+     * bien plus lisible qu'un « Champ status modifié ».
+     */
+    protected const AUDITED_FIELDS = [
+        'name', 'date', 'description', 'document_type', 'deadline',
+        'priority_id', 'typology_id', 'activity_id', 'action_id',
+        'sender_user_id', 'sender_organisation_id',
+        'external_sender_id', 'external_sender_organization_id',
+        'recipient_user_id', 'recipient_organisation_id',
+        'external_recipient_id', 'external_recipient_organization_id',
+    ];
+
+    /**
+     * Réduit une valeur à un scalaire sérialisable en JSON.
+     *
+     * C'est ce qui manquait à l'ancienne implémentation : `old_value` / `new_value`
+     * sont castés en json dans MailHistory, or `status` est casté en enum et
+     * `date` / `deadline` en Carbon — d'où le plantage qui avait fait désactiver
+     * ces événements.
+     */
+    protected static function scalarizeForAudit($value)
+    {
+        if ($value instanceof \BackedEnum) {
+            return $value->value;
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d H:i:s');
+        }
+
+        return $value;
+    }
+
     protected static function boot()
     {
         parent::boot();
 
-        // Événements du modèle temporairement désactivés pour debug
-        /*
         static::created(function ($mail) {
             $mail->logAction('created', null, null, null, 'Courrier créé');
-            // La référence à workflow a été supprimée
         });
 
         static::updated(function ($mail) {
-            $changes = $mail->getChanges();
-            foreach ($changes as $field => $newValue) {
-                if ($field !== 'updated_at') {
-                    $oldValue = $mail->getOriginal($field);
-                    $mail->logAction('updated', $field, $oldValue, $newValue, "Champ {$field} modifié");
+            foreach ($mail->getChanges() as $field => $newValue) {
+                if (!in_array($field, self::AUDITED_FIELDS, true)) {
+                    continue;
                 }
+
+                $mail->logAction(
+                    'updated',
+                    $field,
+                    static::scalarizeForAudit($mail->getOriginal($field)),
+                    static::scalarizeForAudit($newValue),
+                    "Champ {$field} modifié"
+                );
             }
         });
 
         static::deleted(function ($mail) {
             $mail->logAction('deleted', null, null, null, 'Courrier supprimé');
         });
-        */
     }
 }

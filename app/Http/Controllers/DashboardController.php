@@ -133,7 +133,13 @@ class DashboardController extends Controller
             ->get();
 
         // Dernières actions tracées sur le courrier (traçabilité).
+        // Ce bloc n'était pas cloisonné : un agent voyait passer l'activité de
+        // toutes les directions. On le restreint au périmètre de l'utilisateur.
         $recentActivities = MailHistory::with(['user', 'mail'])
+            ->when(!$isDg, fn ($q) => $q->whereHas(
+                'mail',
+                fn ($m) => $m->forOrganisation($organisationId)
+            ))
             ->latest()
             ->limit(6)
             ->get();

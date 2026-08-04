@@ -158,7 +158,7 @@
                                     @if($activity->user)<strong>{{ $activity->user->name }}</strong> — @endif
                                     {{ $activity->description ?? $activity->action }}
                                     @if($activity->mail)
-                                        <a href="{{ route('mails.incoming.show', $activity->mail->id) }}">{{ $activity->mail->name }}</a>
+                                        <a href="{{ $activity->mail->showUrl() }}">{{ $activity->mail->name }}</a>
                                     @endif
                                     <div class="text-muted">{{ $activity->created_at->diffForHumans() }}</div>
                                 </div>
@@ -230,9 +230,7 @@
                     <div class="list-group list-group-flush">
                         @forelse($overdueMails as $mail)
                             @php
-                                $lien = $mail->mail_type === 'incoming'
-                                    ? route('mails.incoming.show', $mail->id)
-                                    : route('mails.outgoing.show', $mail->id);
+                                $lien = $mail->showUrl();
                                 $retard = \Illuminate\Support\Carbon::parse($mail->deadline)->diffInDays(now());
                             @endphp
                             <a href="{{ $lien }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2 px-0">

@@ -44,6 +44,8 @@
                         @endforeach
                     </select>
                 </div>
+                @include('mails.partials._activity', ['activities' => $activities, 'mail' => $mail ?? null])
+
                 <div class="col-md-4 mb-3">
                     <label for="document_type" class="form-label">Type de document</label>
                     <select name="document_type" id="document_type" class="form-select border-primary" required>

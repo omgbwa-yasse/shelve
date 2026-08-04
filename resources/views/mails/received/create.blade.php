@@ -39,6 +39,8 @@
                         @endforeach
                     </select>
                 </div>
+                @include('mails.partials._activity', ['activities' => $activities, 'mail' => $mail ?? null])
+
             </div>
 
             <div class="mb-3">

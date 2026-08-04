@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Mail\MailActivityService;
+
+use App\Services\Mail\MailCodeService;
+
 use App\Models\Attachment;
 use App\Models\Mail;
 use App\Models\User;
@@ -74,6 +78,10 @@ class MailReceivedController extends Controller
         $externalContacts = ExternalContact::orderBy('last_name')->orderBy('first_name')->get();
         $externalOrganizations = ExternalOrganization::orderBy('name')->get();
 
+        // Activité du plan de classement : indispensable au routage des intérims
+        // par volet — un courrier sans activité n'est traitable par aucun volet.
+        $activities = app(MailActivityService::class)->optionsFor(Auth::user());
+
         return view('mails.received.create', compact(
             'mailActions',
             'senderOrganisations',
@@ -81,7 +89,8 @@ class MailReceivedController extends Controller
             'priorities',
             'typologies',
             'externalContacts',
-            'externalOrganizations'
+            'externalOrganizations',
+            'activities'
         ));
     }
 
@@ -99,6 +108,7 @@ class MailReceivedController extends Controller
             'action_id' => 'required|exists:mail_actions,id',
             'priority_id' => 'required|exists:mail_priorities,id',
             'typology_id' => 'required|exists:mail_typologies,id',
+            'activity_id' => 'nullable|exists:activities,id',
             'sender_type' => 'required|in:internal,external_contact,external_organization',
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx,gif',
@@ -148,6 +158,7 @@ class MailReceivedController extends Controller
             'action_id' => $validatedData['action_id'],
             'priority_id' => $validatedData['priority_id'],
             'typology_id' => $validatedData['typology_id'],
+            'activity_id' => $validatedData['activity_id'] ?? null,
             'recipient_organisation_id' => Auth::user()->current_organisation_id,
             'recipient_user_id' => Auth::id(),
             'status' => MailStatusEnum::IN_PROGRESS,
@@ -205,6 +216,7 @@ class MailReceivedController extends Controller
             'action_id' => 'required|exists:mail_actions,id',
             'priority_id' => 'required|exists:mail_priorities,id',
             'typology_id' => 'required|exists:mail_typologies,id',
+            'activity_id' => 'nullable|exists:activities,id',
             'sender_type' => 'required|in:external_contact,external_organization',
         ];
 
@@ -243,6 +255,7 @@ class MailReceivedController extends Controller
             'action_id' => $validatedData['action_id'],
             'priority_id' => $validatedData['priority_id'],
             'typology_id' => $validatedData['typology_id'],
+            'activity_id' => $validatedData['activity_id'] ?? null,
             'recipient_organisation_id' => Auth::user()->current_organisation_id,
             'recipient_user_id' => Auth::id(),
             'status' => MailStatusEnum::IN_PROGRESS,
@@ -292,26 +305,9 @@ class MailReceivedController extends Controller
 
     public function generateMailCode(int $typologie_id)
     {
-        $typology = MailTypology::findOrFail($typologie_id);
-        $year = date('Y');
-
-        $count = Mail::whereYear('created_at', $year)
-                ->where('typology_id', $typologie_id)
-                ->count();
-
-        $nextNumber = $count + 1;
-        $codeExists = true;
-
-        while ($codeExists) {
-            $formattedNumber = str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
-            $candidateCode = $year . "/" . $typology->code . "/" . $formattedNumber;
-            $codeExists = Mail::where('code', $candidateCode)->exists();
-            if ($codeExists) {
-                $nextNumber++;
-            }
-        }
-
-        return $candidateCode;
+        // Numérotation du registre : attribution transactionnelle et unique, via
+        // MailCodeService. Le format AAAA/CODE/0001 reste inchangé.
+        return app(MailCodeService::class)->nextForTypology($typologie_id);
     }
 
     public function show(INT $mail_id)
@@ -323,7 +319,7 @@ class MailReceivedController extends Controller
 
     public function edit(Mail $received)
     {
-        Gate::authorize('mail_edit');
+        Gate::authorize('mail_update');
 
         $received->load([
             'action',
@@ -343,12 +339,14 @@ class MailReceivedController extends Controller
         // The edit view references $mail; expose the loaded record under both names.
         $mail = $received;
 
-        return view('mails.received.edit', compact('received', 'mail', 'mailActions', 'senderOrganisations', 'users', 'priorities', 'typologies'));
+        $activities = app(MailActivityService::class)->optionsFor(Auth::user());
+
+        return view('mails.received.edit', compact('received', 'mail', 'mailActions', 'senderOrganisations', 'users', 'priorities', 'typologies', 'activities'));
     }
 
     public function update(Request $request, int $id)
     {
-        Gate::authorize('mail_edit');
+        Gate::authorize('mail_update');
 
         $mail = Mail::findOrFail($id);
 
@@ -362,6 +360,7 @@ class MailReceivedController extends Controller
             'sender_organisation_id' => 'required|exists:organisations,id',
             'priority_id' => 'required|exists:mail_priorities,id',
             'typology_id' => 'required|exists:mail_typologies,id',
+            'activity_id' => 'nullable|exists:activities,id',
         ]);
 
         $mail->update($validatedData);

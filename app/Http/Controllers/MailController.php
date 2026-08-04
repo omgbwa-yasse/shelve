@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Mail\MailCodeService;
+
 use App\Models\Mail;
 use App\Models\User;
 use App\Models\Batch;
@@ -88,21 +90,10 @@ class MailController extends Controller
      */
     public function createIncoming()
     {
-        $typologies = MailTypology::orderBy('name')->get();
-        $priorities = MailPriority::orderBy('duration')->get();
-        $actions = MailAction::orderBy('name')->get();
-        $senderOrganisations = Organisation::orderBy('name')->get();
-        $externalContacts = ExternalContact::with('organization')->orderBy('last_name')->get();
-        $externalOrganizations = ExternalOrganization::orderBy('name')->get();
-
-        return view('mails.incoming.create', compact(
-            'typologies',
-            'priorities',
-            'actions',
-            'senderOrganisations',
-            'externalContacts',
-            'externalOrganizations'
-        ));
+        // Les vues `mails.incoming.create` / `mails.outgoing.create` n'ont jamais
+        // existé : ces routes renvoyaient une erreur 500. Le formulaire complet
+        // d'enregistrement d'un entrant est celui du courrier externe.
+        return redirect()->route('mails.received.external.create');
     }
 
     /**
@@ -110,19 +101,7 @@ class MailController extends Controller
      */
     public function createOutgoing()
     {
-        $typologies = MailTypology::orderBy('name')->get();
-        $priorities = MailPriority::orderBy('duration')->get();
-        $actions = MailAction::orderBy('name')->get();
-        $externalContacts = ExternalContact::with('organization')->orderBy('last_name')->get();
-        $externalOrganizations = ExternalOrganization::orderBy('name')->get();
-
-        return view('mails.outgoing.create', compact(
-            'typologies',
-            'priorities',
-            'actions',
-            'externalContacts',
-            'externalOrganizations'
-        ));
+        return redirect()->route('mails.send.external.create');
     }
 
 
@@ -291,20 +270,29 @@ class MailController extends Controller
         // Configuration selon le type
         switch ($type) {
             case 'received':
+                // Le filtre de statut comparait auparavant à un TABLEAU (`!=` avec
+                // ['draft','reject']) et 'reject' n'est pas une valeur de l'enum :
+                // la condition ne filtrait rien. On exclut désormais les brouillons.
                 $query->with(['action', 'sender', 'senderOrganisation', 'attachments', 'containers'])
-                      ->where('recipient_organisation_id', $organisationId)
-                      ->where('status', '!=', ['draft', 'reject'])
-                      ->OrWhereHas('containers', function($q) use ($organisationId) {
-                          $q->where('creator_organisation_id', $organisationId);
+                      ->where(function ($q) use ($organisationId) {
+                          $q->where(function ($sub) use ($organisationId) {
+                              $sub->where('recipient_organisation_id', $organisationId)
+                                  ->where('status', '!=', MailStatusEnum::DRAFT->value);
+                          })->orWhereHas('containers', function ($sub) use ($organisationId) {
+                              $sub->where('creator_organisation_id', $organisationId);
+                          });
                       });
                 break;
 
             case 'send':
                 $query->with(['action', 'recipient', 'recipientOrganisation', 'attachments', 'containers'])
-                      ->where('sender_organisation_id', $organisationId)
-                      ->where('status', '!=', 'draft')
-                      ->orWhereHas('containers', function($q) use ($organisationId) {
-                          $q->where('creator_organisation_id', $organisationId);
+                      ->where(function ($q) use ($organisationId) {
+                          $q->where(function ($sub) use ($organisationId) {
+                              $sub->where('sender_organisation_id', $organisationId)
+                                  ->where('status', '!=', MailStatusEnum::DRAFT->value);
+                          })->orWhereHas('containers', function ($sub) use ($organisationId) {
+                              $sub->where('creator_organisation_id', $organisationId);
+                          });
                       });
                 break;
 
@@ -615,26 +603,9 @@ class MailController extends Controller
      */
     protected function generateMailCode(int $typologie_id)
     {
-        $typology = MailTypology::findOrFail($typologie_id);
-        $year = date('Y');
-
-        $count = Mail::whereYear('created_at', $year)
-                ->where('typology_id', $typologie_id)
-                ->count();
-
-        $nextNumber = $count + 1;
-        $codeExists = true;
-
-        while ($codeExists) {
-            $formattedNumber = str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
-            $candidateCode = $year . "/" . $typology->code . "/" . $formattedNumber;
-            $codeExists = Mail::where('code', $candidateCode)->exists();
-            if ($codeExists) {
-                $nextNumber++;
-            }
-        }
-
-        return $candidateCode;
+        // Numérotation du registre : attribution transactionnelle et unique, via
+        // MailCodeService. Le format AAAA/CODE/0001 reste inchangé.
+        return app(MailCodeService::class)->nextForTypology($typologie_id);
     }
 
     /**

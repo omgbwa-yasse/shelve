@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Batch;
 use App\Models\BatchMail;
 use App\Models\Mail;
-use App\Models\MailbatchTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 

@@ -7,7 +7,6 @@ use App\Models\dolly;
 use App\Models\RecordPhysical;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
-use App\Models\MailType;
 use App\Models\Author;
 use App\Models\BatchMail;
 use App\Models\MailArchiving;

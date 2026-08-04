@@ -10,7 +10,7 @@ use App\Models\SlipStatus;
 use App\Models\Room;
 use App\Enums\CommunicationStatus;
 use App\Models\MailPriority;
-use App\Models\MailType;
+use App\Models\MailTypology;
 use App\Models\RecordStatus;
 use App\Models\RecordSupport;
 use App\Models\RecordLevel;
@@ -366,7 +366,7 @@ class DollyActionController extends Controller
 
     public function MailType(INT $id){
         $dolly = dolly::findOrFail($id);
-        $types = MailType::all();
+        $types = MailTypology::all();
         return view('dollies.actions.mailTypeForm', compact('dolly','types'))->with('success', 'Dolly created successfully.');
     }
 

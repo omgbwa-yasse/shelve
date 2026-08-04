@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Mail\MailActivityService;
+
+use App\Services\Mail\MailCodeService;
+
 use App\Models\Mail;
 use App\Models\Dolly;
 use App\Models\User;
@@ -61,6 +65,10 @@ class MailSendController extends Controller
         $externalContacts = \App\Models\ExternalContact::orderBy('last_name')->orderBy('first_name')->get();
         $externalOrganizations = \App\Models\ExternalOrganization::orderBy('name')->get();
 
+        // Activité du plan de classement : indispensable au routage des intérims
+        // par volet — un courrier sans activité n'est traitable par aucun volet.
+        $activities = app(MailActivityService::class)->optionsFor(Auth::user());
+
         return view('mails.send.create', compact(
             'mailActions',
             'recipientOrganisations',
@@ -68,7 +76,8 @@ class MailSendController extends Controller
             'priorities',
             'typologies',
             'externalContacts',
-            'externalOrganizations'
+            'externalOrganizations',
+            'activities'
         ));
     }
 
@@ -210,6 +219,7 @@ class MailSendController extends Controller
                 'action_id' => 'required|exists:mail_actions,id',
                 'priority_id' => 'required|exists:mail_priorities,id',
                 'typology_id' => 'required|exists:mail_typologies,id',
+                'activity_id' => 'nullable|exists:activities,id',
                 'recipient_type' => 'required|in:internal,external_contact,external_organization',
                 'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
                 'attachments_pending' => 'nullable|array',
@@ -250,6 +260,7 @@ class MailSendController extends Controller
                 'action_id' => $validatedData['action_id'],
                 'priority_id' => $validatedData['priority_id'],
                 'typology_id' => $validatedData['typology_id'],
+                'activity_id' => $validatedData['activity_id'] ?? null,
                 'sender_organisation_id' => auth()->user()->current_organisation_id,
                 'sender_user_id' => auth()->id(),
                 'status' => MailStatusEnum::IN_PROGRESS,
@@ -339,7 +350,10 @@ class MailSendController extends Controller
             $transferredMail = new Mail();
 
             $transferredMail->fill([
-                'code' => $originalMail->code,
+                // Le transfert créait un second courrier portant EXACTEMENT le même
+                // numéro de registre. On dérive désormais un suffixe : le lien avec
+                // l'original reste lisible, et le registre garde des numéros uniques.
+                'code' => $this->derivedTransferCode($originalMail->code),
                 'name' => $originalMail->name,
                 'date' => now(),
                 'description' => $originalMail->description . "\n" . Auth::user()->name . " : " . now() . " : " . $validatedData['comment'],
@@ -404,13 +418,16 @@ class MailSendController extends Controller
         $priorities = MailPriority::orderBy('name')->get();
         $typologies = MailTypology::orderBy('name')->get();
 
+        $activities = app(MailActivityService::class)->optionsFor(Auth::user());
+
         return view('mails.send.edit', compact(
             'mail',
             'mailActions',
             'recipientOrganisations',
             'users',
             'priorities',
-            'typologies'
+            'typologies',
+            'activities'
         ));
     }
 
@@ -429,6 +446,7 @@ class MailSendController extends Controller
                 'recipient_organisation_id' => 'required|exists:organisations,id',
                 'priority_id' => 'required|exists:mail_priorities,id',
                 'typology_id' => 'required|exists:mail_typologies,id',
+                'activity_id' => 'nullable|exists:activities,id',
                 'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
             ]);
 
@@ -511,28 +529,26 @@ class MailSendController extends Controller
 
 
 
+    /**
+     * Numéro dérivé pour un courrier transféré : CODE-T1, CODE-T2…
+     */
+    protected function derivedTransferCode(string $originalCode): string
+    {
+        $suffix = 1;
+
+        do {
+            $candidate = $originalCode . '-T' . $suffix;
+            $suffix++;
+        } while (Mail::where('code', $candidate)->exists());
+
+        return $candidate;
+    }
+
     public function generateMailCode(int $typologie_id)
     {
-        $typology = MailTypology::findOrFail($typologie_id);
-        $year = date('Y');
-
-        $count = Mail::whereYear('created_at', $year)
-                ->where('typology_id', $typologie_id)
-                ->count();
-
-        $nextNumber = $count + 1;
-        $codeExists = true;
-
-        while ($codeExists) {
-            $formattedNumber = str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
-            $candidateCode = $year . "/" . $typology->code . "/" . $formattedNumber;
-            $codeExists = Mail::where('code', $candidateCode)->exists();
-            if ($codeExists) {
-                $nextNumber++;
-            }
-        }
-
-        return $candidateCode;
+        // Numérotation du registre : attribution transactionnelle et unique, via
+        // MailCodeService. Le format AAAA/CODE/0001 reste inchangé.
+        return app(MailCodeService::class)->nextForTypology($typologie_id);
     }
 
 

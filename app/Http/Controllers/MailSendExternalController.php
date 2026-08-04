@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Mail\MailActivityService;
+
+use App\Services\Mail\MailCodeService;
+
 use App\Models\Mail;
 use App\Models\MailTypology;
 use App\Models\MailPriority;
@@ -15,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Intervention\Image\Facades\Image;
 use FFMpeg\FFMpeg;
 
@@ -53,12 +58,17 @@ class MailSendExternalController extends Controller
         $externalContacts = ExternalContact::with('organization')->orderBy('last_name')->get();
         $externalOrganizations = ExternalOrganization::orderBy('name')->get();
 
+        // Activité du plan de classement : indispensable au routage des intérims
+        // par volet — un courrier sans activité n'est traitable par aucun volet.
+        $activities = app(MailActivityService::class)->optionsFor(Auth::user());
+
         return view('mails.send.external.create', compact(
             'typologies',
             'priorities',
             'actions',
             'externalContacts',
-            'externalOrganizations'
+            'externalOrganizations',
+            'activities'
         ));
     }
 
@@ -75,6 +85,7 @@ class MailSendExternalController extends Controller
                 'description' => 'nullable',
                 'document_type' => 'required|in:original,duplicate,copy',
                 'typology_id' => 'required|exists:mail_typologies,id',
+                'activity_id' => 'nullable|exists:activities,id',
                 'priority_id' => 'nullable|exists:mail_priorities,id',
                 'action_id' => 'nullable|exists:mail_actions,id',
                 'recipient_type' => 'required|in:external_contact,external_organization',
@@ -106,14 +117,15 @@ class MailSendExternalController extends Controller
                     ->withErrors(['external_recipient_organization_id' => 'Veuillez sélectionner une organisation externe.']);
             }
 
-            if($validatedData['code'] == null) {
-                $mailCode = $this->generateMailCode($validatedData['typology_id']);
-            } else {
-                $mailCode = $validatedData['code'];
-            }
+            // L'opérateur d'union `+` conserve les clés de gauche : tant que
+            // $validatedData portait un 'code' vide, le code généré était ignoré et
+            // l'insertion violait la contrainte NOT NULL. On l'écrit donc dans
+            // $validatedData plutôt que de compter sur l'union.
+            $validatedData['code'] = empty($validatedData['code'])
+                ? $this->generateMailCode($validatedData['typology_id'])
+                : $validatedData['code'];
 
             $mail = Mail::create($validatedData + [
-                'code' => $mailCode,
                 'sender_organisation_id' => Auth::user()->current_organisation_id,
                 'sender_user_id' => Auth::id(),
                 'sender_type' => 'organisation',
@@ -182,13 +194,16 @@ class MailSendExternalController extends Controller
         $externalContacts = ExternalContact::with('organization')->orderBy('last_name')->get();
         $externalOrganizations = ExternalOrganization::orderBy('name')->get();
 
+        $activities = app(MailActivityService::class)->optionsFor(Auth::user());
+
         return view('mails.send.external.edit', compact(
             'mail',
             'typologies',
             'priorities',
             'actions',
             'externalContacts',
-            'externalOrganizations'
+            'externalOrganizations',
+            'activities'
         ));
     }
 
@@ -201,12 +216,15 @@ class MailSendExternalController extends Controller
             $mail = Mail::findOrFail($id);
 
             $validatedData = $request->validate([
-                'code' => 'required|exists:mails,code,' . $mail->id,
+                // Le code identifie le courrier au registre : il doit rester unique,
+                // ce courrier-ci excepté.
+                'code' => ['required', 'string', 'max:50', Rule::unique('mails', 'code')->ignore($mail->id)],
                 'name' => 'required|max:150',
                 'date' => 'required|date',
                 'description' => 'nullable',
                 'document_type' => 'required|in:original,duplicate,copy',
                 'typology_id' => 'required|exists:mail_typologies,id',
+                'activity_id' => 'nullable|exists:activities,id',
                 'priority_id' => 'nullable|exists:mail_priorities,id',
                 'action_id' => 'nullable|exists:mail_actions,id',
                 'recipient_type' => 'required|in:external_contact,external_organization',
@@ -362,25 +380,8 @@ class MailSendExternalController extends Controller
      */
     protected function generateMailCode(int $typologie_id)
     {
-        $typology = MailTypology::findOrFail($typologie_id);
-        $year = date('Y');
-
-        $count = Mail::whereYear('created_at', $year)
-                ->where('typology_id', $typologie_id)
-                ->count();
-
-        $nextNumber = $count + 1;
-        $codeExists = true;
-
-        while ($codeExists) {
-            $formattedNumber = str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
-            $candidateCode = $year . "/" . $typology->code . "/" . $formattedNumber;
-            $codeExists = Mail::where('code', $candidateCode)->exists();
-            if ($codeExists) {
-                $nextNumber++;
-            }
-        }
-
-        return $candidateCode;
+        // Numérotation du registre : attribution transactionnelle et unique, via
+        // MailCodeService. Le format AAAA/CODE/0001 reste inchangé.
+        return app(MailCodeService::class)->nextForTypology($typologie_id);
     }
 }

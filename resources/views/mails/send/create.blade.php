@@ -22,9 +22,15 @@
 
                 <h5 class="card-title mb-4">Informations générales</h5>
 
+                {{-- Le numéro de registre est attribué par le système : le champ de
+                     saisie qui figurait ici n'était jamais lu par le contrôleur, ce
+                     qui laissait croire à l'agent qu'il choisissait le numéro. --}}
                 <div class="col-md-4 mb-3">
-                    <label for="code" class="form-label">Code</label>
-                    <input type="text" id="code" name="code" class="form-control" required>
+                    <label class="form-label">Code du courrier</label>
+                    <input type="text" class="form-control" value="Attribué automatiquement" disabled>
+                    <small class="form-text text-muted">
+                        Le numéro de registre est généré à l'enregistrement, à partir de la typologie.
+                    </small>
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="date" class="form-label">Date du courrier</label>
@@ -39,6 +45,8 @@
                         @endforeach
                     </select>
                 </div>
+                @include('mails.partials._activity', ['activities' => $activities, 'mail' => $mail ?? null])
+
             </div>
 
             <div class="mb-3">

@@ -24,7 +24,36 @@ class MailPolicy extends BasePolicy
      */
     public function view(?User $user, Mail $mail): bool|Response
     {
+        // Le cloisonnement organisationnel ne reconnaît que l'entité du courrier et
+        // ses ancêtres. Or le workflow désigne nommément des acteurs qui peuvent
+        // appartenir à un service rattaché : un validateur N+1 placé dans un service
+        // enfant se voyait ainsi refuser l'accès au courrier qu'il devait viser.
+        // Les personnes explicitement engagées dans le circuit y ont droit.
+        if ($user && $this->hasPermission($user, 'mail_view') && $this->isDesignatedActor($user, $mail)) {
+            return true;
+        }
+
         return $this->canView($user, $mail, 'mail_view');
+    }
+
+    /**
+     * L'utilisateur est-il nommément engagé dans le circuit de ce courrier ?
+     */
+    private function isDesignatedActor(User $user, Mail $mail): bool
+    {
+        $acteurs = array_map('intval', array_filter([
+            $mail->assigned_to,        // validateur courant ou agent affecté
+            $mail->sender_user_id,     // initiateur
+            $mail->recipient_user_id,  // destinataire nommé
+            $mail->dg_signed_by,       // signataire
+        ]));
+
+        if (in_array((int) $user->id, $acteurs, true)) {
+            return true;
+        }
+
+        // Direction cotée dont l'utilisateur a la charge (y compris par intérim).
+        return $mail->exists && $mail->isHandledBy($user);
     }
 
     /**

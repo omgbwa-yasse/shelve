@@ -29,6 +29,9 @@
                 @php
                     $alreadyCoted = $mail->cotations->pluck('organisation_id')->map(fn($i)=>(int)$i)->all();
                     $activitesCotees = $mail->cotations->pluck('activity_id', 'organisation_id');
+                    // Re-cotation : on repart de la consigne déjà donnée, sinon le DG
+                    // renverrait un formulaire vide et effacerait ce qu'il avait écrit.
+                    $cotationCourante = $mail->cotations->first();
                 @endphp
                 @foreach($organisations as $org)
                     <div class="row align-items-center py-1 border-bottom">
@@ -75,7 +78,8 @@
             <select name="action_id" id="action_id" class="form-select">
                 <option value="">Aucune instruction</option>
                 @foreach($instructions as $instruction)
-                    <option value="{{ $instruction->id }}" {{ old('action_id') == $instruction->id ? 'selected' : '' }}>
+                    <option value="{{ $instruction->id }}"
+                        {{ (int) old('action_id', $cotationCourante->action_id ?? null) === (int) $instruction->id ? 'selected' : '' }}>
                         {{ $instruction->name }}
                     </option>
                 @endforeach
@@ -84,7 +88,7 @@
 
         <div class="mb-3">
             <label for="instruction" class="form-label">Précisions (facultatif)</label>
-            <textarea name="instruction" id="instruction" class="form-control" rows="3">{{ old('instruction') }}</textarea>
+            <textarea name="instruction" id="instruction" class="form-control" rows="3">{{ old('instruction', $cotationCourante->instruction ?? '') }}</textarea>
         </div>
 
         <div class="d-flex justify-content-between">

@@ -30,7 +30,7 @@ class MailTransaction extends Model
     }
     public function type()
     {
-        return $this->belongsTo(MailType::class, 'mail_type_id');
+        return $this->belongsTo(MailTypology::class, 'mail_type_id');
     }
     public function userSend()
     {
@@ -54,7 +54,7 @@ class MailTransaction extends Model
 
     public function mailType()
     {
-        return $this->belongsTo(MailType::class, 'mail_type_id');
+        return $this->belongsTo(MailTypology::class, 'mail_type_id');
     }
 
     public function documentType()

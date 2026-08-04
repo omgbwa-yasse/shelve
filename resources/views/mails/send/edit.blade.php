@@ -3,6 +3,17 @@
 @section('content')
 <div class="container">
     <h1>Modifier Courrier sortant</h1>
+
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <form action="{{ route('mail-send.update', $mail->id) }}" method="POST">
         @csrf
         @method('PUT')
@@ -86,6 +97,21 @@
                 @endforeach
             </select>
         </div>
+        <div class="form-group">
+            <label for="activity_id">Activité (plan de classement)</label>
+            <select name="activity_id" id="activity_id" class="form-control">
+                <option value="">Non rattaché…</option>
+                @foreach($activities as $activity)
+                    <option value="{{ $activity->id }}" {{ (int) old('activity_id', $mail->activity_id) === (int) $activity->id ? 'selected' : '' }}>
+                        {{ $activity->name }}
+                    </option>
+                @endforeach
+            </select>
+            <small class="form-text text-muted">
+                Nécessaire pour que les intérims par volet puissent router ce courrier.
+            </small>
+        </div>
+
 
         <button type="submit" class="btn btn-primary">Modifier</button>
     </form>
@@ -112,7 +138,7 @@
 
             recipientUserSelect.innerHTML = '<option value="">Loading...</option>';
 
-            fetch(`/mails/organizations/${organisationId}/users`)
+            fetch(`/mails/organisations/${organisationId}/users`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Error while retrieving users');
@@ -134,6 +160,6 @@
                 });
         });
 
-<script/>
+</script>
 
 @endsection
