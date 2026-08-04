@@ -69,8 +69,10 @@
   display: flex;
   align-items: stretch;
   flex-wrap: nowrap;          // une seule ligne (pas de retour à la ligne => hauteur constante)
-  justify-content: safe center; // centré si peu de groupes, sinon aligné à gauche + scroll
+  justify-content: flex-start; // aligné à gauche
+  height: 116px;              // hauteur fixe du ruban
   overflow-x: auto;
+  overflow-y: hidden;
   gap: 0;
   background: linear-gradient(180deg, #fafbfc 0%, #eef0f3 100%);
   border: 1px solid #d9dde3;
@@ -130,11 +132,11 @@
     display: flex;
     flex-wrap: wrap;
     align-content: center;      // grille centrée verticalement dans le groupe
-    justify-content: center;
+    justify-content: flex-start;
     gap: 3px;
     padding: 0;
     margin: 0;
-    overflow: visible;
+    overflow: hidden;
     max-height: none !important;
     opacity: 1 !important;
 
@@ -152,14 +154,14 @@
   // Bouton tuile Office : icône au-dessus, libellé en dessous, taille fixe.
   .submenu-link {
     flex: 0 0 78px;
-    min-height: 40px;
+    min-height: 36px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
-    padding: 5px 4px;
-    font-size: 10.5px;
+    gap: 2px;
+    padding: 4px 4px;
+    font-size: 10px;
     line-height: 1.15;
     border-radius: 5px;
     color: #3c4043;
@@ -168,7 +170,7 @@
 
     i {
       margin: 0;
-      font-size: 19px;
+      font-size: 18px;
       color: var(--primary, #0d6efd);
     }
 
@@ -190,9 +192,12 @@
 @media (max-width: 991px) {
   .office-ribbon {
     display: block;
+    height: auto;
+    max-height: 85vh;
+    overflow-y: auto;
     justify-content: flex-start;
     .submenu-section { max-width: none; border-right: none; }
-    .submenu-content { align-content: flex-start; justify-content: flex-start; }
+    .submenu-content { align-content: flex-start; justify-content: flex-start; overflow: visible; }
     .submenu-link { flex: none; width: auto; flex-direction: row; justify-content: flex-start; text-align: left; min-height: 0; }
     .submenu-link i { margin-right: 8px; }
   }
