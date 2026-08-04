@@ -216,8 +216,8 @@
   }
 }
 
-// Settings : boutons superposés (1 colonne) dans chaque section et passages à la
-// ligne des sections => pas de bande défilante horizontale, tout reste visible.
+// Settings : exactement 2 boutons par ligne dans chaque section, jamais 3+.
+// Les sections passent à la ligne => pas de bande défilante horizontale.
 .ribbon-settings {
   flex-wrap: wrap;            // les sections passent à la ligne au lieu de défiler
   height: auto;
@@ -225,7 +225,7 @@
   overflow: visible;
 
   .submenu-section {
-    max-width: 116px;         // 1 colonne : boutons l'un sur l'autre
+    max-width: 215px;         // 2 colonnes exactement : les boutons passent à la ligne après 2
   }
 }
 
