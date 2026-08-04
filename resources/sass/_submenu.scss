@@ -216,16 +216,19 @@
   }
 }
 
-// Settings : exactement 2 boutons par ligne dans chaque section, jamais 3+.
-// Les sections passent à la ligne => pas de bande défilante horizontale.
+// Settings : sections de largeur fixe (2 boutons par ligne) et de hauteur
+// identique, qui passent à la ligne proprement (pas de bande défilante).
 .ribbon-settings {
-  flex-wrap: wrap;            // les sections passent à la ligne au lieu de défiler
+  flex-wrap: wrap;            // les sections passent à la ligne
+  align-content: flex-start;
   height: auto;
-  min-height: 156px;
   overflow: visible;
 
   .submenu-section {
-    max-width: 215px;         // 2 colonnes exactement : les boutons passent à la ligne après 2
+    flex: 0 0 215px;          // largeur fixe : exactement 2 boutons par ligne
+    max-width: 215px;
+    height: 156px;            // hauteur identique pour toutes les sections
+    justify-content: flex-start;
   }
 }
 
