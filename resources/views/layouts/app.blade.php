@@ -850,6 +850,59 @@
                     </nav>
                 </div>
             </div>
+
+            <!-- Ruban façon Office : commandes du module actif (intégré au bandeau) -->
+            <div class="office-ribbon mb-1 ribbon-{{ Request::segment(1) }}" id="sidebar">
+                @switch(Request::segment(1))
+                    @case('public')
+                        @include('submenu.public')
+                        @break
+                    @case('')
+                    @case('mails')
+                        @include('submenu.mails')
+                        @break
+                    @case('external')
+                        @include('submenu.external')
+                        @break
+                    @case('repositories')
+                        @include('submenu.repositories')
+                        @break
+                    @case('communications')
+                        @include('submenu.communications')
+                        @break
+                    @case('settings')
+                        @include('submenu.settings')
+                        @break
+                    @case('deposits')
+                        @include('submenu.deposits')
+                        @break
+                    @case('tools')
+                        @include('submenu.tools')
+                        @break
+                    @case('transferrings')
+                        @include('submenu.transferrings')
+                        @break
+                    @case('dollies')
+                        @include('submenu.dollies')
+                        @break
+                    @case('ai-search')
+                        @include('submenu.ai-search')
+                        @break
+                    @case('library')
+                        @include('submenu.library')
+                        @break
+                    @case('museum')
+                        @include('submenu.museum')
+                        @break
+                    @case('workflows')
+                    @case('tasks')
+                        @include('submenu.workflow')
+                        @break
+                    @case('workplaces')
+                        @include('submenu.workplaces')
+                        @break
+                @endswitch
+            </div>
         </header>
 
         <!-- Overlay pour le menu mobile -->
@@ -862,59 +915,6 @@
 
         <main class="py-3">
             <div class="container-fluid">
-                <!-- Ruban façon Office : commandes du module actif en groupes horizontaux -->
-                <div class="office-ribbon mb-3 ribbon-{{ Request::segment(1) }}" id="sidebar">
-                    @switch(Request::segment(1))
-                        @case('public')
-                            @include('submenu.public')
-                            @break
-                        @case('')
-                        @case('mails')
-                            @include('submenu.mails')
-                            @break
-                        @case('external')
-                            @include('submenu.external')
-                            @break
-                        @case('repositories')
-                            @include('submenu.repositories')
-                            @break
-                        @case('communications')
-                            @include('submenu.communications')
-                            @break
-                        @case('settings')
-                            @include('submenu.settings')
-                            @break
-                        @case('deposits')
-                            @include('submenu.deposits')
-                            @break
-                        @case('tools')
-                            @include('submenu.tools')
-                            @break
-                        @case('transferrings')
-                            @include('submenu.transferrings')
-                            @break
-                        @case('dollies')
-                            @include('submenu.dollies')
-                            @break
-                        @case('ai-search')
-                            @include('submenu.ai-search')
-                            @break
-                        @case('library')
-                            @include('submenu.library')
-                            @break
-                        @case('museum')
-                            @include('submenu.museum')
-                            @break
-                        @case('workflows')
-                        @case('tasks')
-                            @include('submenu.workflow')
-                            @break
-                        @case('workplaces')
-                            @include('submenu.workplaces')
-                            @break
-                    @endswitch
-                </div>
-
                 <div id="container" class="card">
                     @yield('content')
                 </div>
