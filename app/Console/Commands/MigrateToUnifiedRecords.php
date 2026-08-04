@@ -451,10 +451,9 @@ class MigrateToUnifiedRecords extends Command
             return;
         }
 
-        $digitalSupportId = DB::table('record_supports')->whereRaw('LOWER(name) = ?', ['numérique'])->value('id')
-            ?? DB::table('record_supports')->value('id');
-        $paperSupportId = DB::table('record_supports')->whereRaw('LOWER(name) = ?', ['papier'])->value('id')
-            ?? $digitalSupportId;
+        // Garantit les supports canoniques (papier / numérique) puis récupère leurs ids.
+        $paperSupportId = $this->ensureSupport('Papier');
+        $digitalSupportId = $this->ensureSupport('Numérique');
 
         // 7.1 Physiques → support papier
         RecordPhysical::query()->chunkById(500, function ($records) use ($paperSupportId) {
@@ -464,7 +463,7 @@ class MigrateToUnifiedRecords extends Command
                     continue;
                 }
 
-                $this->createMedium($recordId, $paperSupportId, $source->id);
+                $this->upsertMedium($recordId, $paperSupportId, $source->id);
             }
         });
 
@@ -480,9 +479,15 @@ class MigrateToUnifiedRecords extends Command
                 continue;
             }
 
+            // Notice numérique absorbée par une fusion physique↔numérique → soft-supprimée,
+            // son medium vit désormais sur la notice physique (is_principal=false).
+            if (!DB::table('records')->where('id', $recordId)->whereNull('deleted_at')->exists()) {
+                continue;
+            }
+
             $status = ($row->signature_status && $row->signature_status !== 'unsigned') ? 'final' : 'draft';
 
-            $this->createMedium($recordId, $digitalSupportId, $row->id, [
+            $this->upsertMedium($recordId, $digitalSupportId, $row->id, [
                 'attachment_id' => $row->attachment_id,
                 'status' => $status,
                 'checked_out_by' => $row->checked_out_by,
@@ -495,19 +500,41 @@ class MigrateToUnifiedRecords extends Command
         }
 
         // 7.3 Fusions physique↔numérique (document numérisé) : une notice, deux supports.
-        // Le second support est créé par addMedium côté applicatif ; ici on fusionne les paires
-        // dont la notice numérique a déjà été déclassée/transférée vers une notice physique.
         $this->mergeTransferredPairs($digitalSupportId);
     }
 
-    private function createMedium(int $recordId, int $supportId, int $legacyId, array $extra = []): void
+    /**
+     * Crée le support canonique s'il n'existe pas (par nom, insensible à la casse).
+     */
+    private function ensureSupport(string $name): int
     {
-        $exists = DB::table('record_mediums')
-            ->where('record_id', $recordId)
-            ->where('legacy_id', $legacyId)
-            ->exists();
+        $existing = DB::table('record_supports')
+            ->whereRaw('LOWER(name) = ?', [strtolower($name)])
+            ->value('id');
+
+        if ($existing) {
+            return (int) $existing;
+        }
+
+        return (int) DB::table('record_supports')->insertGetId([
+            'name' => $name,
+            'description' => 'Support canonique unifié',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function upsertMedium(int $recordId, int $supportId, int $legacyId, array $extra = []): void
+    {
+        $exists = DB::table('record_mediums')->where('record_id', $recordId)->where('legacy_id', $legacyId)->first();
 
         if ($exists) {
+            DB::table('record_mediums')->where('id', $exists->id)->update(array_merge([
+                'support_id' => $supportId,
+                'is_principal' => true,
+                'updated_at' => now(),
+            ], $extra));
+
             return;
         }
 
@@ -543,7 +570,13 @@ class MigrateToUnifiedRecords extends Command
                 ->where('support_id', $digitalSupportId)
                 ->update(['record_id' => $physicalRecordId, 'is_principal' => false]);
 
-            // La notice numérique devient une version-fille (obsolète) de la notice physique.
+            // La notice numérique est absorbée (soft-delete) : il ne reste qu'une notice,
+            // portant les deux supports. La relation version_of garde la trace historique.
+            DB::table('records')
+                ->where('id', $digitalRecordId)
+                ->whereNull('deleted_at')
+                ->update(['deleted_at' => now()]);
+
             RecordRelation::firstOrCreate([
                 'source_id' => $digitalRecordId,
                 'target_id' => $physicalRecordId,
