@@ -395,15 +395,15 @@
     <!-- Statistiques compactes -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-number text-primary">{{ $containers->total() }}</div>
+            <div class="stat-number text-primary">{{ $containers->count() }}</div>
             <div class="stat-label">{{ __('Contenants Total') }}</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number text-success">{{ $containers->where('status.name', 'Disponible')->count() }}</div>
+            <div class="stat-number text-success">{{ $containers->filter(fn($c) => $c->status?->name === 'Disponible')->count() }}</div>
             <div class="stat-label">{{ __('Disponibles') }}</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number text-warning">{{ $containers->where('status.name', 'Occupé')->count() }}</div>
+            <div class="stat-number text-warning">{{ $containers->filter(fn($c) => $c->status?->name === 'Occupé')->count() }}</div>
             <div class="stat-label">{{ __('Occupés') }}</div>
         </div>
         <div class="stat-card">
