@@ -216,8 +216,8 @@
   }
 }
 
-// Paramètres : toutes les sections affichent les boutons sur deux lignes
-// (2 par ligne, jamais plus), comme les autres sous-menus.
+// Paramètres : sections sur deux lignes par défaut (2 boutons par ligne),
+// sauf Paramètres / Courrier / Répertoire dont les boutons sont empilés (1 colonne).
 .ribbon-settings {
   height: auto;
   min-height: 156px;
@@ -225,6 +225,12 @@
 
   .submenu-section {
     max-width: 215px;   // 2 colonnes : les boutons passent à la ligne après 2
+  }
+
+  .submenu-section:has(#settingsSection),
+  .submenu-section:has(#mailSection),
+  .submenu-section:has(#directorySection) {
+    max-width: 116px;   // 1 colonne : les boutons l'un sur l'autre
   }
 }
 
