@@ -5,6 +5,30 @@
 
     <!-- Styles partagés via _submenu.scss -->
 
+    <!-- Section Ressources IA -->
+    <div class="submenu-section">
+        <div class="submenu-heading">
+            <i class="bi bi-boxes"></i> {{ __('Ressources IA') }}
+        </div>
+        <div class="submenu-content" id="aiResourcesMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('ai-search.resources', ['tab' => 'skills']) }}">
+                    <i class="bi bi-stars"></i> {{ __('Skills') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('ai-search.resources', ['tab' => 'prompts']) }}">
+                    <i class="bi bi-chat-square-text"></i> {{ __('Prompts') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('ai-search.resources', ['tab' => 'templates']) }}">
+                    <i class="bi bi-file-earmark-richtext"></i> {{ __('Templates') }}
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Section Recherche Rapide -->
     <div class="submenu-section">
         <div class="submenu-heading">

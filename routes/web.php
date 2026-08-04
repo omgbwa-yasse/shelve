@@ -985,6 +985,16 @@ Route::middleware(['auth'])->prefix('ai-search')->name('ai-search.')->group(func
     // Documentation de l'IA
     Route::get('/documentation', [\App\Http\Controllers\AiSearchController::class, 'documentation'])->name('documentation');
 
+    // Ressources IA : skills, prompts, templates
+    Route::get('/resources', [\App\Http\Controllers\AiResourceController::class, 'index'])->name('resources');
+    Route::post('/skills/install', [\App\Http\Controllers\AiSkillController::class, 'install'])->name('skills.install');
+    Route::post('/skills/{skill}/toggle', [\App\Http\Controllers\AiSkillController::class, 'toggle'])->name('skills.toggle');
+    Route::delete('/skills/{skill}', [\App\Http\Controllers\AiSkillController::class, 'destroy'])->name('skills.destroy');
+    Route::post('/templates', [\App\Http\Controllers\AiTemplateController::class, 'store'])->name('templates.store');
+    Route::get('/templates/{template}/download', [\App\Http\Controllers\AiTemplateController::class, 'download'])->name('templates.download');
+    Route::get('/templates/{template}/preview', [\App\Http\Controllers\AiTemplateController::class, 'preview'])->name('templates.preview');
+    Route::delete('/templates/{template}', [\App\Http\Controllers\AiTemplateController::class, 'destroy'])->name('templates.destroy');
+
     // Routes de test
     Route::get('/tests', [\App\Http\Controllers\AiSearchTestController::class, 'runTests'])->name('tests');
     Route::get('/test/{testName}', [\App\Http\Controllers\AiSearchTestController::class, 'runTest'])->name('test.single');
