@@ -1,13 +1,13 @@
 <div class="submenu-container py-2">
     <!-- Styles partagés via _submenu.scss -->
 
-    <!-- Recherche Section -->
+    <!-- Recherche Section - Archives -->
     @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('repositories', 'search'))
     <div class="submenu-section">
         <div class="submenu-heading" data-menu-action="toggle">
-            <i class="bi bi-search"></i> {{ __('search') }}
+            <i class="bi bi-folder"></i> {{ __('search') }} — Archives
         </div>
-        <div class="submenu-content" id="rechercheMenu">
+        <div class="submenu-content" id="rechercheArchivesMenu">
             @can('viewAny', App\Models\Record::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('records.index') }}">
@@ -39,7 +39,15 @@
                 </a>
             </div>
             @endcan
+        </div>
+    </div>
 
+    <!-- Recherche Section - Par critère -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-menu-action="toggle">
+            <i class="bi bi-search"></i> {{ __('search') }} — Critères
+        </div>
+        <div class="submenu-content" id="rechercheCriteresMenu">
             @can('viewAny', App\Models\Author::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('record-author.index') }}">
