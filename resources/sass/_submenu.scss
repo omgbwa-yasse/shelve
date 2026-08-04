@@ -113,6 +113,15 @@
     max-width: 320px;           // Enregistrement records : 3 éléments max par ligne
   }
 
+  // Menu Outils : les 4 premières sections (2 boutons chacune) sont empilées
+  // sur une seule colonne pour gagner de la largeur au profit de Thésaurus/Référentiels.
+  .submenu-section:has(#planClassementMenu),
+  .submenu-section:has(#referentielConservationMenu),
+  .submenu-section:has(#communicabiliteMenu),
+  .submenu-section:has(#organigrammeMenu) {
+    max-width: 116px;           // 1 colonne : les 2 boutons l'un sur l'autre
+  }
+
   .submenu-heading {
     order: 2;                   // titre déplacé en bas du groupe
     flex: none;
