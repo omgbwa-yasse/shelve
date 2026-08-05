@@ -10,16 +10,20 @@ import { FallbackScreen } from '@/components/crud/FallbackScreen';
 /**
  * Routeur UNIVERSEL du back-office (composant client).
  *
+ * Catch-all REQUIS (`[...path]`) : les vues back-office ont toujours au moins
+ * un segment (`/records`, `/mails/received`, …). La racine `/` appartient au
+ * portail public (`(opac)`), sans conflit de route.
+ *
  * Ordre de résolution :
  *   1. Écran spécialisé de la feature (features/<module>/resources.tsx).
  *   2. Config CRUD de la feature (liste / création / édition / détail).
  *   3. Écran de repli.
  */
 export default function ResourceRouter() {
-  const params = useParams<{ path?: string | string[] }>();
+  const params = useParams<{ path: string | string[] }>();
   const searchParams = useSearchParams();
   const raw = params.path;
-  const segments = Array.isArray(raw) ? raw : raw ? [raw] : [];
+  const segments = Array.isArray(raw) ? raw : [raw];
   const fullPath = `/${segments.join('/')}`;
 
   const special = getFeatureSpecialRoute(fullPath);
