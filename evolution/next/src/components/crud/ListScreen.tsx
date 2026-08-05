@@ -2,32 +2,47 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Column, FilterSpec, ActionSpec, ResourceConfig } from '@/lib/crud/types';
 import type { Entity, PaginatedEnvelope } from '@/lib/api/types';
 
 /**
- * Écran LISTE universel — rendu depuis une `ResourceConfig` : filtres,
- * recherche, tri, pagination serveur, actions de ligne/de page, export.
+ * Écran LISTE universel — rendu depuis une `ResourceConfig`.
+ *
+ * Respecte la convention API v1 (CONVENTIONS §3) : filtrage `filter[champ]=`,
+ * recherche `filter[champ][like]=`, tri `sort=-champ`, pagination `page` /
+ * `page.size`. Le `presetFilters` de la config permet des écrans ciblés
+ * (ex. "reçus", "archivés") partageant la même ressource.
  */
 export function ListScreen({ config }: { config: ResourceConfig }) {
-  const router = useRouter();
-  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [debounced, setDebounced] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [sortField, setSortField] = useState<string | null>(null);
+  const [sortDesc, setSortDesc] = useState(false);
 
-  const params: Record<string, unknown> = { page, per_page: 20 };
-  if (debounced) params.search = debounced;
-  for (const [k, v] of Object.entries(filters)) if (v) params[k] = v;
+  const params: Record<string, unknown> = { page, 'page.size': 20 };
 
-  const { data, isPending, isError, error } = useQuery({
-    queryKey: [config.path, page, debounced, filters],
+  if (debounced && config.searchField) {
+    params[`filter[${config.searchField}][like]`] = debounced;
+  }
+  for (const [k, v] of Object.entries(config.presetFilters ?? {})) {
+    if (v) params[`filter[${k}]`] = v;
+  }
+  for (const [k, v] of Object.entries(filters)) {
+    if (v) params[`filter[${k}]`] = v;
+  }
+  if (sortField) {
+    params.sort = sortDesc ? `-${sortField}` : sortField;
+  }
+
+  const { data, isPending, isError } = useQuery({
+    queryKey: [config.path, page, debounced, filters, sortField, sortDesc],
     queryFn: () => config.api.list(params as never) as Promise<PaginatedEnvelope<Entity>>,
   });
 
+  const queryClient = useQueryClient();
   const removeMutation = useMutation({
     mutationFn: (id: string | number) => config.api.destroy(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [config.path] }),
@@ -36,6 +51,16 @@ export function ListScreen({ config }: { config: ResourceConfig }) {
   const rows = data?.data ?? [];
   const meta = data?.meta;
   const total = meta?.total ?? rows.length;
+
+  function toggleSort(col: Column) {
+    if (!col.sortable) return;
+    if (sortField === col.key) {
+      setSortDesc((d) => !d);
+    } else {
+      setSortField(col.key);
+      setSortDesc(false);
+    }
+  }
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -93,8 +118,13 @@ export function ListScreen({ config }: { config: ResourceConfig }) {
           <thead className="sticky top-0 bg-surface">
             <tr>
               {(config.columns ?? []).map((col) => (
-                <th key={col.key} className={`px-3 py-2 font-medium text-muted-foreground ${col.className ?? ''}`}>
+                <th
+                  key={col.key}
+                  onClick={() => toggleSort(col)}
+                  className={`px-3 py-2 font-medium text-muted-foreground ${col.className ?? ''} ${col.sortable ? 'cursor-pointer select-none hover:text-foreground' : ''}`}
+                >
                   {col.label}
+                  {sortField === col.key && <span className="ml-1">{sortDesc ? '↓' : '↑'}</span>}
                 </th>
               ))}
               {config.rowActions && config.rowActions.length > 0 && <th className="px-3 py-2" />}

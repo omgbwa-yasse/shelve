@@ -11,3 +11,6 @@ export const batchesApi = createResourceApi('batches');
 export const batchTransactionsApi = createResourceApi('batch-transactions');
 export const mailContainersApi = createResourceApi('mail-containers');
 export const mailArchivesApi = createResourceApi('mail-archives');
+export const mailAttachmentsApi = createResourceApi('mail-attachments');
+export { containerPropertiesApi } from '@/features/deposits/services/deposit.service';
+

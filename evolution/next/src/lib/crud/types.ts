@@ -119,6 +119,10 @@ export type ResourceConfig = {
   detailFields?: string[];
   /** Filtres au-dessus de la liste. */
   filters?: FilterSpec[];
+  /** Filtres pré-appliqués (convention API `filter[champ]=valeur`) — ex. écrans "reçus", "archivés". */
+  presetFilters?: Record<string, string>;
+  /** Champ utilisé par la recherche libre (convention API `filter[champ][like]=`). */
+  searchField?: string;
   /** Actions de ligne. */
   rowActions?: ActionSpec[];
   /** Actions de masse / de page (haut de liste). */
@@ -151,11 +155,13 @@ export type Tab = {
   apiPath?: string;
   /** Client API dédié (sinon construit depuis `apiPath`). */
   api?: ResourceApi;
+  /** Client API de la sous-ressource parente (pour construire le chemin). */
+  parentApi?: ResourceApi;
+  /** Chemin complet construit depuis l'id parent — ressources plates (ex. `filter[mail_id]`). */
+  queryBy?: (parentId: string) => string;
   columns: Column[];
   /** Champs du formulaire d'ajout en ligne (optionnel). */
   fields?: Field[];
-  /** Client API de la sous-ressource parente (pour construire le chemin). */
-  parentApi?: ResourceApi;
   /** Endpoint d'ajout : `action(parentId, verb, payload)`. */
   addVerb?: string;
   /** Endpoint de suppression : `destroy(id)` sur la sous-ressource. */

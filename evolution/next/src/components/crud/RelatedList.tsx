@@ -19,7 +19,8 @@ export function RelatedList({ tab, parentId }: { tab: Tab; parentId: string }) {
 
   const parentBase = tab.parentApi?.base ?? '';
   const subPath = tab.apiPath ?? '';
-  const url = `${parentBase}/${parentId}${subPath ? `/${subPath}` : ''}`;
+  // Chemin complet : `queryBy` (ressource plate) sinon `{base}/{id}/{subPath}`.
+  const url = tab.queryBy ? tab.queryBy(parentId) : `${parentBase}/${parentId}${subPath ? `/${subPath}` : ''}`;
   const queryKey = [url, page];
 
   const { data, isPending } = useQuery({
