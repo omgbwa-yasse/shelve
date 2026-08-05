@@ -7,13 +7,14 @@ import type { ResourceApi } from '@/lib/api/resources';
 import type { Entity } from '@/lib/api/types';
 import type { TableColumn } from '@/components/ui/table';
 import { useResourceList, useDestroy, useCreate } from '@/lib/api/hooks';
-import { DataTable } from '@/components/ui/table';
+import { DataTable, Pagination } from '@/components/ui/table';
 import * as api from './services/contact.service';
 import type { FeatureRoute } from '@/lib/routing';
 
 function makeList(r: ResourceApi, key: string, columns: TableColumn<Entity>[], o: { title: string; create?: string }) {
   return function List() {
-    const { data, isLoading, isError } = useResourceList(r, key, { 'page.size': 50 } as never);
+    const [page, setPage] = useState(1);
+    const { data, isLoading, isError } = useResourceList(r, key, { page, 'page.size': 20 } as never);
     const destroy = useDestroy(r, key);
     const rows = (data?.data ?? []) as Entity[];
     return (
@@ -24,6 +25,7 @@ function makeList(r: ResourceApi, key: string, columns: TableColumn<Entity>[], o
         </header>
         <DataTable columns={columns} rows={rows} loading={isLoading} error={isError}
           actions={(row) => <button type="button" onClick={() => { if (window.confirm('Supprimer ?')) destroy.mutate(row.id); }} className="rounded border border-border px-2 py-1 text-xs text-danger">Supprimer</button>} />
+        <Pagination page={page} totalPages={data?.meta?.last_page ?? 1} total={data?.meta?.total} onChange={setPage} />
       </div>
     );
   };

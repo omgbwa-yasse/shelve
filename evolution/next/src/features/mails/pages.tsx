@@ -37,6 +37,7 @@ function makeMailList(columns: TableColumn<Entity>[], o: { title: string; desc?:
           </div>
           <div className="flex gap-2">
             <input type="search" placeholder="Rechercher…" onChange={(e) => { setD(e.target.value); setPage(1); }} className="w-56 rounded border border-border bg-surface px-3 py-1.5 text-sm" />
+            <a href={`/api/proxy/api/v1/mails?export=1`} className="rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted">Exporter</a>
             {o.create && <Link href={o.create} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">+ Nouveau</Link>}
           </div>
         </header>

@@ -15,18 +15,24 @@ import { RecordsTree, DragDrop } from './components/records-views';
 import type { FeatureRoute } from '@/lib/routing';
 
 /* Usine locale : liste générique (propre à la feature Records) */
-function makeList(r: ResourceApi, key: string, columns: TableColumn<Entity>[], o: { title: string; create?: string; detail?: string }) {
+function makeList(r: ResourceApi, key: string, columns: TableColumn<Entity>[], o: { title: string; create?: string; detail?: string; search?: string }) {
   return function List() {
     const [page, setPage] = useState(1);
-    const { data, isLoading, isError } = useResourceList(r, key, { page, 'page.size': 20 } as never);
+    const [d, setD] = useState('');
+    const params: Record<string, unknown> = { page, 'page.size': 20 };
+    if (d && o.search) params[`filter[${o.search}][like]`] = d;
+    const { data, isLoading, isError } = useResourceList(r, key, params as never);
     const destroy = useDestroy(r, key);
     const rows = (data?.data ?? []) as Entity[];
     const m = data?.meta;
     return (
       <div className="flex h-full flex-col gap-4">
-        <header className="flex items-center justify-between">
+        <header className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-xl font-semibold">{o.title}</h1>
-          {o.create && <Link href={o.create} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">+ Nouveau</Link>}
+          <div className="flex gap-2">
+            {o.search && <input type="search" placeholder="Rechercher…" onChange={(e) => { setD(e.target.value); setPage(1); }} className="w-56 rounded border border-border bg-surface px-3 py-1.5 text-sm" />}
+            {o.create && <Link href={o.create} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">+ Nouveau</Link>}
+          </div>
         </header>
         <DataTable columns={columns} rows={rows} loading={isLoading} error={isError}
           actions={o.detail ? (row) => (
@@ -93,6 +99,7 @@ const REF_COLS: TableColumn<Entity>[] = [
 
 export function RecordDetail({ id }: { id: string }) {
   const { data, isLoading } = useResource(api.recordsApi, 'records', id);
+  const [tab, setTab] = useState<string>('infos');
   if (isLoading) return <p className="text-sm text-muted-foreground">Chargement…</p>;
   const r = data?.data ?? {};
   return (
@@ -106,18 +113,27 @@ export function RecordDetail({ id }: { id: string }) {
           <Link href={`/records/${id}/edit`} className="rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted">Modifier</Link>
         </div>
       </header>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {([
-          ['Code', r.code], ['Nom', r.name], ['Description', r.description], ['Typologie', r.type_id], ['Niveau', r.level_id], ['Créée le', r.created_at ? new Date(String(r.created_at)).toLocaleDateString('fr-FR') : '—'],
-        ] as [string, unknown][]).map(([k, v]) => (
-          <div key={String(k)} className="rounded border border-border bg-surface p-3">
-            <p className="text-xs font-semibold uppercase text-muted-foreground">{k}</p>
-            <p className="mt-1 text-sm">{String(v ?? '—')}</p>
-          </div>
+      <nav className="flex gap-1 border-b border-border text-sm">
+        {(['infos', 'children', 'containers', 'attachments', 'authors'] as const).map((t) => (
+          <button key={t} type="button" onClick={() => setTab(t)} className={`rounded-t border-b-2 px-3 py-1.5 ${tab === t ? 'border-primary' : 'border-transparent text-muted-foreground hover:bg-muted'}`}>
+            {t === 'infos' ? 'Informations' : t === 'children' ? 'Sous-notices' : t === 'containers' ? 'Contenants' : t === 'attachments' ? 'Pièces jointes' : 'Auteurs'}
+          </button>
         ))}
-      </div>
-      <SubList title="Sous-notices" apiPath={`/api/v1/records/${id}/children`} colKey="name" />
-      <SubList title="Contenants" apiPath={`/api/v1/records/${id}/containers`} colKey="code" />
+      </nav>
+      {tab === 'infos' && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {([['Code', r.code], ['Nom', r.name], ['Description', r.description], ['Typologie', r.type_id], ['Niveau', r.level_id], ['Créée le', r.created_at ? new Date(String(r.created_at)).toLocaleDateString('fr-FR') : '—']] as [string, unknown][]).map(([k, v]) => (
+            <div key={String(k)} className="rounded border border-border bg-surface p-3">
+              <p className="text-xs font-semibold uppercase text-muted-foreground">{k}</p>
+              <p className="mt-1 text-sm">{String(v ?? '—')}</p>
+            </div>
+          ))}
+        </div>
+      )}
+      {tab === 'children' && <SubList title="Sous-notices" apiPath={`/api/v1/records/${id}/children`} colKey="name" />}
+      {tab === 'containers' && <SubList title="Contenants" apiPath={`/api/v1/records/${id}/containers`} colKey="code" />}
+      {tab === 'attachments' && <SubList title="Pièces jointes" apiPath={`/api/v1/records/${id}/attachments`} colKey="name" />}
+      {tab === 'authors' && <SubList title="Auteurs" apiPath={`/api/v1/records/${id}/authors`} colKey="name" />}
     </div>
   );
 }
@@ -137,7 +153,7 @@ function SubList({ title, apiPath, colKey }: { title: string; apiPath: string; c
 }
 
 export const routes: FeatureRoute[] = [
-  { path: '/records', List: makeList(api.recordsApi, 'records', RECORD_COLS, { title: 'Notices', create: '/records/create', detail: '/records' }), Detail: RecordDetail, Form: makeForm(api.recordsApi, 'records', { title: 'Notice', back: '/records', fields: [{ name: 'code', label: 'Code' }, { name: 'name', label: 'Nom', required: true }, { name: 'description', label: 'Description' }] }) },
+  { path: '/records', List: makeList(api.recordsApi, 'records', RECORD_COLS, { title: 'Notices', create: '/records/create', detail: '/records', search: 'name' }), Detail: RecordDetail, Form: makeForm(api.recordsApi, 'records', { title: 'Notice', back: '/records', fields: [{ name: 'code', label: 'Code' }, { name: 'name', label: 'Nom', required: true }, { name: 'description', label: 'Description' }] }) },
   { path: '/records/trash', List: makeList(api.recordsApi, 'records-trash', RECORD_COLS, { title: 'Corbeille' }) },
   { path: '/records/authors', List: makeList(api.authorsApi, 'authors', [{ key: 'name', label: 'Nom' }, { key: 'role', label: 'Fonction' }], { title: 'Auteurs', create: '/records/authors/create', detail: '/records/authors' }), Form: makeForm(api.authorsApi, 'authors', { title: 'Auteur', back: '/records/authors', fields: [{ name: 'name', label: 'Nom', required: true }, { name: 'role', label: 'Fonction' }] }) },
   { path: '/records/author-contacts', List: makeList(api.authorContactsApi, 'author-contacts', [{ key: 'name', label: 'Nom' }, { key: 'email', label: 'Email' }], { title: 'Contacts d’auteurs', create: '/records/author-contacts/create', detail: '/records/author-contacts' }), Form: makeForm(api.authorContactsApi, 'author-contacts', { title: 'Contact d’auteur', back: '/records/author-contacts', fields: [{ name: 'name', label: 'Nom', required: true }, { name: 'email', label: 'Email' }] }) },
