@@ -73,7 +73,7 @@ export const navigation: NavDomain[] = [
   },
 
   // ------------------------------------------------------------------
-  // 3. WorkPlaces — submenu/workplaces.blade.php
+  // 3. WorkPlaces — submenu/workplaces.blade.php (+ Chat intégré en section)
   // ------------------------------------------------------------------
   {
     key: 'workplaces',
@@ -90,23 +90,12 @@ export const navigation: NavDomain[] = [
       { key: 'workplaces-owner', group: 'Mes espaces', label: 'Propriétaire', href: '/workplaces?owner=me', icon: 'personBadge' },
       { key: 'workplaces-member', group: 'Mes espaces', label: 'Membre', href: '/workplaces?member=me', icon: 'personCheck' },
       { key: 'workplaces-public', group: 'Mes espaces', label: 'Publics', href: '/workplaces?is_public=1', icon: 'globe' },
-    ],
-  },
 
-  // ------------------------------------------------------------------
-  // 4. Chat — submenu/chats.blade.php
-  // ------------------------------------------------------------------
-  {
-    key: 'chats',
-    label: 'Chat',
-    href: '/chats',
-    icon: 'chats',
-    items: [
-      { key: 'chats-all', group: 'Chats', label: 'Tous les chats', href: '/chats', icon: 'messageCircle' },
-      { key: 'chats-private', group: 'Chats', label: 'Messages privés', href: '/chats#privates', icon: 'mails' },
-      { key: 'chats-workplaces', group: 'Chats', label: 'Chats des workplaces', href: '/workplaces', icon: 'workplaces' },
-
-      { key: 'chats-create', group: 'Création', label: 'Nouveau message privé', href: '/chats?new=1', icon: 'plusCircle' },
+      // Chat : section du sous-menu WorkPlaces (ancien domaine racine « Chat »).
+      { key: 'chats-all', group: 'Chat', label: 'Tous les chats', href: '/chats', icon: 'messageCircle' },
+      { key: 'chats-private', group: 'Chat', label: 'Messages privés', href: '/chats#privates', icon: 'mails' },
+      { key: 'chats-workplaces', group: 'Chat', label: 'Chats des workplaces', href: '/workplaces', icon: 'workplaces' },
+      { key: 'chats-create', group: 'Chat', label: 'Nouveau message privé', href: '/chats?new=1', icon: 'plusCircle' },
     ],
   },
 
