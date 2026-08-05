@@ -43,7 +43,7 @@ export function MailAdvancedSearch() {
     <div className="flex h-full flex-col gap-4">
       <PageHeader title="Recherche avancée — Courriers" description="Filtres combinables sur le courrier (code, objet, statut, type, période)." />
 
-      <div className="grid max-w-3xl grid-cols-1 gap-3 rounded border border-border bg-surface p-4 md:grid-cols-3">
+      <div className="grid w-full grid-cols-1 gap-3 rounded border border-border bg-surface p-4 md:grid-cols-3">
         <Field label="Code" value={criteria.code ?? ''} onChange={(v) => setCriteria((p) => ({ ...p, code: v }))} />
         <Field label="Objet / Nom" value={criteria.name ?? ''} onChange={(v) => setCriteria((p) => ({ ...p, name: v }))} />
         <label className="flex flex-col gap-1 text-sm">
@@ -144,7 +144,7 @@ export function MailDateSelect() {
   return (
     <div className="flex h-full flex-col gap-4">
       <PageHeader title="Courriers par date" description="Sélection d'une période pour lister les courriers." />
-      <div className="flex max-w-xl flex-wrap items-end gap-3 rounded border border-border bg-surface p-4">
+      <div className="flex w-full flex-wrap items-end gap-3 rounded border border-border bg-surface p-4">
         <label className="flex flex-col gap-1 text-sm">Du
           <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
         </label>

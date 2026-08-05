@@ -96,7 +96,7 @@ export function FormScreen({ config, mode, id }: { config: ResourceConfig; mode:
   }
 
   return (
-    <form onSubmit={submit} className="mx-auto flex max-w-3xl flex-col gap-4">
+    <form onSubmit={submit} className="flex w-full flex-col gap-4">
       <header className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">
           {isEdit ? `Modifier — ${config.label}` : `Créer — ${config.label}`}
@@ -109,7 +109,7 @@ export function FormScreen({ config, mode, id }: { config: ResourceConfig; mode:
       {notice && <div className="rounded border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">{notice}</div>}
 
       <div className="rounded border border-border bg-surface p-4">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {config.fields.filter((f) => !f.hidden).map((field) => (
             <FieldControl
               key={field.name}
