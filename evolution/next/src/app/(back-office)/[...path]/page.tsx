@@ -1,75 +1,47 @@
 'use client';
 
-import { useParams, useSearchParams } from 'next/navigation';
-import { getFeatureSpecialRoute, resolveFeatureConfig } from '@/features';
-import { ListScreen } from '@/components/crud/ListScreen';
-import { FormScreen } from '@/components/crud/FormScreen';
-import { DetailScreen } from '@/components/crud/DetailScreen';
-import { FallbackScreen } from '@/components/crud/FallbackScreen';
+import { useParams } from 'next/navigation';
+import { resolveFeatureRoute } from '@/features';
 
 /**
- * Routeur UNIVERSEL du back-office (composant client).
- *
- * Catch-all REQUIS (`[...path]`) : les vues back-office ont toujours au moins
- * un segment (`/records`, `/mails/received`, …). La racine `/` appartient au
- * portail public (`(opac)`), sans conflit de route.
- *
- * Ordre de résolution :
- *   1. Écran spécialisé de la feature (features/<module>/resources.tsx).
- *   2. Config CRUD de la feature (liste / création / édition / détail).
- *   3. Écran de repli.
+ * Routeur universel du back-office : dispatch vers les écrans propres à chaque
+ * feature. Conventions : `/x` → List · `/x/create` → Form(create) ·
+ * `/x/{id}` → Detail · `/x/{id}/edit` → Form(edit).
  */
 export default function ResourceRouter() {
   const params = useParams<{ path: string | string[] }>();
-  const searchParams = useSearchParams();
   const raw = params.path;
   const segments = Array.isArray(raw) ? raw : [raw];
   const fullPath = `/${segments.join('/')}`;
 
-  const special = getFeatureSpecialRoute(fullPath);
-  if (special) {
-    const Component = special;
-    const query = Object.fromEntries(searchParams.entries());
-    return <Component tab={query.tab} action={query.action} view={query.view} />;
+  const hit = resolveFeatureRoute(fullPath);
+
+  if (!hit) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <p className="text-sm text-muted-foreground">Page introuvable.</p>
+      </div>
+    );
   }
 
-  const config = resolveFeatureConfig(fullPath);
+  const { route, base } = hit;
+  const baseLen = base.split('/').filter(Boolean).length;
 
-  if (!config) {
-    return <FallbackScreen path={fullPath} />;
+  // Création : .../create
+  if (segments.length === baseLen + 1 && segments[segments.length - 1] === 'create' && route.Form) {
+    return <route.Form mode="create" />;
   }
 
-  // Longueur (nb segments) du chemin de base réellement utilisé par la config.
-  const base = configBase(config, segments);
-
-  // Cas « création » : .../create
-  if (segments.length === base + 1 && segments[segments.length - 1] === 'create') {
-    return <FormScreen config={config} mode="create" />;
+  // Édition : .../{id}/edit
+  if (segments.length === baseLen + 2 && segments[segments.length - 1] === 'edit' && route.Form) {
+    return <route.Form mode="edit" id={segments[segments.length - 2]} />;
   }
 
-  // Cas « édition » : .../{id}/edit
-  if (segments.length === base + 2 && segments[segments.length - 1] === 'edit') {
-    const id = segments[segments.length - 2];
-    return <FormScreen config={config} mode="edit" id={id} />;
+  // Détail : .../{id}
+  if (segments.length === baseLen + 1 && route.Detail) {
+    return <route.Detail id={String(segments[segments.length - 1])} />;
   }
 
-  // Cas « détail » : .../{id}
-  if (segments.length === base + 1) {
-    const id = segments[segments.length - 1];
-    return <DetailScreen config={config} id={String(id)} />;
-  }
-
-  // Cas « liste » : ... (chemin exact)
-  return <ListScreen config={config} />;
-}
-
-/** Longueur (nb segments) du chemin de base réellement utilisé par la config. */
-function configBase(config: ReturnType<typeof resolveFeatureConfig>, segments: string[]): number {
-  const full = `/${segments.join('/')}`;
-  const candidates = [config!.path, ...(config!.aliases ?? [])];
-  const matched = candidates
-    .filter((c) => c === full || full.startsWith(`${c}/`))
-    .sort((a, b) => b.length - a.length)[0];
-
-  return matched ? matched.split('/').filter(Boolean).length : segments.length;
+  // Liste (ou écran spécialisé sur son chemin exact)
+  return <route.List />;
 }
