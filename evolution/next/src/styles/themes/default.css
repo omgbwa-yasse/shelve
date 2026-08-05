@@ -1,0 +1,7 @@
+/**
+ * Template "default" — importe les tokens tels quels. Un second template
+ * (ex. "contraste-eleve.css", "marque-2026.css") importerait le même fichier
+ * de tokens puis surchargerait uniquement les valeurs qui changent, en
+ * conservant les mêmes noms de variables.
+ */
+@import '../tokens.css';

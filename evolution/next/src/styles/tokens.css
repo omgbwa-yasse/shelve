@@ -1,0 +1,67 @@
+/**
+ * SOURCE UNIQUE DE VÉRITÉ — toutes les couleurs, tous les espacements et tous
+ * les rayons de l'application sont déclarés ici, et nulle part ailleurs.
+ *
+ * Pour créer un nouveau template : dupliquer un fichier de `src/styles/themes/`,
+ * changer les valeurs ci-dessous, l'importer dans `src/app/globals.css` à la
+ * place de `themes/default.css`. Aucun composant ne doit être modifié.
+ *
+ * Format des couleurs : HSL sans fonction `hsl()` (ex. "222 47% 11%"), pour
+ * rester compatible avec l'opacité Tailwind (`bg-primary/50`).
+ */
+
+:root {
+  /* Surfaces */
+  --color-background: 0 0% 100%;
+  --color-foreground: 222 47% 11%;
+  --color-surface: 210 20% 98%;
+  --color-border: 214 32% 91%;
+
+  /* Marque */
+  --color-primary: 221 83% 53%;
+  --color-primary-foreground: 0 0% 100%;
+
+  /* Texte secondaire */
+  --color-muted: 210 20% 96%;
+  --color-muted-foreground: 215 16% 47%;
+
+  /* États */
+  --color-danger: 0 72% 51%;
+
+  /* Navigation (bande d'icônes + bandeau sous-menu — voir PHILOSOPHY.md) */
+  --color-rail: 222 47% 11%;
+  --color-rail-foreground: 210 20% 98%;
+  --color-rail-active: 221 83% 53%;
+
+  /* Dimensions de la coquille applicative */
+  --width-rail: 5.5rem;
+  --width-submenu: 16rem;
+  --height-topbar: 3.75rem;
+
+  /* Forme */
+  --radius: 0.5rem;
+  --radius-sm: 0.25rem;
+  --radius-lg: 0.75rem;
+
+  /* Typographie */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+:root[data-theme='dark'] {
+  --color-background: 222 47% 8%;
+  --color-foreground: 210 20% 96%;
+  --color-surface: 222 40% 12%;
+  --color-border: 217 33% 20%;
+
+  --color-primary: 217 91% 60%;
+  --color-primary-foreground: 222 47% 8%;
+
+  --color-muted: 217 33% 17%;
+  --color-muted-foreground: 215 20% 65%;
+
+  --color-danger: 0 63% 60%;
+
+  --color-rail: 222 47% 6%;
+  --color-rail-foreground: 210 20% 90%;
+  --color-rail-active: 217 91% 60%;
+}

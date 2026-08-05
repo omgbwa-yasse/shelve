@@ -1,0 +1,20 @@
+/**
+ * Point d'entrée CSS unique de l'application (importé une seule fois, dans
+ * `app/layout.tsx`). Le seul choix à faire ici est QUEL template importer —
+ * voir `src/styles/themes/`.
+ */
+@import '../styles/themes/default.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
