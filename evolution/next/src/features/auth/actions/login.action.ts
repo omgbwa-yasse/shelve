@@ -62,7 +62,8 @@ export async function loginAction(
     return { error: 'Impossible de contacter le serveur.' };
   }
 
-  redirect('/');
+  // Connexion réussie → atterrissage sur le back-office (liste des notices).
+  redirect('/records');
 }
 
 /**
