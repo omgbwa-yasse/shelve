@@ -10,6 +10,8 @@ use App\Http\Resources\Api\V1\RecordResource;
 use App\Models\Record;
 use App\Models\RecordLevel;
 use App\Models\RecordStatus;
+use App\Models\RecordType;
+use App\Services\MetadataValidationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -82,6 +84,8 @@ class RecordChildController extends Controller
             $data['status_id'] = RecordStatus::query()->value('id');
         }
 
+        $this->validateMetadataAgainstType($data['type_id'] ?? $record->type_id, $data['metadata'] ?? null);
+
         $child = new Record($data);
         $child->parent_id = $record->id;
         $child->organisation_id = $record->organisation_id;
@@ -101,6 +105,11 @@ class RecordChildController extends Controller
 
         $child->save();
 
+        if (!empty($data['metadata']) && is_array($data['metadata'])) {
+            $child->setMultipleMetadata($data['metadata']);
+            $child->save();
+        }
+
         return response()->json(
             ['data' => new RecordResource($child->fresh())],
             201,
@@ -118,6 +127,8 @@ class RecordChildController extends Controller
         $child = $this->resolveChild($record, $child);
 
         $data = $request->validated();
+
+        $this->validateMetadataAgainstType($data['type_id'] ?? $child->type_id, $data['metadata'] ?? null);
 
         if (array_key_exists('metadata', $data) && is_array($data['metadata'])) {
             $child->setMultipleMetadata($data['metadata']);
@@ -154,5 +165,23 @@ class RecordChildController extends Controller
         return $record->children()
             ->whereKey($child->id)
             ->firstOrFail();
+    }
+
+    /**
+     * Les anciens champs descriptifs figés sont désormais des MetadataDefinition
+     * rattachées au RecordType — validées ici plutôt que par une liste de règles
+     * codées en dur dans le FormRequest.
+     */
+    private function validateMetadataAgainstType(?int $typeId, ?array $metadata): void
+    {
+        if (!$typeId) {
+            return;
+        }
+
+        $type = RecordType::find($typeId);
+
+        if ($type) {
+            app(MetadataValidationService::class)->validateRecordMetadata($type, $metadata ?? []);
+        }
     }
 }

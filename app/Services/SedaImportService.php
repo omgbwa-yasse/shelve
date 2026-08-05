@@ -4,12 +4,15 @@ namespace App\Services;
 
 use App\Models\Attachment;
 use App\Models\Dolly;
-use App\Models\RecordPhysical;
+use App\Models\Record;
+use App\Models\RecordLevel;
+use App\Models\RecordStatus;
 use App\Models\Slip;
 use App\Models\SlipRecord;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use ZipArchive;
 
 class SedaImportService
@@ -175,7 +178,7 @@ class SedaImportService
         return $map;
     }
 
-    private function createRecordFromUnit($unit): RecordPhysical
+    private function createRecordFromUnit($unit): Record
     {
         $content = $unit->Content ?? null;
         $title = (string) ($content->Title ?? 'Unité documentaire');
@@ -184,15 +187,28 @@ class SedaImportService
         $end = (string) ($content->EndDate ?? '');
         $desc = (string) ($content->Description ?? '');
 
-        return RecordPhysical::create([
-            'code' => $code ?: null,
+        return Record::create([
+            'code' => $code ?: $this->generateImportCode('SEDA'),
             'name' => $title,
-            'date_start' => $start ?: null,
-            'date_end' => $end ?: null,
+            'start_date' => $start ?: null,
+            'end_date' => $end ?: null,
             'content' => $desc ?: null,
-            'user_id' => Auth::id() ?? 1,
+            'level_id' => RecordLevel::query()->value('id'),
+            'status_id' => RecordStatus::query()->value('id'),
+            'creator_id' => Auth::id() ?? 1,
             'organisation_id' => optional(Auth::user())->current_organisation_id ?? 1,
+            'version_number' => 1,
+            'is_current_version' => true,
         ]);
+    }
+
+    /**
+     * `records.code` est UNIQUE et NOT NULL : les unités SEDA sans identifiant
+     * ont besoin d'un code de repli garanti unique.
+     */
+    private function generateImportCode(string $prefix): string
+    {
+        return $prefix . '-' . now()->format('YmdHis') . '-' . Str::upper(Str::random(4));
     }
 
     private function createSlipRecordFromUnit(Slip $slip, $unit): SlipRecord

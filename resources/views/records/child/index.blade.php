@@ -12,7 +12,7 @@
                 <a href="{{ route('records.show', $parent) }}" class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-arrow-left me-1"></i> {{ __('back') }}
                 </a>
-                @can('create', App\Models\RecordPhysical::class)
+                @can('create', App\Models\Record::class)
                 <a href="{{ route('record-child.create', $parent) }}" class="btn btn-primary btn-sm">
                     <i class="bi bi-plus-lg me-1"></i> {{ __('create') }}
                 </a>
@@ -62,7 +62,7 @@
                     <div class="text-center py-5 text-muted">
                         <i class="bi bi-inbox display-4"></i>
                         <p class="mt-3">{{ __('no_child_records') }}</p>
-                        @can('create', App\Models\RecordPhysical::class)
+                        @can('create', App\Models\Record::class)
                         <a href="{{ route('record-child.create', $parent) }}" class="btn btn-primary btn-sm mt-2">
                             <i class="bi bi-plus-lg me-1"></i> {{ __('create') }}
                         </a>

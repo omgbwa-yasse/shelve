@@ -1,23 +1,29 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
 
 class Container extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'code',
         'shelve_id',
         'status_id',
         'property_id',
+        'capacity_cm',
         'creator_id',
         'creator_organisation_id',
-        'is_archived'
+        'is_archived',
     ];
 
+    protected $casts = [
+        'capacity_cm' => 'decimal:2',
+        'is_archived' => 'boolean',
+    ];
 
     public function shelf()
     {
@@ -46,7 +52,33 @@ class Container extends Model
 
     public function slipRecord()
     {
-        return $this->belongsTo(SlipRecord::class,);
+        return $this->belongsTo(SlipRecord::class);
+    }
+
+    /**
+     * Mesure linéaire déjà occupée (somme des supports placés dans ce contenant).
+     */
+    public function usedLinearMeasureCm(): float
+    {
+        return (float) RecordMedium::where('container_id', $this->id)
+            ->sum('linear_measure_cm');
+    }
+
+    /**
+     * Espace linéaire restant dans le contenant (null si aucune capacité définie).
+     */
+    public function remainingSpaceCm(): ?float
+    {
+        if ($this->capacity_cm === null) {
+            return null;
+        }
+
+        return round((float) $this->capacity_cm - $this->usedLinearMeasureCm(), 2);
+    }
+
+    public function mediums(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(RecordMedium::class, 'container_id');
     }
 
     public function records()

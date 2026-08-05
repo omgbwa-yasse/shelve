@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MetadataDefinition extends Model
 {
@@ -26,7 +26,17 @@ class MetadataDefinition extends Model
         'options',
         'reference_list_id',
         'searchable',
+        'sortable',
+        'highlightable',
+        'autocomplete',
+        'unique',
+        'input_mask',
+        'max_length',
+        'copy_source_type',
+        'copy_source_field',
+        'computed_template',
         'active',
+        'is_system',
         'sort_order',
         'created_by',
         'updated_by',
@@ -41,9 +51,24 @@ class MetadataDefinition extends Model
         'validation_rules' => 'array',
         'options' => 'array',
         'searchable' => 'boolean',
+        'sortable' => 'boolean',
+        'highlightable' => 'boolean',
+        'autocomplete' => 'boolean',
+        'unique' => 'boolean',
+        'max_length' => 'integer',
         'active' => 'boolean',
+        'is_system' => 'boolean',
         'sort_order' => 'integer',
     ];
+
+    /**
+     * Scope à n'inclure que les définitions système (ex. champs ISAD(G) communs à
+     * tous les types) par opposition aux définitions personnalisées créées par type.
+     */
+    public function scopeSystem($query)
+    {
+        return $query->where('is_system', true);
+    }
 
     /**
      * Get the metadata profiles for this definition.

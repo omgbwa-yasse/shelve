@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class WorkflowDefinition extends Model
 {
-    use HasFactory, BelongsToOrganisation;
+    use BelongsToOrganisation, HasFactory;
 
     protected $fillable = [
         'name',
@@ -18,6 +18,9 @@ class WorkflowDefinition extends Model
         'bpmn_xml',
         'version',
         'status',
+        'visibility',
+        'allowed_user_ids',
+        'allowed_role_ids',
         'organisation_id',
         'created_by',
         'updated_by',
@@ -25,9 +28,46 @@ class WorkflowDefinition extends Model
 
     protected $casts = [
         'version' => 'integer',
+        'allowed_user_ids' => 'array',
+        'allowed_role_ids' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public const VISIBILITY_PUBLIC = 'public';
+
+    public const VISIBILITY_PRIVATE = 'private';
+
+    /**
+     * L'utilisateur peut-il démarrer ce workflow ? (étape 10 — sécurité de démarrage)
+     */
+    public function canStart(?User $user = null): bool
+    {
+        $user = $user ?? auth()->user();
+
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        if ($this->visibility === self::VISIBILITY_PRIVATE) {
+            $allowedUserIds = $this->allowed_user_ids ?? [];
+            $allowedRoleIds = $this->allowed_role_ids ?? [];
+
+            if (in_array($user->id, $allowedUserIds, true)) {
+                return true;
+            }
+
+            $userRoleIds = $user->roles()->pluck('roles.id')->all();
+
+            return ! empty(array_intersect($allowedRoleIds, $userRoleIds));
+        }
+
+        return $this->organisation_id === ($user->current_organisation_id ?? $user->organisation_id);
+    }
 
     public $timestamps = false; // Using custom timestamp fields
 

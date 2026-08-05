@@ -16,10 +16,18 @@
             </div>
             @endcan
 
-            @can('viewAny', App\Models\RecordPhysical::class)
+            @can('viewAny', App\Models\Record::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('records.physical') }}">
                     <i class="bi bi-archive"></i> {{ __('Physical Records') }}
+                </a>
+            </div>
+            @endcan
+
+            @can('viewAny', App\Models\Record::class)
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('records.trash') }}">
+                    <i class="bi bi-trash"></i> Corbeille
                 </a>
             </div>
             @endcan

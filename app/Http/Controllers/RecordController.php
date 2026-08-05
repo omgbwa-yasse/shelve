@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attachment;
 use App\Models\Organisation;
 use App\Models\Record;
 use App\Models\RecordLevel;
@@ -10,8 +11,8 @@ use App\Models\RecordStatus;
 use App\Models\RecordSupport;
 use App\Models\RecordType;
 use App\Models\ReferenceList;
-use App\Models\Attachment;
 use App\Models\User;
+use App\Services\MetadataValidationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +48,9 @@ class RecordController extends Controller
                 $q->where('name', 'like', "%{$keyword}%")
                     ->orWhere('code', 'like', "%{$keyword}%")
                     ->orWhere('description', 'like', "%{$keyword}%")
-                    ->orWhere('content', 'like', "%{$keyword}%");
+                    // Les anciens champs descriptifs (content, etc.) vivent désormais dans
+                    // `metadata` (JSON) : recherche sur le blob complet plutôt qu'une colonne.
+                    ->orWhereRaw('CAST(metadata AS CHAR) LIKE ?', ["%{$keyword}%"]);
             });
         }
 
@@ -95,9 +98,8 @@ class RecordController extends Controller
                 $q->where('name', 'like', "%{$term}%")
                     ->orWhere('code', 'like', "%{$term}%")
                     ->orWhere('description', 'like', "%{$term}%")
-                    ->orWhere('content', 'like', "%{$term}%")
-                    ->orWhere('archivist_note', 'like', "%{$term}%")
-                    ->orWhere('note', 'like', "%{$term}%");
+                    // content/archivist_note/note vivent désormais dans `metadata` (JSON).
+                    ->orWhereRaw('CAST(metadata AS CHAR) LIKE ?', ["%{$term}%"]);
             });
         }
 
@@ -187,7 +189,7 @@ class RecordController extends Controller
             $record->save();
             $created = $record;
 
-            if (!empty($data['metadata']) && is_array($data['metadata'])) {
+            if (! empty($data['metadata']) && is_array($data['metadata'])) {
                 $record->setMultipleMetadata($data['metadata']);
                 $record->save();
             }
@@ -254,7 +256,7 @@ class RecordController extends Controller
 
         $data = $this->validateRecord($request, $record);
 
-        DB::transaction(function () use ($request, $record, $data) {
+        DB::transaction(function () use ($record, $data) {
             $record->fill($data);
             $record->save();
 
@@ -274,6 +276,86 @@ class RecordController extends Controller
         $record->delete();
 
         return redirect()->route('records.index')->with('success', 'Notice supprimée.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Corbeille (étape 1)
+    |--------------------------------------------------------------------------
+    */
+    public function trash(Request $request)
+    {
+        Gate::authorize('records_view');
+
+        $query = Record::onlyTrashed()
+            ->with(['type', 'creator', 'organisation'])
+            ->orderBy('deleted_at', 'desc');
+
+        $this->applyOrganisationScope($query);
+
+        $records = $query->paginate(20);
+
+        return view('records.trash', compact('records'));
+    }
+
+    public function restore($id)
+    {
+        Gate::authorize('records_restore');
+
+        $record = Record::withTrashed()->findOrFail($id);
+
+        $record->restore();
+
+        return redirect()->route('records.trash')->with('success', 'Notice restaurée.');
+    }
+
+    public function forceDelete($id)
+    {
+        Gate::authorize('records_force_delete');
+
+        $record = Record::withTrashed()->findOrFail($id);
+
+        $record->forceDelete();
+
+        return redirect()->route('records.trash')->with('success', 'Notice supprimée définitivement.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Étape 9 — duplication & finalisation
+    |--------------------------------------------------------------------------
+    */
+    public function duplicate(Request $request, Record $record)
+    {
+        Gate::authorize('records_update');
+
+        $request->validate(['with_children' => 'boolean']);
+
+        $withChildren = (bool) $request->boolean('with_children');
+
+        $copy = $record->duplicate($withChildren);
+
+        return redirect()->route('records.show', $copy)
+            ->with('success', $withChildren
+                ? 'Notice et arborescence dupliquées avec succès.'
+                : 'Notice dupliquée avec succès.');
+    }
+
+    public function finalizeMedium(Record $record, RecordMedium $medium)
+    {
+        Gate::authorize('records_update');
+
+        $this->ensureMediumBelongs($record, $medium);
+
+        try {
+            $medium->finalize(auth()->user());
+        } catch (\Exception $e) {
+            return redirect()->route('records.show', $record)
+                ->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('records.show', $record)
+            ->with('success', 'Support finalisé (version majeure).');
     }
 
     /**
@@ -339,7 +421,7 @@ class RecordController extends Controller
     {
         return [
             'id' => $record->id,
-            'text' => ($record->code ? $record->code . ' — ' : '') . $record->name,
+            'text' => ($record->code ? $record->code.' — ' : '').$record->name,
             'type' => $record->type?->code,
             'is_container' => (bool) $record->isContainer(),
             'children' => $record->children()
@@ -364,6 +446,7 @@ class RecordController extends Controller
         $request->validate([
             'support_id' => 'required|exists:record_supports,id',
             'container_id' => 'nullable|exists:containers,id',
+            'linear_measure_cm' => 'nullable|numeric|min:0',
             'attachment' => 'nullable|file|max:51200',
         ]);
 
@@ -371,6 +454,7 @@ class RecordController extends Controller
             'record_id' => $record->id,
             'support_id' => $request->input('support_id'),
             'container_id' => $request->input('container_id'),
+            'linear_measure_cm' => $request->input('linear_measure_cm'),
         ]);
 
         if ($request->hasFile('attachment')) {
@@ -442,7 +526,7 @@ class RecordController extends Controller
         Gate::authorize('records_update');
         $this->ensureMediumBelongs($record, $medium);
 
-        if (!Auth::validate(['email' => $request->user()->email, 'password' => $request->input('password')])) {
+        if (! Auth::validate(['email' => $request->user()->email, 'password' => $request->input('password')])) {
             return back()->withErrors(['password' => 'Mot de passe incorrect.']);
         }
 
@@ -476,7 +560,7 @@ class RecordController extends Controller
         Gate::authorize('records_view');
         $this->ensureMediumBelongs($record, $medium);
 
-        if (!$medium->attachment) {
+        if (! $medium->attachment) {
             abort(404);
         }
 
@@ -521,7 +605,7 @@ class RecordController extends Controller
 
         return \Maatwebsite\Excel\Facades\Excel::download(
             new \App\Exports\UnifiedRecordsExport($records),
-            'records-' . date('Ymd-His') . '.xlsx'
+            'records-'.date('Ymd-His').'.xlsx'
         );
     }
 
@@ -537,7 +621,7 @@ class RecordController extends Controller
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('records.print-list', compact('records'));
 
-        return $pdf->download('records-' . date('Ymd-His') . '.pdf');
+        return $pdf->download('records-'.date('Ymd-His').'.pdf');
     }
 
     /**
@@ -568,7 +652,7 @@ class RecordController extends Controller
 
         foreach ($request->input('record_ids') as $recordId) {
             $record = \App\Models\Record::find($recordId);
-            if (!$record) {
+            if (! $record) {
                 continue;
             }
 
@@ -582,7 +666,7 @@ class RecordController extends Controller
                 'date_start' => $record->start_date,
                 'date_end' => $record->end_date,
                 'date_exact' => $record->date_exact,
-                'content' => $record->content,
+                'content' => $record->getMetadataValue('content'),
                 'level_id' => $record->level_id,
                 'support_id' => $supportId,
                 'activity_id' => $record->activity_id,
@@ -591,7 +675,7 @@ class RecordController extends Controller
         }
 
         return redirect()->route('slips.index')
-            ->with('success', 'Bordereau créé avec ' . count($request->input('record_ids')) . ' notice(s).');
+            ->with('success', 'Bordereau créé avec '.count($request->input('record_ids')).' notice(s).');
     }
 
     /**
@@ -699,13 +783,6 @@ class RecordController extends Controller
             'date_format' => 'nullable|string|max:1',
             'opening_date' => 'nullable|date',
             'closing_date' => 'nullable|date',
-            'extent' => 'nullable|string',
-            'table_of_contents' => 'nullable|string',
-            'quantity' => 'nullable|string',
-            'dimension' => 'nullable|string',
-            'publisher' => 'nullable|string',
-            'sort_value' => 'nullable|string',
-            'geographic_scope' => 'nullable|array',
             'metadata' => 'nullable|array',
         ];
 
@@ -721,6 +798,26 @@ class RecordController extends Controller
 
         if (empty($data['access_level'])) {
             $data['access_level'] = 'internal';
+        }
+
+        // Les anciens champs descriptifs figés (content, biographical_history, extent,
+        // quantity, ...) sont désormais des MetadataDefinition (système ou personnalisées)
+        // rattachées au RecordType via record_type_metadata_profiles — validées
+        // dynamiquement plutôt que par une liste de règles codées en dur.
+        $typeId = $data['type_id'] ?? $record?->type_id;
+
+        // Toujours valider (même sans `metadata` envoyé) : un type peut avoir des
+        // métadonnées obligatoires, auquel cas leur absence doit être rejetée.
+        if ($typeId) {
+            $type = RecordType::find($typeId);
+
+            if ($type) {
+                app(MetadataValidationService::class)->validateRecordMetadata(
+                    $type,
+                    $data['metadata'] ?? [],
+                    $record?->id
+                );
+            }
         }
 
         return $data;
@@ -759,7 +856,7 @@ class RecordController extends Controller
     {
         $user = auth()->user();
 
-        if ($user && !$user->hasRole('superadmin')) {
+        if ($user && ! $user->hasRole('superadmin')) {
             $query->where('organisation_id', $user->current_organisation_id ?? $user->organisation_id);
         }
     }

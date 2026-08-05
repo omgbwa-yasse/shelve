@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ReferenceValue extends Model
 {
@@ -21,6 +21,7 @@ class ReferenceValue extends Model
         'value',
         'code',
         'description',
+        'extra_attributes',
         'active',
         'sort_order',
         'created_by',
@@ -33,6 +34,7 @@ class ReferenceValue extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'extra_attributes' => 'array',
         'active' => 'boolean',
         'sort_order' => 'integer',
     ];

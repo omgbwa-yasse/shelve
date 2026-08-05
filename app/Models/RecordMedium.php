@@ -20,11 +20,15 @@ class RecordMedium extends Model
     protected $table = 'record_mediums';
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_FINAL = 'final';
+
     public const STATUS_OBSOLETE = 'obsolete';
 
     public const SIGNATURE_UNSIGNED = 'unsigned';
+
     public const SIGNATURE_SIGNED = 'signed';
+
     public const SIGNATURE_REJECTED = 'rejected';
 
     protected $fillable = [
@@ -35,6 +39,7 @@ class RecordMedium extends Model
         'status',
         'is_principal',
         'copy_code',
+        'linear_measure_cm',
         'checked_out_by',
         'checked_out_at',
         'signature_status',
@@ -46,11 +51,29 @@ class RecordMedium extends Model
 
     protected $casts = [
         'is_principal' => 'boolean',
+        'linear_measure_cm' => 'decimal:2',
         'checked_out_at' => 'datetime',
         'signed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    /**
+     * Versions mineure / majeure (étape 9).
+     * DRAFT = version mineure ; FINAL = version majeure publiée ; OBSOLETE = archivée.
+     */
+    public function finalize(User $user): void
+    {
+        if ($this->status !== self::STATUS_DRAFT) {
+            throw new \Exception('Seul un support en état draft peut être finalisé.');
+        }
+
+        $this->update([
+            'status' => self::STATUS_FINAL,
+            'signed_by' => $user->id,
+            'signed_at' => now(),
+        ]);
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -106,7 +129,7 @@ class RecordMedium extends Model
 
     public function checkin(User $user): void
     {
-        if (!$this->isCheckedOut()) {
+        if (! $this->isCheckedOut()) {
             throw new \Exception('Support is not checked out');
         }
 
@@ -119,7 +142,7 @@ class RecordMedium extends Model
 
     public function cancelCheckout(User $user): void
     {
-        if (!$this->isCheckedOut()) {
+        if (! $this->isCheckedOut()) {
             throw new \Exception('Support is not checked out');
         }
 
@@ -135,7 +158,7 @@ class RecordMedium extends Model
 
     public function isCheckedOut(): bool
     {
-        return !is_null($this->checked_out_by);
+        return ! is_null($this->checked_out_by);
     }
 
     public function isCheckedOutBy(User $user): bool
@@ -184,7 +207,7 @@ class RecordMedium extends Model
             return false;
         }
 
-        return !empty($this->signature_data) && $this->signed_by !== null;
+        return ! empty($this->signature_data) && $this->signed_by !== null;
     }
 
     public function revokeSignature(User $user): void

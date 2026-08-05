@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\MetadataDefinition;
 use App\Models\RecordDigitalDocumentType;
 use App\Models\RecordDigitalFolderType;
 use App\Models\RecordType;
-use App\Models\MetadataDefinition;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -14,23 +14,19 @@ class MetadataValidationService
     /**
      * Validate metadata for a unified record type (Phase 1/2 — reciblage).
      *
-     * @param RecordType $recordType
-     * @param array $metadata
      * @return array Validated metadata
+     *
      * @throws ValidationException
      */
-    public function validateRecordMetadata(RecordType $recordType, array $metadata): array
+    public function validateRecordMetadata(RecordType $recordType, array $metadata, ?int $ignoreRecordId = null): array
     {
         $profiles = $recordType->metadataProfiles()->with('metadataDefinition')->ordered()->get();
 
-        return $this->validateProfiles($profiles, $metadata);
+        return $this->validateProfiles($profiles, $metadata, $ignoreRecordId);
     }
 
     /**
      * Get metadata form fields for a unified record type.
-     *
-     * @param RecordType $recordType
-     * @return array
      */
     public function getRecordMetadataFields(RecordType $recordType): array
     {
@@ -46,12 +42,11 @@ class MetadataValidationService
     /**
      * Shared validation logic over a collection of metadata profiles.
      *
-     * @param \Illuminate\Support\Collection $profiles
-     * @param array $metadata
-     * @return array
+     * @param  \Illuminate\Support\Collection  $profiles
+     *
      * @throws ValidationException
      */
-    protected function validateProfiles($profiles, array $metadata): array
+    protected function validateProfiles($profiles, array $metadata, ?int $ignoreRecordId = null): array
     {
         $rules = [];
         $messages = [];
@@ -71,6 +66,10 @@ class MetadataValidationService
 
             $fieldRules = array_merge($fieldRules, $this->getDataTypeRules($definition->data_type, $definition));
 
+            if ($definition->unique) {
+                $fieldRules[] = $this->uniqueRule($definition->code, $ignoreRecordId);
+            }
+
             if ($profile->validation_rules) {
                 $fieldRules = array_merge($fieldRules, $profile->validation_rules);
             }
@@ -89,11 +88,34 @@ class MetadataValidationService
     }
 
     /**
+     * Règle d'unicité sur une métadonnée stockée dans `records.metadata` (JSON).
+     * Le champ JSON est interrogé via le chemin `->{code}` supporté par MySQL.
+     */
+    protected function uniqueRule(string $code, ?int $ignoreRecordId): \Closure
+    {
+        return function (string $attribute, $value, $fail) use ($code, $ignoreRecordId) {
+            if ($value === null || $value === '') {
+                return;
+            }
+
+            $query = \App\Models\Record::query()
+                ->whereRaw("CAST(JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.{$code}')) AS CHAR) = ?", [(string) $value]);
+
+            if ($ignoreRecordId) {
+                $query->where('id', '!=', $ignoreRecordId);
+            }
+
+            if ($query->exists()) {
+                $fail('La valeur doit être unique : une autre notice utilise déjà cette valeur.');
+            }
+        };
+    }
+
+    /**
      * Validate metadata for a document type.
      *
-     * @param RecordDigitalDocumentType $documentType
-     * @param array $metadata
      * @return array Validated metadata
+     *
      * @throws ValidationException
      */
     public function validateDocumentMetadata(RecordDigitalDocumentType $documentType, array $metadata): array
@@ -142,9 +164,8 @@ class MetadataValidationService
     /**
      * Validate metadata for a folder type.
      *
-     * @param RecordDigitalFolderType $folderType
-     * @param array $metadata
      * @return array Validated metadata
+     *
      * @throws ValidationException
      */
     public function validateFolderMetadata(RecordDigitalFolderType $folderType, array $metadata): array
@@ -192,10 +213,6 @@ class MetadataValidationService
 
     /**
      * Get validation rules based on data type.
-     *
-     * @param string $dataType
-     * @param MetadataDefinition $definition
-     * @return array
      */
     protected function getDataTypeRules(string $dataType, MetadataDefinition $definition): array
     {
@@ -204,7 +221,7 @@ class MetadataValidationService
         switch ($dataType) {
             case 'text':
                 $rules[] = 'string';
-                $rules[] = 'max:255';
+                $rules[] = 'max:'.($definition->max_length ?? 255);
                 break;
 
             case 'textarea':
@@ -237,20 +254,20 @@ class MetadataValidationService
 
             case 'select':
                 if ($definition->options && is_array($definition->options)) {
-                    $rules[] = 'in:' . implode(',', $definition->options);
+                    $rules[] = 'in:'.implode(',', $definition->options);
                 }
                 break;
 
             case 'multi_select':
                 $rules[] = 'array';
                 if ($definition->options && is_array($definition->options)) {
-                    $rules[] = 'in:' . implode(',', $definition->options);
+                    $rules[] = 'in:'.implode(',', $definition->options);
                 }
                 break;
 
             case 'reference_list':
                 if ($definition->reference_list_id) {
-                    $rules[] = 'exists:reference_values,code,list_id,' . $definition->reference_list_id . ',active,1';
+                    $rules[] = 'exists:reference_values,code,list_id,'.$definition->reference_list_id.',active,1';
                 }
                 break;
         }
@@ -260,9 +277,6 @@ class MetadataValidationService
 
     /**
      * Get metadata form fields for a document type.
-     *
-     * @param RecordDigitalDocumentType $documentType
-     * @return array
      */
     public function getDocumentMetadataFields(RecordDigitalDocumentType $documentType): array
     {
@@ -277,9 +291,6 @@ class MetadataValidationService
 
     /**
      * Get metadata form fields for a folder type.
-     *
-     * @param RecordDigitalFolderType $folderType
-     * @return array
      */
     public function getFolderMetadataFields(RecordDigitalFolderType $folderType): array
     {
@@ -295,8 +306,7 @@ class MetadataValidationService
     /**
      * Build metadata fields array from profiles.
      *
-     * @param \Illuminate\Support\Collection $profiles
-     * @return array
+     * @param  \Illuminate\Support\Collection  $profiles
      */
     protected function buildMetadataFields($profiles): array
     {
@@ -341,9 +351,7 @@ class MetadataValidationService
     /**
      * Apply default values to metadata.
      *
-     * @param RecordDigitalDocumentType|RecordDigitalFolderType $type
-     * @param array $metadata
-     * @return array
+     * @param  RecordDigitalDocumentType|RecordDigitalFolderType  $type
      */
     public function applyDefaultValues($type, array $metadata): array
     {
@@ -353,7 +361,7 @@ class MetadataValidationService
             $code = $profile->metadataDefinition->code;
 
             // Apply default value if field is empty and default exists
-            if (empty($metadata[$code]) && !empty($profile->default_value)) {
+            if (empty($metadata[$code]) && ! empty($profile->default_value)) {
                 $metadata[$code] = $profile->default_value;
             }
         }

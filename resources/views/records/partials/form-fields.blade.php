@@ -108,28 +108,6 @@
         <label class="form-label">Description</label>
         <textarea name="description" class="form-control" rows="3">{{ old('description', $record?->description) }}</textarea>
     </div>
-
-    <div class="col-md-6">
-        <label class="form-label">Étendue (fonds)</label>
-        <input type="text" name="extent" value="{{ old('extent', $record?->extent) }}" class="form-control">
-    </div>
-    <div class="col-md-6">
-        <label class="form-label">Table des matières</label>
-        <input type="text" name="table_of_contents" value="{{ old('table_of_contents', $record?->table_of_contents) }}" class="form-control">
-    </div>
-
-    <div class="col-md-4">
-        <label class="form-label">Quantité</label>
-        <input type="text" name="quantity" value="{{ old('quantity', $record?->quantity) }}" class="form-control">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Dimension</label>
-        <input type="text" name="dimension" value="{{ old('dimension', $record?->dimension) }}" class="form-control">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Éditeur</label>
-        <input type="text" name="publisher" value="{{ old('publisher', $record?->publisher) }}" class="form-control">
-    </div>
 </div>
 
 {{-- Champs dynamiques du profil du type (serveur en édition, AJAX en création) --}}

@@ -101,6 +101,8 @@ class RecordType extends Model
             'readonly',
             'default_value',
             'validation_rules',
+            'group',
+            'restricted_to_roles',
             'sort_order',
         ])->withTimestamps()->orderByPivot('sort_order');
     }
@@ -199,7 +201,7 @@ class RecordType extends Model
             return true;
         }
 
-        $extension = str_starts_with($extension, '.') ? $extension : '.' . $extension;
+        $extension = str_starts_with($extension, '.') ? $extension : '.'.$extension;
 
         return in_array(strtolower($extension), array_map('strtolower', $this->allowed_extensions));
     }
@@ -223,16 +225,16 @@ class RecordType extends Model
     {
         $errors = [];
 
-        if (!$this->isMimeTypeAllowed($mimeType)) {
-            $errors[] = "Type MIME non autorisé : {$mimeType}. Types autorisés : " . implode(', ', $this->allowed_mime_types ?? []);
+        if (! $this->isMimeTypeAllowed($mimeType)) {
+            $errors[] = "Type MIME non autorisé : {$mimeType}. Types autorisés : ".implode(', ', $this->allowed_mime_types ?? []);
         }
 
-        if (!$this->isExtensionAllowed($extension)) {
-            $errors[] = "Extension non autorisée : {$extension}. Extensions autorisées : " . implode(', ', $this->allowed_extensions ?? []);
+        if (! $this->isExtensionAllowed($extension)) {
+            $errors[] = "Extension non autorisée : {$extension}. Extensions autorisées : ".implode(', ', $this->allowed_extensions ?? []);
         }
 
-        if (!$this->isFileSizeAllowed($fileSize)) {
-            $errors[] = 'Fichier trop volumineux : maximum autorisé ' . $this->max_file_size . ' octets';
+        if (! $this->isFileSizeAllowed($fileSize)) {
+            $errors[] = 'Fichier trop volumineux : maximum autorisé '.$this->max_file_size.' octets';
         }
 
         return $errors;

@@ -172,6 +172,12 @@ class MigrateToUnifiedRecords extends Command
 
                 if (!$this->option('dry-run')) {
                     $this->map['physical:' . $source->id] = $record->id;
+
+                    // Champs descriptifs ISAD(G) : MetadataDefinition système
+                    // (`SystemMetadataDefinitionsSeeder`), stockées dans `metadata`
+                    // plutôt qu'en colonnes directes sur `records` (2026-08-05).
+                    $record->setMultipleMetadata($this->mapPhysicalIsadMetadata($source));
+                    $record->save();
                 }
 
                 $this->syncPivots($source, 'physical');
@@ -179,15 +185,26 @@ class MigrateToUnifiedRecords extends Command
         });
     }
 
+    private const ISAD_FIELDS = [
+        'biographical_history', 'archival_history', 'acquisition_source', 'content', 'appraisal',
+        'accrual', 'arrangement', 'access_conditions', 'reproduction_conditions', 'language_material',
+        'characteristic', 'finding_aids', 'location_original', 'location_copy', 'related_unit',
+        'publication_note', 'note', 'archivist_note', 'rule_convention',
+    ];
+
+    private function mapPhysicalIsadMetadata(RecordPhysical $source): array
+    {
+        $metadata = [];
+
+        foreach (self::ISAD_FIELDS as $field) {
+            $metadata[$field] = $source->{$field};
+        }
+
+        return $metadata;
+    }
+
     private function mapPhysical(RecordPhysical $source): array
     {
-        $isad = [
-            'biographical_history', 'archival_history', 'acquisition_source', 'content', 'appraisal',
-            'accrual', 'arrangement', 'access_conditions', 'reproduction_conditions', 'language_material',
-            'characteristic', 'finding_aids', 'location_original', 'location_copy', 'related_unit',
-            'publication_note', 'note', 'archivist_note', 'rule_convention',
-        ];
-
         $data = [
             'code' => $this->resolveCode($source->code, 'physical', $source->id),
             'name' => $source->name,
@@ -207,10 +224,6 @@ class MigrateToUnifiedRecords extends Command
             'legacy_source' => 'physical',
             'legacy_id' => $source->id,
         ];
-
-        foreach ($isad as $field) {
-            $data[$field] = $source->{$field};
-        }
 
         $data['type_id'] = $source->level_id ? $this->typeIdForLevel($source->level_id) : null;
 

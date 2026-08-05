@@ -263,13 +263,21 @@ class SearchRecordController extends Controller
         switch ($field) {
             case 'code':
             case 'name':
-            case 'content':
             case 'description':
                 $query->where($field, 'like', '%' . $value . '%');
                 break;
 
+            case 'content':
+                // Vit désormais dans `metadata` (JSON) plutôt qu'en colonne directe.
+                $query->whereRaw('CAST(metadata AS CHAR) LIKE ?', ['%' . $value . '%']);
+                break;
+
             case 'date_start':
             case 'date_end':
+                // `Record` nomme ces colonnes start_date/end_date (pas date_start/date_end).
+                $query->whereDate($field === 'date_start' ? 'start_date' : 'end_date', $value);
+                break;
+
             case 'date_exact':
                 $query->whereDate($field, $value);
                 break;

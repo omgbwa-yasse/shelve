@@ -460,6 +460,11 @@ class PermissionCategorySeeder extends Seeder
                 'description' => 'Supprimer dÃ©finitivement des dossiers'
             ],
             [
+                'name' => 'records_restore',
+                'category' => 'records',
+                'description' => 'Restaurer des notices depuis la corbeille'
+            ],
+            [
                 'name' => 'records_archive',
                 'category' => 'records',
                 'description' => 'Archiver des dossiers'

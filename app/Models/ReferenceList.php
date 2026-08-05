@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ReferenceList extends Model
 {
@@ -22,6 +22,7 @@ class ReferenceList extends Model
         'code',
         'description',
         'active',
+        'linked_schema_id',
         'created_by',
         'updated_by',
     ];
@@ -33,6 +34,32 @@ class ReferenceList extends Model
      */
     protected $casts = [
         'active' => 'boolean',
+    ];
+
+    /**
+     * Domaines de valeurs système livrés par le seeder par défaut.
+     * Les codes éligibles au champ « Schéma lié » (étape 2 du plan).
+     */
+    public const DEFAULT_SYSTEM_CODES = [
+        'CONTAINER_TYPES',
+        'FOLDER_TYPES',
+        'LOCATION_TYPES',
+        'SUPPORT_TYPES',
+        'TASK_TYPES',
+        'TASK_STATUS',
+        'YEAR_TYPES',
+        'PRIORITY_TYPES',
+    ];
+
+    /**
+     * Codes des domaines système éligibles à une liaison « Schéma lié ».
+     */
+    public const LINKED_SCHEMA_ELIGIBLE_CODES = [
+        'CONTAINER_TYPES',
+        'FOLDER_TYPES',
+        'LOCATION_TYPES',
+        'SUPPORT_TYPES',
+        'TASK_TYPES',
     ];
 
     /**
@@ -60,6 +87,22 @@ class ReferenceList extends Model
     public function metadataDefinitions(): HasMany
     {
         return $this->hasMany(MetadataDefinition::class);
+    }
+
+    /**
+     * Le schéma (RecordType) associé à ce domaine de valeurs (étape 2).
+     */
+    public function linkedSchema(): BelongsTo
+    {
+        return $this->belongsTo(RecordType::class, 'linked_schema_id');
+    }
+
+    /**
+     * Les domaines système éligibles au champ « Schéma lié ».
+     */
+    public function isLinkedSchemaEligible(): bool
+    {
+        return in_array($this->code, self::LINKED_SCHEMA_ELIGIBLE_CODES, true);
     }
 
     /**

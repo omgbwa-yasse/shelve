@@ -524,3 +524,211 @@ mort) :**
 5. Planifier la « Phase 7 » de nettoyage du schéma (suppression effective des
    tables `record_physicals`/`record_digital_folders`/`record_digital_documents`
    et satellites) une fois les points 1 à 3 résolus.
+
+## Finalisation de la migration vers le modèle unifié Record (2026-08-05)
+
+Suite au nettoyage du code mort (section précédente), l'utilisateur a demandé de
+« finaliser la migration vers Record unifié ». Le diagnostic avait montré que la
+migration n'était pas terminée : plusieurs chemins **actifs** créaient encore des
+lignes dans les tables legacy (`record_physicals`) ou étaient cassés depuis
+l'unification. Ce tour de travail ferme tous les chemins qui **créaient de la
+nouvelle dette legacy** et corrige les liaisons de route cassées.
+
+### Portés vers `Record` (avec tests)
+
+1. **`RecordChildController`** (web, `records.child` / `record-child.*`) — entièrement
+   réécrit sur `Record`. Corrige au passage 3 bugs préexistants et indépendants de
+   l'unification :
+   - `create(INT $id)` : `INT` n'est pas un type PHP valide → erreur fatale à chaque
+     appel. La route `record-child.create` était donc cassée à 100 % avant ce correctif.
+   - `record::findOrFail($id)` : classe `record` (minuscule) inexistante.
+   - **Découverte plus profonde** : le paramètre de route généré par
+     `Route::resource('records.child', ...)` s'appelle `{record}`, pas `{parent}`.
+     Le contrôleur (legacy et donc aussi ma première version) type-hintait
+     `$parent` : Laravel ne pouvait pas faire le binding par nom et résolvait un
+     `Record`/`RecordPhysical` **vide** via le conteneur. Résultat mesuré en test :
+     un `store()` qui insérait `level_id = NULL` en base (violation de contrainte)
+     et un rattachement au parent silencieusement perdu (`$parent->id` = null).
+     Corrigé en renommant le paramètre en `$record` partout (index/create/store).
+   - Le formulaire `records/child/create.blade.php` poste déjà vers `records.store`
+     (le endpoint unifié) — `RecordChildController::store()` n'est donc pas le chemin
+     réellement emprunté par l'UI actuelle, mais reste corrigé et fonctionnel si
+     appelé directement (garantit qu'aucun appelant ne recrée du `RecordPhysical`).
+   - Tests : `tests/Feature/RecordChildAndSedaExportTest.php` (5 tests, verts).
+
+2. **`SEDAExportController::exportRecord`** (`records.export.seda`) — le binding de
+   route `RecordPhysical $record` était cassé pour la quasi-totalité des notices
+   actuelles : les ids de `record_physicals` (23 lignes) ne coïncident plus avec ceux
+   de `records` (132 lignes) depuis la migration. Reporté à `Record $record`, propagé
+   à `SedaZipBuilder::buildForRecord()`. **Bug silencieux corrigé au passage** :
+   `SEDAExport::addDatesAndIdentifiersToContent()` lisait `$record->date_start`/
+   `date_end` (nommage `RecordPhysical`) alors que `Record` expose `start_date`/
+   `end_date` — l'export SEDA d'une notice unifiée omettait donc silencieusement
+   `<StartDate>`/`<EndDate>` avant ce correctif.
+
+3. **`EADImportService`** et **`SedaImportService`** (imports EAD3/SEDA 2.1, appelés
+   par `SlipController::import`, route `slips.import`, active) — remplacent
+   `RecordPhysical::create()` par `Record::create()`. `records.code` est
+   `UNIQUE NOT NULL` (contrairement à `record_physicals.code`, nullable) : ajout
+   d'un repli `{PREFIX}-{horodatage}-{aléatoire}` quand l'EAD/SEDA source n'a pas
+   d'identifiant. `level_id`/`status_id` (NOT NULL sur `records`) repliés sur la
+   première valeur de référence disponible, comme le fait déjà `RecordController`
+   côté web. Vérifié par un smoke-test EAD bout-en-bout (import réel dans une
+   transaction annulée) : notice créée avec `level_id`/`status_id`/`organisation_id`
+   valides.
+
+### Sciemment reporté (non traité ce tour, avec justification)
+
+Deux composants touchent encore les modèles legacy et ont été **volontairement
+laissés en l'état** plutôt que portés dans la foulée :
+
+- **`RecordDigitalTransferController` + `DigitalPhysicalTransferService`**
+  (`record-digital-transfer/*`, déjà signalé orphelin côté UI). Un vrai portage
+  n'est plus un simple renommage : dans le modèle unifié, « transférer » un
+  numérique vers un physique devient une **fusion de deux `Record` déjà
+  existants** (déplacement des `RecordMedium`, ré-attachement des enfants,
+  soft-delete + `RecordRelation` — mécanisme déjà éprouvé par
+  `MigrateToUnifiedRecords::mergeTransferredPairs()`), ce qui change le contrat de
+  l'API (`type=document|folder` n'a plus de sens, `cancel` devient une opération
+  d'« annulation de fusion » différente de l'ancienne). Ce contrat est
+  actuellement figé par **26 tests existants et verts**
+  (`tests/Feature/DigitalPhysicalTransferTest.php`,
+  `tests/Unit/DigitalPhysicalTransferServiceTest.php`) écrits contre l'ancienne API.
+  Le redesign nécessite de réécrire ces 26 tests en même temps — jugé trop risqué
+  à faire en fin de tour sans dédier une passe propre.
+- **OPAC `DigitalFolderController`/`DigitalDocumentController`** (lecture publique).
+  Porter la navigation « dossiers/documents numériques » vers `Record`+
+  `RecordMedium` pose une vraie question de conception (le nouveau modèle ne porte
+  plus le numérique au niveau du conteneur mais au niveau du support ; naviguer
+  par « dossier numérique » devient soit un aplatissement des résultats soit une
+  requête récursive sur `parent_id`, arbitrage produit et non un renommage
+  mécanique) sur une surface **publique et sensible côté contrôle d'accès**, sans
+  aucun test existant pour verrouiller le comportement attendu. Reporté plutôt que
+  deviné.
+
+Ces deux points, plus les éléments déjà listés lors du nettoyage précédent
+(API Phase 9 `RecordDigitalFolderApiController`/`RecordDigitalDocumentApiController`
+à déprécier au profit de l'API D02 `records`/`records/{record}/children` déjà
+complète, consolidation `record_digital_*_metadata_profiles` →
+`record_type_metadata_profiles`, migration des écrans Settings Types), forment le
+reste du travail avant que les tables `record_physicals`/`record_digital_folders`/
+`record_digital_documents` puissent être réellement supprimées (Phase 7).
+
+### Bug de sécurité pré-existant noté, hors périmètre
+
+`RecordChildController` n'a jamais eu de vérification d'autorisation
+(`Gate::authorize`/`$this->authorize`), contrairement à `RecordController`. Ce
+n'est pas une régression introduite ici (le code legacy ne l'avait pas non plus) :
+signalé pour une correction séparée, pas traité dans ce tour pour rester sur le
+périmètre « finalisation du modèle unifié ».
+
+### Vérification
+
+- Nouveau fichier `tests/Feature/RecordChildAndSedaExportTest.php` : 5/5 verts.
+- Smoke-test manuel `EADImportService::importRecordsFromString()` : notice créée
+  avec succès sur le modèle unifié (transaction annulée après vérification).
+- Aucun test existant ne référence `RecordChildController`, `SEDAExportController`,
+  `SedaZipBuilder`, `EADImportService` ou `SedaImportService` : zéro régression
+  possible sur une suite préexistante pour ces fichiers.
+- `resources/views/submenu/repositories.blade.php` et `records/child/index.blade.php` :
+  Gates `RecordPhysical::class` → `Record::class` (comportement identique — même
+  `RecordPolicy` résolu dans les deux cas — mais cohérent avec le modèle réellement
+  utilisé par les contrôleurs cibles).
+
+## Déplacement des champs descriptifs de Record vers le système de métadonnées dynamique (2026-08-05)
+
+Chantier planifié (voir plan approuvé), exécuté en 6 phases. Objectif : les ~27
+colonnes descriptives figées sur `records` (19 ISAD(G) narratifs + 8 non-ISAD :
+content, biographical_history, archival_history, acquisition_source, appraisal,
+accrual, arrangement, access_conditions, reproduction_conditions,
+language_material, characteristic, finding_aids, location_original,
+location_copy, related_unit, publication_note, note, archivist_note,
+rule_convention, extent, category_precision, table_of_contents, quantity,
+dimension, publisher, sort_value, geographic_scope) deviennent des
+`MetadataDefinition` système (`is_system=true`), rattachées à chaque `RecordType`
+via `RecordTypeMetadataProfile` (mandatory/visible/ordre configurables par type),
+stockées dans `records.metadata` (JSON, déjà existant). Permet de créer de
+nouveaux `RecordType` (dossier patient, acte de naissance, offre de service) avec
+leurs propres profils de métadonnées système + personnalisées, sans toucher au
+schéma. `code`/`name`/`type_id`/`level_id`/`status_id`/`organisation_id`/
+`parent_id`/dates de cycle de vie restent des colonnes réelles (listes, tri,
+recherche indexée, contrainte d'unicité).
+
+**Vérifié avant de commencer** : 0/132 notices existantes n'avaient de valeur
+dans l'une de ces 27 colonnes — suppression de colonnes sans script de migration
+de données.
+
+### Réalisé
+- Migration `2026_08_05_100000_drop_descriptive_columns_from_records_table.php`
+  (idempotente, `down()` restaure les colonnes en `text nullable`).
+- Seeder `SystemMetadataDefinitionsSeeder` : 27 `MetadataDefinition` (is_system),
+  attachées à tous les `RecordType` actifs (51 au moment du seed → 1378 profils),
+  `mandatory=false`/`visible=true` par défaut (comportement identique à avant).
+- `MetadataDefinition::$fillable`/`$casts` : ajout de `is_system` (manquant),
+  scope `system()`.
+- `Record::$fillable`/`toSearchableArray()` : colonnes retirées ; l'index Scout
+  aplatit désormais `metadata` en texte (`flattenMetadataForSearch()`) plutôt que
+  du JSON brut.
+- **Nouvel écran d'admin** `settings.record-types.metadata.*`
+  (`RecordTypeMetadataProfileController` + bloc ajouté à
+  `settings/record-types/edit.blade.php`) : attacher/détacher une définition à un
+  type, régler mandatory/visible/ordre. Sans cet écran la fonctionnalité aurait
+  été inutilisable sans passer par la base.
+- `RecordController::validateRecord()`, `RecordChildController::store()`,
+  `Api/V1/RecordController`, `Api/V1/RecordChildController` : validation des 27
+  champs déplacée vers `MetadataValidationService::validateRecordMetadata()`
+  (mandatory par type), au lieu de règles codées en dur. **Bug corrigé en cours
+  de route** : la validation ne se déclenchait que si le client envoyait un
+  `metadata` non vide — un client omettant complètement `metadata` contournait
+  les champs obligatoires. Corrigé (toujours valider dès qu'un type est résolu,
+  avec `$metadata ?? []`), capturé par
+  `test_store_requires_mandatory_metadata_for_the_selected_type`.
+- FormRequests API (`Store/UpdateRecordRequest`, `Store/UpdateRecordChildRequest`)
+  et `RecordResource` : règles/champs codés en dur retirés, exposés uniquement
+  via `metadata`.
+- Vues : `form-fields.blade.php` (5 inputs codés en dur retirés, couverts par la
+  boucle dynamique déjà existante `metadata-fields.blade.php`), `show.blade.php`
+  (7 champs codés en dur → boucle générique `getVisibleMetadataFields()`, couvre
+  maintenant les 27 au lieu de 7), `records/child/create.blade.php` (463 → ~250
+  lignes : le formulaire ISAD à onglets, dont le `<form action>` pointait déjà
+  par erreur vers `records.store` au lieu de `record-child.store` — silencieux
+  depuis l'origine —, remplacé par le même bloc dynamique, POST corrigé vers la
+  bonne route).
+- Exports/imports repointés vers `getMetadataValue()`/`setMultipleMetadata()` :
+  `SEDAExport`, `EADExport`, `RecordsExport`, `UnifiedRecordsExport`,
+  `MigrateToUnifiedRecords::mapPhysical()`, `PublicRecord` (4 accesseurs +
+  `scopeSearchContent()`), `QueryExecutorService::mapFieldNames()`.
+  **Bugs de nommage de dates corrigés au passage** (même classe que le bug
+  `date_start`/`date_end` déjà trouvé dans `SEDAExport` plus tôt cette session,
+  jamais vraiment fonctionnel pour `Record`) : `EADExport::addRecordComponent()`,
+  `PublicRecord::getDateStartAttribute()`/`getDateEndAttribute()`.
+- **Recherches trouvées en trop lors de la vérification finale** (absentes de
+  l'inventaire initial, découvertes par l'exécution de la suite Api/V1 complète
+  — 2 tests réellement cassés en `SQLSTATE 42S22 Unknown column 'content'`) :
+  `Api/V1/SearchController::records()` (D10) et
+  `Api/V1/SearchRecordController::applyCriteria()` (D10, même fichier avait aussi
+  le bug `date_start`/`date_end`) — les deux interrogeaient `content` en colonne
+  directe ; repointés vers `CAST(metadata AS CHAR) LIKE`. Egalement
+  `PublicRecordApiController::transformRecordForApi()` : accès directs
+  `$record->record->archival_history` etc. (contournant les accesseurs déjà
+  corrigés de `PublicRecord`) — repointés vers `getMetadataValue()`.
+
+### Explicitement non touché (confirmé hors périmètre)
+`AiRecordContextBuilder`, `SearchActionService`, `Api/RecordSearchController`
+(public), `RecordsImport.php`, `Api/AiRecordApplyController` — tous encore basés
+sur le modèle legacy `RecordPhysical` (colonnes intactes, non affectées).
+`EAD2002ExportService`/`DublinCoreExportService` — confirmés sans appelant
+(code mort), déjà candidats à une suppression séparée.
+
+### Vérification
+- `tests/Feature/RecordControllerTest.php` (nouveau, 6 tests — ce contrôleur
+  central n'avait aucun test avant ce chantier), `RecordChildAndSedaExportTest`
+  (5), `RecordTypeMetadataProfileTest` (5, écran d'admin) : tous verts.
+- Suite complète `tests/Feature/Api/V1/` (94 fichiers) rejouée intégralement en
+  série : **692/692 verts**, 0 régression (les 2 échecs trouvés au premier passage
+  ont été corrigés puis reconfirmés verts au second).
+- Smoke-test manuel `EADExport::exportRecords()` sur une notice avec métadonnées
+  peuplées (content/biographical_history/dates) : valeurs correctement présentes
+  dans le XML produit, transaction annulée après vérification.
+- `DB::table('records')->count()` inchangé (132), 0 colonne des 27 encore
+  présente, 27 `MetadataDefinition` système, 1378 profils attachés.

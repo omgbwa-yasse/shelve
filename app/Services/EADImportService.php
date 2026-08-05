@@ -4,10 +4,13 @@ namespace App\Services;
 
 use App\Models\Attachment;
 use App\Models\Dolly;
-use App\Models\RecordPhysical;
+use App\Models\Record;
+use App\Models\RecordLevel;
+use App\Models\RecordStatus;
 use App\Models\Slip;
 use App\Models\SlipRecord;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class EADImportService
 {
@@ -37,14 +40,18 @@ class EADImportService
             [$dateStart, $dateEnd] = $this->extractDates($did);
             $content = $this->stringOrNull(($c->scopecontent?->p) ?? null);
 
-            $record = RecordPhysical::create([
-                'code' => $code ?: null,
+            $record = Record::create([
+                'code' => $code ?: $this->generateImportCode('EAD'),
                 'name' => $name ?: ($code ?: 'Unité documentaire'),
-                'date_start' => $dateStart,
-                'date_end' => $dateEnd,
+                'start_date' => $dateStart,
+                'end_date' => $dateEnd,
                 'content' => $content,
-                'user_id' => Auth::id() ?? 1,
+                'level_id' => RecordLevel::query()->value('id'),
+                'status_id' => RecordStatus::query()->value('id'),
+                'creator_id' => Auth::id() ?? 1,
                 'organisation_id' => optional(Auth::user())->current_organisation_id ?? 1,
+                'version_number' => 1,
+                'is_current_version' => true,
             ]);
 
             $dolly->records()->attach($record->id);
@@ -213,5 +220,14 @@ class EADImportService
         if ($node === null) { return null; }
         $s = trim((string) $node);
         return $s !== '' ? $s : null;
+    }
+
+    /**
+     * `records.code` est UNIQUE et NOT NULL : les unités EAD sans `unitid`
+     * ont besoin d'un code de repli garanti unique.
+     */
+    private function generateImportCode(string $prefix): string
+    {
+        return $prefix . '-' . now()->format('YmdHis') . '-' . Str::upper(Str::random(4));
     }
 }

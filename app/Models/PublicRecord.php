@@ -70,7 +70,7 @@ class PublicRecord extends Model
      */
     public function getContentAttribute()
     {
-        return $this->record?->content ?? '';
+        return $this->record?->getMetadataValue('content') ?? '';
     }
 
     /**
@@ -78,7 +78,7 @@ class PublicRecord extends Model
      */
     public function getDateStartAttribute()
     {
-        return $this->record?->date_start;
+        return $this->record?->start_date;
     }
 
     /**
@@ -86,7 +86,7 @@ class PublicRecord extends Model
      */
     public function getDateEndAttribute()
     {
-        return $this->record?->date_end;
+        return $this->record?->end_date;
     }
 
     /**
@@ -125,7 +125,7 @@ class PublicRecord extends Model
      */
     public function getBiographicalHistoryAttribute()
     {
-        return $this->record?->biographical_history ?? '';
+        return $this->record?->getMetadataValue('biographical_history') ?? '';
     }
 
     /**
@@ -133,7 +133,7 @@ class PublicRecord extends Model
      */
     public function getLanguageMaterialAttribute()
     {
-        return $this->record?->language_material ?? '';
+        return $this->record?->getMetadataValue('language_material') ?? '';
     }
 
     /**
@@ -141,7 +141,7 @@ class PublicRecord extends Model
      */
     public function getAccessConditionsAttribute()
     {
-        return $this->record?->access_conditions ?? '';
+        return $this->record?->getMetadataValue('access_conditions') ?? '';
     }
 
     /**
@@ -294,11 +294,10 @@ class PublicRecord extends Model
     public function scopeSearchContent($query, $searchTerm)
     {
         return $query->whereHas('record', function ($q) use ($searchTerm) {
+            // content/biographical_history/note vivent désormais dans `metadata` (JSON).
             $q->where('name', 'like', "%{$searchTerm}%")
-              ->orWhere('content', 'like', "%{$searchTerm}%")
               ->orWhere('code', 'like', "%{$searchTerm}%")
-              ->orWhere('biographical_history', 'like', "%{$searchTerm}%")
-              ->orWhere('note', 'like', "%{$searchTerm}%");
+              ->orWhereRaw('CAST(metadata AS CHAR) LIKE ?', ["%{$searchTerm}%"]);
         });
     }
 }

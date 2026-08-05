@@ -28,8 +28,26 @@
                     @endif
                 </div>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 flex-wrap">
+                @can('records_view')
+                    <button class="btn btn-outline-warning" id="favoriteBtn" data-url="{{ route('records.favorite.toggle', $record) }}">
+                        <i class="bi {{ auth()->user()->favorites()->where('favoriteable_type', \App\Models\Record::class)->where('favoriteable_id', $record->id)->exists() ? 'bi-star-fill' : 'bi-star' }}"></i>
+                        Favori
+                    </button>
+                    <form method="POST" action="{{ route('records.shortcuts.store', $record) }}" class="d-inline">
+                        @csrf
+                        <input type="hidden" name="label" value="{{ $record->name }}">
+                        <button class="btn btn-outline-secondary" title="Créer un raccourci"><i class="bi bi-link-45deg"></i> Raccourci</button>
+                    </form>
+                    <a href="{{ route('records.workflow.start', $record) }}" class="btn btn-outline-info">
+                        <i class="bi bi-diagram-3"></i> Workflow
+                    </a>
+                @endcan
                 @can('records_update')
+                    <a href="{{ route('records.shares', $record) }}" class="btn btn-outline-primary"><i class="bi bi-share"></i> Partager</a>
+                    <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#duplicateModal">
+                        <i class="bi bi-copy"></i> Dupliquer
+                    </button>
                     <a href="{{ route('records.edit', $record) }}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> Modifier</a>
                     <form method="POST" action="{{ route('records.create-version', $record) }}">
                         @csrf
@@ -118,24 +136,20 @@
                             </dd>
                         </dl>
 
-                        @if(!empty($record->metadata))
+                        @php($visibleMetadataFields = $record->type ? array_filter($record->getVisibleMetadataFields(), fn ($f) => $f['value'] !== null && $f['value'] !== '') : [])
+                        @if(!empty($visibleMetadataFields))
                             <hr>
-                            <h6>Métadonnées du type</h6>
+                            <h6>Métadonnées</h6>
                             <dl class="row mb-0">
-                                @foreach($record->metadata as $code => $value)
-                                    <dt class="col-sm-4">{{ $code }}</dt>
-                                    <dd class="col-sm-8">{{ is_array($value) ? json_encode($value) : $value }}</dd>
+                                @foreach($visibleMetadataFields as $field)
+                                    <dt class="col-sm-4">
+                                        {{ $field['name'] }}
+                                        @if($field['required']) <span class="text-danger">*</span> @endif
+                                    </dt>
+                                    <dd class="col-sm-8">{{ is_array($field['value']) ? json_encode($field['value']) : $field['value'] }}</dd>
                                 @endforeach
                             </dl>
                         @endif
-
-                        @foreach(['content', 'archival_history', 'biographical_history', 'note', 'archivist_note', 'access_conditions', 'reproduction_conditions'] as $section)
-                            @if($record->{$section})
-                                <hr>
-                                <h6>{{ ucfirst(str_replace('_', ' ', $section)) }}</h6>
-                                <p class="mb-0">{{ $record->{$section} }}</p>
-                            @endif
-                        @endforeach
                     </div>
                 </div>
 
@@ -175,6 +189,64 @@
                         @endforelse
                     </div>
                 </div>
+
+                {{-- Raccourcis (étape 8) --}}
+                @if($record->shortcuts->isNotEmpty())
+                    <div class="card mb-4">
+                        <div class="card-header"><i class="bi bi-link-45deg"></i> Raccourcis</div>
+                        <ul class="list-group list-group-flush">
+                            @foreach($record->shortcuts as $shortcut)
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>{{ $shortcut->label ?? $record->name }}</span>
+                                    <form method="POST" action="{{ route('records.shortcuts.destroy', [$record, $shortcut]) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
+                                    </form>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                {{-- Commentaires (étape 8) --}}
+                <div class="card mb-4">
+                    <div class="card-header"><i class="bi bi-chat-left-text"></i> Commentaires ({{ $record->comments->count() }})</div>
+                    <div class="card-body">
+                        @forelse($record->comments as $comment)
+                            <div class="border-bottom pb-2 mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <strong>{{ $comment->user?->name ?? '—' }}</strong>
+                                    <small class="text-muted">{{ $comment->created_at?->format('d/m/Y H:i') }}</small>
+                                </div>
+                                <p class="mb-1">{{ $comment->content }}</p>
+                                @if($comment->isOwnedBy())
+                                    <form method="POST" action="{{ route('records.comments.update', [$record, $comment]) }}" class="d-flex gap-2">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="text" name="content" value="{{ $comment->content }}" class="form-control form-control-sm" required>
+                                        <button class="btn btn-sm btn-outline-secondary" title="Mettre à jour"><i class="bi bi-check-lg"></i></button>
+                                    </form>
+                                    <form method="POST" action="{{ route('records.comments.destroy', [$record, $comment]) }}"
+                                          onsubmit="return confirm('Supprimer ce commentaire ?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                @endif
+                            </div>
+                        @empty
+                            <p class="text-muted">Aucun commentaire.</p>
+                        @endforelse
+                        @can('records_view')
+                            <form method="POST" action="{{ route('records.comments.store', $record) }}" class="mt-2">
+                                @csrf
+                                <textarea name="content" class="form-control mb-2" rows="2" placeholder="Ajouter un commentaire..." required></textarea>
+                                <button class="btn btn-sm btn-primary"><i class="bi bi-send"></i> Commenter</button>
+                            </form>
+                        @endcan
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -197,6 +269,10 @@
                             </select>
                         </div>
                         <div class="mb-3">
+                            <label class="form-label">Mesure linéaire (cm)</label>
+                            <input type="number" name="linear_measure_cm" step="0.01" min="0" class="form-control">
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label">Boîte / contenant (support papier)</label>
                             <select name="container_id" class="form-select">
                                 <option value="">— Aucun —</option>
@@ -217,5 +293,47 @@
                 </form>
             </div>
         </div>
+
+        <div class="modal fade" id="duplicateModal" tabindex="-1">
+            <div class="modal-dialog">
+                <form method="POST" action="{{ route('records.duplicate', $record) }}" class="modal-content">
+                    @csrf
+                    <div class="modal-header"><h5 class="modal-title">Dupliquer la notice</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="with_children" value="1" id="withChildren">
+                            <label class="form-check-label" for="withChildren">
+                                Dupliquer aussi l'arborescence (sous-notices, sans documents)
+                            </label>
+                        </div>
+                        <p class="text-muted mb-0"><small>Les métadonnées sont copiées, un nouveau code est généré.</small></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button class="btn btn-primary"><i class="bi bi-copy"></i> Dupliquer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     @endcan
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const btn = document.getElementById('favoriteBtn');
+                if (btn) {
+                    btn.addEventListener('click', function () {
+                        fetch(btn.dataset.url, {method: 'POST', headers: {'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content}})
+                            .then(r => r.json())
+                            .then(data => {
+                                const icon = btn.querySelector('i');
+                                icon.className = data.favorite ? 'bi bi-star-fill' : 'bi bi-star';
+                            });
+                    });
+                }
+            });
+        </script>
+    @endpush
 @endsection

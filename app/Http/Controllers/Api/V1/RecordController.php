@@ -13,6 +13,8 @@ use App\Models\Record;
 use App\Models\RecordLevel;
 use App\Models\RecordReactivation;
 use App\Models\RecordStatus;
+use App\Models\RecordType;
+use App\Services\MetadataValidationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -95,6 +97,8 @@ class RecordController extends Controller
             $data['access_level'] = 'internal';
         }
 
+        $this->validateMetadataAgainstType($data['type_id'] ?? null, $data['metadata'] ?? null);
+
         $record = new Record($data);
         $record->organisation_id = Auth::user()->current_organisation_id;
         $record->creator_id = Auth::id();
@@ -138,6 +142,8 @@ class RecordController extends Controller
         $record = Record::inOrganisation(Auth::user()->current_organisation_id)->findOrFail($record->id);
 
         $data = $request->validated();
+
+        $this->validateMetadataAgainstType($data['type_id'] ?? $record->type_id, $data['metadata'] ?? null);
 
         if (array_key_exists('metadata', $data) && is_array($data['metadata'])) {
             $record->setMultipleMetadata($data['metadata']);
@@ -211,5 +217,27 @@ class RecordController extends Controller
             201,
             ['Location' => "/api/v1/record-reactivations/{$reactivation->id}"]
         );
+    }
+
+    /**
+     * Les anciens champs descriptifs figés (content, biographical_history, ...) sont
+     * désormais des MetadataDefinition rattachées au RecordType — validées ici plutôt
+     * que par une liste de règles codées en dur dans le FormRequest. Sans type, la
+     * validation est ignorée (aucun profil à valider contre — comportement identique
+     * à avant, où ces champs n'étaient de toute façon validés contre aucun schéma).
+     */
+    private function validateMetadataAgainstType(?int $typeId, ?array $metadata): void
+    {
+        // Toujours valider (même sans `metadata` envoyé) : un type peut avoir des
+        // métadonnées obligatoires, auquel cas leur absence doit être rejetée.
+        if (!$typeId) {
+            return;
+        }
+
+        $type = RecordType::find($typeId);
+
+        if ($type) {
+            app(MetadataValidationService::class)->validateRecordMetadata($type, $metadata ?? []);
+        }
     }
 }

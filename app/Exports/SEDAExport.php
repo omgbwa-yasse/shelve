@@ -3,7 +3,6 @@
 namespace App\Exports;
 
 use App\Models\Slip;
-use App\Models\RecordPhysical;
 use App\Models\SlipRecord;
 use App\Models\Attachment;
 use SimpleXMLElement;
@@ -352,7 +351,11 @@ class SEDAExport
 
         $desc = null;
         if ($record) {
-            $desc = $record->content ?: null;
+            // `Record::content` vit désormais dans `metadata` (MetadataDefinition
+            // système) ; `SlipRecord` (chemin export($slips)) garde sa colonne directe.
+            $desc = method_exists($record, 'getMetadataValue')
+                ? ($record->getMetadataValue('content') ?: null)
+                : ($record->content ?: null);
         } else {
             $desc = $slip->description ?: null;
         }
@@ -368,11 +371,14 @@ class SEDAExport
         if (!$record) {
             return;
         }
-        if (!empty($record->date_start)) {
-            $content->addChild('StartDate', $record->date_start);
+        // `Record::start_date`/`end_date` (l'ancien `RecordPhysical` utilisait
+        // `date_start`/`date_end` ; ce champ était donc muet côté export pour
+        // le modèle unifié avant ce correctif).
+        if (!empty($record->start_date)) {
+            $content->addChild('StartDate', (string) $record->start_date);
         }
-        if (!empty($record->date_end)) {
-            $content->addChild('EndDate', $record->date_end);
+        if (!empty($record->end_date)) {
+            $content->addChild('EndDate', (string) $record->end_date);
         }
         if (!empty($record->code)) {
             $content->addChild('SystemId', $record->code);

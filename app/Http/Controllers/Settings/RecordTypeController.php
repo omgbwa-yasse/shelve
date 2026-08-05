@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Models\MetadataDefinition;
 use App\Models\RecordType;
 use App\Models\ReferenceList;
 use Illuminate\Http\Request;
@@ -49,10 +50,24 @@ class RecordTypeController extends Controller
 
     public function edit(RecordType $recordType)
     {
+        $attachedProfiles = $recordType->metadataProfiles()
+            ->with('metadataDefinition')
+            ->ordered()
+            ->get();
+
+        $attachedDefinitionIds = $attachedProfiles->pluck('metadata_definition_id');
+
         return view('settings.record-types.edit', [
             'recordType' => $recordType,
             'referenceLists' => ReferenceList::all(),
             'parents' => RecordType::active()->where('id', '!=', $recordType->id)->orderBy('name')->get(),
+            'attachedProfiles' => $attachedProfiles,
+            'availableDefinitions' => MetadataDefinition::active()
+                ->whereNotIn('id', $attachedDefinitionIds)
+                ->orderBy('is_system', 'desc')
+                ->orderBy('name')
+                ->get(),
+            'roles' => \App\Models\Role::orderBy('name')->get(),
         ]);
     }
 
@@ -70,6 +85,18 @@ class RecordTypeController extends Controller
 
     public function destroy(RecordType $recordType)
     {
+        $recordCount = \App\Models\Record::withTrashed()->where('type_id', $recordType->id)->count();
+
+        if ($recordCount > 0) {
+            return redirect()->route('settings.record-types.index')
+                ->with('error', "Typologie utilisée par {$recordCount} notice(s) : suppression impossible. Réaffectez d'abord les notices.");
+        }
+
+        if ($recordType->children()->count() > 0) {
+            return redirect()->route('settings.record-types.index')
+                ->with('error', 'Cette typologie possède des sous-typologies : suppression impossible.');
+        }
+
         try {
             $recordType->delete();
 
@@ -77,14 +104,24 @@ class RecordTypeController extends Controller
                 ->with('success', 'Typologie supprimée.');
         } catch (\Exception $e) {
             return redirect()->route('settings.record-types.index')
-                ->with('error', 'Erreur : ' . $e->getMessage());
+                ->with('error', 'Erreur : '.$e->getMessage());
         }
+    }
+
+    public function restore($id)
+    {
+        $recordType = RecordType::withTrashed()->findOrFail($id);
+
+        $recordType->restore();
+
+        return redirect()->route('settings.record-types.index')
+            ->with('success', 'Typologie restaurée.');
     }
 
     private function validateType(Request $request): array
     {
         return $request->validate([
-            'code' => 'required|string|max:50|unique:record_types,code,' . ($request->route('recordType')->id ?? 'NULL'),
+            'code' => 'required|string|max:50|unique:record_types,code,'.($request->route('recordType')->id ?? 'NULL'),
             'name' => 'required|string|max:150',
             'description' => 'nullable|string',
             'parent_id' => 'nullable|exists:record_types,id',

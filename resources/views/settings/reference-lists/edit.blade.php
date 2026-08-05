@@ -31,6 +31,20 @@
                         <label class="form-label">Description</label>
                         <textarea name="description" class="form-control" rows="2">{{ old('description', $referenceList->description) }}</textarea>
                     </div>
+                    @if($referenceList->isLinkedSchemaEligible())
+                        <div class="col-md-6">
+                            <label class="form-label">Schéma lié</label>
+                            <select name="linked_schema_id" class="form-select">
+                                <option value="">— Aucun schéma lié —</option>
+                                @foreach($linkedSchemas as $schema)
+                                    <option value="{{ $schema->id }}" @selected(old('linked_schema_id', $referenceList->linked_schema_id) == $schema->id)>
+                                        {{ $schema->name }} ({{ $schema->code }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">Associe le schéma (RecordType) à ce domaine de valeurs.</small>
+                        </div>
+                    @endif
                     <div class="col-12">
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" name="active" value="1" id="active"

@@ -14,6 +14,14 @@
             <form action="{{ route('workflows.instances.store') }}" method="POST">
                 @csrf
 
+                @if(isset($record) && $record)
+                    <div class="alert alert-primary">
+                        <i class="bi bi-file-earmark-text"></i>
+                        Notice : <strong>{{ $record->code }} — {{ $record->name }}</strong>
+                        <input type="hidden" name="record_id" value="{{ $record->id }}">
+                    </div>
+                @endif
+
                 <div class="mb-3">
                     <label for="definition_id" class="form-label">{{ __('Définition de workflow') }} <span class="text-danger">*</span></label>
                     <select class="form-select @error('definition_id') is-invalid @enderror" id="definition_id" name="definition_id" required>
@@ -33,7 +41,8 @@
                 <div class="mb-3">
                     <label for="name" class="form-label">{{ __('Nom de l\'instance') }} <span class="text-danger">*</span></label>
                     <input type="text" class="form-control @error('name') is-invalid @enderror"
-                           id="name" name="name" value="{{ old('name') }}" required maxlength="190">
+                           id="name" name="name"
+                           value="{{ old('name', isset($record) && $record ? $record->name . ' — ' : '') }}" required maxlength="190">
                     @error('name')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror

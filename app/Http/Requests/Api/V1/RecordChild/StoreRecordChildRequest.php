@@ -32,16 +32,9 @@ class StoreRecordChildRequest extends FormRequest
             'end_date' => 'nullable|date',
             'date_exact' => 'nullable|date',
             'date_format' => 'nullable|string|max:1',
-            'content' => 'nullable|string',
-            'biographical_history' => 'nullable|string',
-            'archival_history' => 'nullable|string',
-            'access_conditions' => 'nullable|string',
-            'reproduction_conditions' => 'nullable|string',
-            'extent' => 'nullable|string',
-            'quantity' => 'nullable|string',
-            'dimension' => 'nullable|string',
-            'note' => 'nullable|string',
-            'archivist_note' => 'nullable|string',
+            // Champs descriptifs (content, biographical_history, ...) : désormais des
+            // MetadataDefinition rattachées au RecordType, validées dynamiquement dans
+            // le contrôleur via MetadataValidationService.
             'metadata' => 'nullable|array',
         ];
     }

@@ -11,7 +11,9 @@ use Illuminate\Support\Carbon;
  * (modèle unifié `Record` : `RecordPhysical`/`RecordDigital*` fusionnés).
  *
  * Champs calculés repris de l'arbre Blade : `is_container`, `is_root`. `deleted_at`
- * n'est pas exposé (suppression logique interne).
+ * n'est pas exposé (suppression logique interne). Les anciens champs descriptifs
+ * figés (content, biographical_history, extent, quantity, ...) sont désormais des
+ * MetadataDefinition (système ou personnalisées) exposées uniquement via `metadata`.
  */
 class RecordResource extends JsonResource
 {
@@ -22,27 +24,6 @@ class RecordResource extends JsonResource
             'code' => $this->code,
             'name' => $this->name,
             'description' => $this->description,
-            'biographical_history' => $this->biographical_history,
-            'archival_history' => $this->archival_history,
-            'acquisition_source' => $this->acquisition_source,
-            'content' => $this->content,
-            'appraisal' => $this->appraisal,
-            'accrual' => $this->accrual,
-            'arrangement' => $this->arrangement,
-            'access_conditions' => $this->access_conditions,
-            'reproduction_conditions' => $this->reproduction_conditions,
-            'language_material' => $this->language_material,
-            'characteristic' => $this->characteristic,
-            'finding_aids' => $this->finding_aids,
-            'location_original' => $this->location_original,
-            'location_copy' => $this->location_copy,
-            'related_unit' => $this->related_unit,
-            'publication_note' => $this->publication_note,
-            'note' => $this->note,
-            'archivist_note' => $this->archivist_note,
-            'rule_convention' => $this->rule_convention,
-            'extent' => $this->extent,
-            'category_precision' => $this->category_precision,
             'opening_date' => $this->opening_date ? Carbon::parse($this->opening_date)->toDateString() : null,
             'closing_date' => $this->closing_date ? Carbon::parse($this->closing_date)->toDateString() : null,
             'old_record_number' => $this->old_record_number,
@@ -56,14 +37,8 @@ class RecordResource extends JsonResource
             'modified_after_loan' => (bool) $this->modified_after_loan,
             'confidentiality_id' => $this->confidentiality_id,
             'access_limit_id' => $this->access_limit_id,
-            'table_of_contents' => $this->table_of_contents,
-            'quantity' => $this->quantity,
-            'dimension' => $this->dimension,
-            'publisher' => $this->publisher,
             'publication_date' => $this->publication_date ? Carbon::parse($this->publication_date)->toDateString() : null,
             'location_before_add' => $this->location_before_add,
-            'sort_value' => $this->sort_value,
-            'geographic_scope' => $this->geographic_scope,
             'type_id' => $this->type_id,
             'level_id' => $this->level_id,
             'status_id' => $this->status_id,

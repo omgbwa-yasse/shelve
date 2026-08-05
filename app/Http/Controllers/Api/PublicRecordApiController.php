@@ -632,8 +632,8 @@ class PublicRecordApiController extends Controller
                 'reference_code' => $record->code,                           // 3.1.1 Reference code(s)
                 'title' => $record->title,                                   // 3.1.2 Title
                 'dates' => [                                                 // 3.1.3 Date(s)
-                    'start' => $record->record->date_start ?? null,
-                    'end' => $record->record->date_end ?? null,
+                    'start' => $record->record->start_date ?? null,
+                    'end' => $record->record->end_date ?? null,
                     'exact' => $record->record->date_exact ?? null,
                     'format' => $record->record->date_format ?? null
                 ],
@@ -666,13 +666,15 @@ class PublicRecordApiController extends Controller
                 'dimensions' => $record->record->dimensions ?? null,
                 'language' => $record->language_material,
                 'biographical_history' => $record->biographical_history,
-                'archival_history' => $record->record->archival_history ?? '',
-                'reproduction_conditions' => $record->record->reproduction_conditions ?? '',
-                'characteristic' => $record->record->characteristic ?? '',
-                'finding_aids' => $record->record->finding_aids ?? '',
-                'related_unit' => $record->record->related_unit ?? '',
-                'publication_note' => $record->record->publication_note ?? '',
-                'note' => $record->record->note ?? '',
+                // Champs descriptifs ISAD(G) : désormais des MetadataDefinition système
+                // stockées dans `metadata` sur `Record`, pas des colonnes directes.
+                'archival_history' => $record->record->getMetadataValue('archival_history') ?? '',
+                'reproduction_conditions' => $record->record->getMetadataValue('reproduction_conditions') ?? '',
+                'characteristic' => $record->record->getMetadataValue('characteristic') ?? '',
+                'finding_aids' => $record->record->getMetadataValue('finding_aids') ?? '',
+                'related_unit' => $record->record->getMetadataValue('related_unit') ?? '',
+                'publication_note' => $record->record->getMetadataValue('publication_note') ?? '',
+                'note' => $record->record->getMetadataValue('note') ?? '',
             ]);
         }
 

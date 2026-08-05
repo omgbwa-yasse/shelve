@@ -40,9 +40,11 @@ class SearchController extends Controller
 
         foreach ($this->terms($request) as $term) {
             $query->where(function (Builder $builder) use ($term) {
+                // `content` (comme les autres champs descriptifs) vit désormais dans
+                // `metadata` (JSON) plutôt qu'en colonne directe sur `records`.
                 $builder->where('name', 'LIKE', "%{$term}%")
                     ->orWhere('code', 'LIKE', "%{$term}%")
-                    ->orWhere('content', 'LIKE', "%{$term}%")
+                    ->orWhereRaw('CAST(metadata AS CHAR) LIKE ?', ["%{$term}%"])
                     ->orWhere('description', 'LIKE', "%{$term}%");
             });
         }

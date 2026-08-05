@@ -30,16 +30,8 @@ class UpdateRecordChildRequest extends FormRequest
             'end_date' => 'sometimes|nullable|date',
             'date_exact' => 'sometimes|nullable|date',
             'date_format' => 'sometimes|nullable|string|max:1',
-            'content' => 'nullable|string',
-            'biographical_history' => 'nullable|string',
-            'archival_history' => 'nullable|string',
-            'access_conditions' => 'nullable|string',
-            'reproduction_conditions' => 'nullable|string',
-            'extent' => 'nullable|string',
-            'quantity' => 'nullable|string',
-            'dimension' => 'nullable|string',
-            'note' => 'nullable|string',
-            'archivist_note' => 'nullable|string',
+            // Champs descriptifs : désormais des MetadataDefinition, validées
+            // dynamiquement dans le contrôleur.
             'metadata' => 'nullable|array',
         ];
     }

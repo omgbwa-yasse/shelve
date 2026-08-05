@@ -65,6 +65,8 @@ use App\Http\Controllers\ThesaurusSearchController;
 use App\Http\Controllers\ThesaurusExportImportController;
 use App\Http\Controllers\PublicSearchLogController;
 use App\Http\Controllers\RecordController;
+use App\Http\Controllers\RecordCollaborationController;
+use App\Http\Controllers\WorkflowInstanceController;
 use App\Http\Controllers\RecordDragDropController;
 use App\Http\Controllers\LifeCycleController;
 use App\Http\Controllers\RecordChildController;
@@ -476,6 +478,25 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('records/bulk-transfer', [RecordController::class, 'bulkTransfer'])->name('records.bulk-transfer');
         Route::post('records/bulk-communicate', [RecordController::class, 'bulkCommunicate'])->name('records.bulk-communicate');
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
+        // Corbeille (étape 1)
+        Route::get('records/trash', [RecordController::class, 'trash'])->name('records.trash');
+        Route::post('records/{record}/restore', [RecordController::class, 'restore'])->name('records.restore');
+        Route::delete('records/{record}/force-delete', [RecordController::class, 'forceDelete'])->name('records.force-delete');
+        // Duplication (étape 9)
+        Route::post('records/{record}/duplicate', [RecordController::class, 'duplicate'])->name('records.duplicate');
+        Route::post('records/{record}/mediums/{medium}/finalize', [RecordController::class, 'finalizeMedium'])->name('records.mediums.finalize');
+        // Collaboration (étape 8)
+        Route::get('records/{record}/shares', [RecordCollaborationController::class, 'shareForm'])->name('records.shares');
+        Route::post('records/{record}/shares', [RecordCollaborationController::class, 'share'])->name('records.shares.store');
+        Route::delete('records/{record}/shares/{share}', [RecordCollaborationController::class, 'revokeShare'])->name('records.shares.destroy');
+        Route::post('records/{record}/favorite', [RecordCollaborationController::class, 'toggleFavorite'])->name('records.favorite.toggle');
+        Route::post('records/{record}/comments', [RecordCollaborationController::class, 'storeComment'])->name('records.comments.store');
+        Route::put('records/{record}/comments/{comment}', [RecordCollaborationController::class, 'updateComment'])->name('records.comments.update');
+        Route::delete('records/{record}/comments/{comment}', [RecordCollaborationController::class, 'destroyComment'])->name('records.comments.destroy');
+        Route::post('records/{record}/shortcuts', [RecordCollaborationController::class, 'storeShortcut'])->name('records.shortcuts.store');
+        Route::delete('records/{record}/shortcuts/{shortcut}', [RecordCollaborationController::class, 'destroyShortcut'])->name('records.shortcuts.destroy');
+        // Workflow depuis une notice (étape 10)
+        Route::get('records/{record}/workflow', [WorkflowInstanceController::class, 'startFromRecord'])->name('records.workflow.start');
         Route::post('records/{record}/move', [RecordController::class, 'move'])->name('records.move');
         Route::get('records/tree/view', [RecordController::class, 'treeView'])->name('records.tree.view');
         Route::get('records/tree/data', [RecordController::class, 'tree'])->name('records.tree');
@@ -665,11 +686,21 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('metadata-definitions', \App\Http\Controllers\Settings\MetadataDefinitionController::class)->names('settings.metadata-definitions');
         Route::resource('reference-lists', \App\Http\Controllers\Settings\ReferenceListController::class)->names('settings.reference-lists');
         Route::resource('record-types', \App\Http\Controllers\Settings\RecordTypeController::class)->except(['show'])->names('settings.record-types');
+        Route::post('record-types/{recordType}/metadata', [\App\Http\Controllers\Settings\RecordTypeMetadataProfileController::class, 'store'])->name('settings.record-types.metadata.store');
+        Route::put('record-types/{recordType}/metadata/{profile}', [\App\Http\Controllers\Settings\RecordTypeMetadataProfileController::class, 'update'])->name('settings.record-types.metadata.update');
+        Route::delete('record-types/{recordType}/metadata/{profile}', [\App\Http\Controllers\Settings\RecordTypeMetadataProfileController::class, 'destroy'])->name('settings.record-types.metadata.destroy');
 
         // Routes pour les valeurs de référence
         Route::post('reference-lists/{referenceList}/values', [\App\Http\Controllers\Settings\ReferenceListController::class, 'addValue'])->name('settings.reference-lists.values.store');
         Route::put('reference-lists/{referenceList}/values/{value}', [\App\Http\Controllers\Settings\ReferenceListController::class, 'updateValue'])->name('settings.reference-lists.values.update');
         Route::delete('reference-lists/{referenceList}/values/{value}', [\App\Http\Controllers\Settings\ReferenceListController::class, 'deleteValue'])->name('settings.reference-lists.values.destroy');
+        Route::post('reference-lists/{referenceList}/values/{value}/restore', [\App\Http\Controllers\Settings\ReferenceListController::class, 'restoreValue'])->name('settings.reference-lists.values.restore');
+        Route::post('reference-lists/{referenceList}/restore', [\App\Http\Controllers\Settings\ReferenceListController::class, 'restore'])->name('settings.reference-lists.restore');
+        Route::post('reference-lists/{referenceList}/purge-inactive', [\App\Http\Controllers\Settings\ReferenceListController::class, 'purgeInactive'])->name('settings.reference-lists.purge-inactive');
+        // Import / Export en masse (étape 7)
+        Route::post('reference-lists/{referenceList}/values/import', [\App\Http\Controllers\Settings\ReferenceListController::class, 'importValues'])->name('settings.reference-lists.values.import');
+        Route::get('reference-lists/{referenceList}/values/export', [\App\Http\Controllers\Settings\ReferenceListController::class, 'exportValues'])->name('settings.reference-lists.values.export');
+        Route::post('record-types/{recordType}/restore', [\App\Http\Controllers\Settings\RecordTypeController::class, 'restore'])->name('settings.record-types.restore');
 
         // Routes pour les profils de métadonnées des types de documents
         Route::get('document-types/{documentType}/metadata-profiles', [\App\Http\Controllers\Settings\DocumentTypeMetadataProfileController::class, 'index'])->name('settings.document-types.metadata-profiles.index');
@@ -803,7 +834,16 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('reference-lists/{referenceList}/values', [\App\Http\Controllers\Settings\ReferenceListController::class, 'addValue'])->name('tools.reference-lists.values.store');
         Route::put('reference-lists/{referenceList}/values/{value}', [\App\Http\Controllers\Settings\ReferenceListController::class, 'updateValue'])->name('tools.reference-lists.values.update');
         Route::delete('reference-lists/{referenceList}/values/{value}', [\App\Http\Controllers\Settings\ReferenceListController::class, 'deleteValue'])->name('tools.reference-lists.values.destroy');
+        Route::post('reference-lists/{referenceList}/values/{value}/restore', [\App\Http\Controllers\Settings\ReferenceListController::class, 'restoreValue'])->name('tools.reference-lists.values.restore');
+        Route::post('reference-lists/{referenceList}/restore', [\App\Http\Controllers\Settings\ReferenceListController::class, 'restore'])->name('tools.reference-lists.restore');
+        Route::post('reference-lists/{referenceList}/purge-inactive', [\App\Http\Controllers\Settings\ReferenceListController::class, 'purgeInactive'])->name('tools.reference-lists.purge-inactive');
+        Route::post('reference-lists/{referenceList}/values/import', [\App\Http\Controllers\Settings\ReferenceListController::class, 'importValues'])->name('tools.reference-lists.values.import');
+        Route::get('reference-lists/{referenceList}/values/export', [\App\Http\Controllers\Settings\ReferenceListController::class, 'exportValues'])->name('tools.reference-lists.values.export');
         Route::resource('record-types', \App\Http\Controllers\Settings\RecordTypeController::class)->except(['show'])->names('tools.record-types');
+        Route::post('record-types/{recordType}/restore', [\App\Http\Controllers\Settings\RecordTypeController::class, 'restore'])->name('tools.record-types.restore');
+        Route::post('record-types/{recordType}/metadata', [\App\Http\Controllers\Settings\RecordTypeMetadataProfileController::class, 'store'])->name('tools.record-types.metadata.store');
+        Route::put('record-types/{recordType}/metadata/{profile}', [\App\Http\Controllers\Settings\RecordTypeMetadataProfileController::class, 'update'])->name('tools.record-types.metadata.update');
+        Route::delete('record-types/{recordType}/metadata/{profile}', [\App\Http\Controllers\Settings\RecordTypeMetadataProfileController::class, 'destroy'])->name('tools.record-types.metadata.destroy');
         Route::resource('metadata-definitions', \App\Http\Controllers\Settings\MetadataDefinitionController::class)->names('tools.metadata-definitions');
         Route::resource('folder-types', \App\Http\Controllers\Settings\RecordDigitalFolderTypeController::class)->names('tools.folder-types');
         Route::post('folder-types/order/update', [\App\Http\Controllers\Settings\RecordDigitalFolderTypeController::class, 'updateOrder'])->name('tools.folder-types.update-order');
@@ -1150,6 +1190,9 @@ Route::prefix('workflows')->name('workflows.')->middleware('auth')->group(functi
     Route::post('instances/{instance}/pause', [\App\Http\Controllers\WorkflowInstanceController::class, 'pause'])->name('instances.pause');
     Route::post('instances/{instance}/resume', [\App\Http\Controllers\WorkflowInstanceController::class, 'resume'])->name('instances.resume');
     Route::post('instances/{instance}/cancel', [\App\Http\Controllers\WorkflowInstanceController::class, 'cancel'])->name('instances.cancel');
+
+    // Tableau de bord (étape 10) : échéances, retards, taux de respect
+    Route::get('dashboard', [\App\Http\Controllers\WorkflowDashboardController::class, 'index'])->name('dashboard');
 });
 
 // Task Management Routes

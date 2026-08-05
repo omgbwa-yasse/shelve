@@ -25,6 +25,11 @@
                     <i class="bi bi-play-fill"></i> {{ __('Démarrer workflow') }}
                 </a>
             </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('workflows.dashboard') }}">
+                    <i class="bi bi-speedometer2"></i> Tableau de bord
+                </a>
+            </div>
         </div>
     </div>
 

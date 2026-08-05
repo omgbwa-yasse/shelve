@@ -517,9 +517,11 @@ class QueryExecutorService
             'records' => [
                 'title' => 'records.name',
                 'name' => 'records.name',
-                'description' => 'records.archivist_note',
-                'content' => 'records.archivist_note',
-                'archivist_note' => 'records.archivist_note',
+                // `archivist_note` (comme les autres champs descriptifs) vit désormais
+                // dans `records.metadata` (JSON) plutôt qu'en colonne directe.
+                'description' => DB::raw('CAST(records.metadata AS CHAR)'),
+                'content' => DB::raw('CAST(records.metadata AS CHAR)'),
+                'archivist_note' => DB::raw('CAST(records.metadata AS CHAR)'),
                 'code' => 'records.code',
             ],
             'mails' => [

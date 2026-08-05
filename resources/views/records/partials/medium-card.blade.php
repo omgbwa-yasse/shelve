@@ -33,6 +33,9 @@
                         <span class="badge bg-light text-dark">Non signé</span>
                     @endif
                     @include('records.partials.checkout-badge', ['medium' => $medium, 'record' => $record])
+                    @if($medium->linear_measure_cm !== null)
+                        <span class="badge bg-light text-dark"><i class="bi bi-rulers"></i> {{ rtrim(rtrim(number_format($medium->linear_measure_cm, 2), '0'), '.') }} cm</span>
+                    @endif
                 </div>
             </div>
             <div class="d-flex gap-1">
@@ -55,6 +58,15 @@
                         <form method="POST" action="{{ route('records.mediums.cancel-checkout', [$record, $medium]) }}">
                             @csrf
                             <button class="btn btn-sm btn-outline-secondary" title="Annuler le check-out"><i class="bi bi-x"></i></button>
+                        </form>
+                    @endif
+                    @if($medium->status === 'draft')
+                        <form method="POST" action="{{ route('records.mediums.finalize', [$record, $medium]) }}"
+                              onsubmit="return confirm('Finaliser ce support (version majeure) ?');">
+                            @csrf
+                            <button class="btn btn-sm btn-outline-success" title="Finaliser (version majeure)">
+                                <i class="bi bi-check2-square"></i>
+                            </button>
                         </form>
                     @endif
                     @if($medium->signature_status !== 'signed')

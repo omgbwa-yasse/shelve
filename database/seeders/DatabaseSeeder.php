@@ -17,6 +17,9 @@ use Database\Seeders\Records\Configuration\RecordLevelSeeder;
 use Database\Seeders\Records\Configuration\RecordSupportSeeder;
 use Database\Seeders\Records\Configuration\DeclassementStatusSeeder;
 use Database\Seeders\Records\Types\RecordTypeSeeder;
+use Database\Seeders\Records\Types\DocumentTypologySeeder;
+use Database\Seeders\SystemMetadataDefinitionsSeeder;
+use Database\Seeders\DefaultReferenceListsSeeder;
 use Database\Seeders\Records\DeclassementPermissionsSeeder;
 use Database\Seeders\Deposits\ContainerStatusSeeder;
 use Database\Seeders\Deposits\SortSeeder;
@@ -37,6 +40,7 @@ use Database\Seeders\Public\OpacTemplateSeeder;
 use Database\Seeders\Tools\KeywordSeeder;
 use Database\Seeders\Records\ExampleData\RecordDigitalFolderSeeder;
 use Database\Seeders\Records\ExampleData\RecordDigitalDocumentSeederSimple;
+use Database\Seeders\Records\ExampleData\DocumentTypologyExampleSeeder;
 
 // Module Data Seeders (test data for all 11 modules)
 use Database\Seeders\Contacts\ContactDataSeeder;
@@ -97,6 +101,9 @@ class DatabaseSeeder extends Seeder
 
             // 6ter. TYPES UNIFIÉS (Phase 1 — dépend des utilisateurs pour created_by)
             RecordTypeSeeder::class, // Backfill record_types + profils de métadonnées
+            DocumentTypologySeeder::class, // Dictionnaire de 10 typologies documentaires + métadonnées propres
+            SystemMetadataDefinitionsSeeder::class, // Métadonnées système ISAD(G) attachées à tous les RecordType actifs
+            DefaultReferenceListsSeeder::class, // Dictionnaire des domaines de valeurs par défaut (étape 2)
 
             // 6quater. COMPTE ADMIN (idempotent — accès garanti)
             AdminAccountSeeder::class, // admin@example.com / admin123
@@ -134,6 +141,7 @@ class DatabaseSeeder extends Seeder
             RetentionLawSeeder::class,      // Sorts, lois, articles, règles de conservation
             DepositDataSeeder::class,       // Propriétés, statuts et conteneurs
             RecordDataSeeder::class,        // Hiérarchie ISAD(G) + versements
+            DocumentTypologyExampleSeeder::class, // 3 exemples par typologie (support papier + numérique)
             MailDataSeeder::class,          // Courriers (internes/entrants/sortants), lots, métriques
             WorkflowDataSeeder::class,      // Définitions, instances, tâches de workflow
             WorkplaceDataSeeder::class,     // Espaces de travail, membres, dossiers

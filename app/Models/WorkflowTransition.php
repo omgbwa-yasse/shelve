@@ -16,6 +16,9 @@ class WorkflowTransition extends Model
         'to_task_key',
         'name',
         'condition',
+        'assignment_type',
+        'assignment_value',
+        'due_days',
         'sequence_order',
         'is_default',
         'created_by',
@@ -25,6 +28,7 @@ class WorkflowTransition extends Model
     protected $casts = [
         'sequence_order' => 'integer',
         'is_default' => 'boolean',
+        'due_days' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

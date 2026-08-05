@@ -20,6 +20,8 @@ class RecordTypeMetadataProfile extends Model
         'readonly',
         'default_value',
         'validation_rules',
+        'group',
+        'restricted_to_roles',
         'sort_order',
         'created_by',
         'updated_by',
@@ -30,8 +32,33 @@ class RecordTypeMetadataProfile extends Model
         'visible' => 'boolean',
         'readonly' => 'boolean',
         'validation_rules' => 'array',
+        'restricted_to_roles' => 'array',
         'sort_order' => 'integer',
     ];
+
+    /**
+     * La métadonnée est-elle visible pour le rôle courant ?
+     */
+    public function isRestrictedForCurrentUser(): bool
+    {
+        $roles = $this->restricted_to_roles ?? [];
+
+        if (empty($roles)) {
+            return false;
+        }
+
+        $user = auth()->user();
+
+        if (! $user) {
+            return true;
+        }
+
+        if ($user->isSuperAdmin()) {
+            return false;
+        }
+
+        return ! $user->roles()->whereIn('name', $roles)->exists();
+    }
 
     /**
      * Le type de notice auquel appartient ce profil.

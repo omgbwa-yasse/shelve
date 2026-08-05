@@ -133,13 +133,18 @@ class EADExport
             $did->addChild('unitid', 'R-' . $record->id);
         }
 
-        // Dates (exact or ranges)
+        // Dates (exact or ranges). `Record` (notice unifiée) nomme ces colonnes
+        // start_date/end_date ; `SlipRecord` (chemin export($slips)) garde date_start/
+        // date_end : on essaie les deux noms selon le type réel de $record.
+        $dateStart = method_exists($record, 'getMetadataValue') ? $record->start_date : $record->date_start;
+        $dateEnd = method_exists($record, 'getMetadataValue') ? $record->end_date : $record->date_end;
+
         if (!empty($record->date_exact)) {
             $ud = $did->addChild('unitdate', (string)$record->date_exact);
             $ud->addAttribute('normal', (string)$record->date_exact);
-        } elseif (!empty($record->date_start) || !empty($record->date_end)) {
-            $start = (string)($record->date_start ?? '');
-            $end = (string)($record->date_end ?? '');
+        } elseif (!empty($dateStart) || !empty($dateEnd)) {
+            $start = (string)($dateStart ?? '');
+            $end = (string)($dateEnd ?? '');
             if ($start && $end) {
                 $ud = $did->addChild('unitdate', $start . ' - ' . $end);
                 $ud->addAttribute('unitdatetype', 'inclusive');
@@ -208,8 +213,11 @@ class EADExport
             }
         }
 
-        // Physical description (dimensions)
-        if (!empty($record->width) || !empty($record->width_description) || !empty($record->characteristic)) {
+        // Physical description (dimensions). `characteristic` (comme les champs
+        // descriptifs ci-dessous) vit désormais dans `metadata` pour un `Record` ;
+        // `width`/`width_description` restent des colonnes réelles (structurelles).
+        $characteristic = $this->metaValue($record, 'characteristic');
+        if (!empty($record->width) || !empty($record->width_description) || !empty($characteristic)) {
             $phys = $did->addChild('physdesc');
             if (!empty($record->width)) {
                 $phys->addChild('dimensions', (string)$record->width . ' cm');
@@ -217,100 +225,102 @@ class EADExport
             if (!empty($record->width_description)) {
                 $phys->addChild('physfacet', (string)$record->width_description);
             }
-            if (!empty($record->characteristic)) {
-                $phys->addChild('materialspec', (string)$record->characteristic);
+            if (!empty($characteristic)) {
+                $phys->addChild('materialspec', (string)$characteristic);
             }
         }
 
         // Language usage
-        if (!empty($record->language_material)) {
-            $did->addChild('langusage', (string)$record->language_material);
+        if ($languageMaterial = $this->metaValue($record, 'language_material')) {
+            $did->addChild('langusage', (string)$languageMaterial);
         }
 
         // Locations
-        if (!empty($record->location_original)) {
-            $did->addChild('physloc', (string)$record->location_original)->addAttribute('label', 'original');
+        if ($locationOriginal = $this->metaValue($record, 'location_original')) {
+            $did->addChild('physloc', (string)$locationOriginal)->addAttribute('label', 'original');
         }
-        if (!empty($record->location_copy)) {
-            $did->addChild('physloc', (string)$record->location_copy)->addAttribute('label', 'copy');
+        if ($locationCopy = $this->metaValue($record, 'location_copy')) {
+            $did->addChild('physloc', (string)$locationCopy)->addAttribute('label', 'copy');
         }
 
-        // Content/notes
-        if (!empty($record->content)) {
+        // Content/notes — champs descriptifs ISAD(G), désormais des MetadataDefinition
+        // système pour un `Record` (voir metaValue()) ; `SlipRecord` garde `content`
+        // en colonne directe et n'a pas les autres champs (metaValue() renvoie null).
+        if ($content = $this->metaValue($record, 'content')) {
             $scopecontent = $c->addChild('scopecontent');
-            $scopecontent->addChild('p', (string)$record->content);
+            $scopecontent->addChild('p', (string)$content);
         }
 
-        if (!empty($record->biographical_history)) {
+        if ($biographicalHistory = $this->metaValue($record, 'biographical_history')) {
             $bh = $c->addChild('bioghist');
-            $bh->addChild('p', (string)$record->biographical_history);
+            $bh->addChild('p', (string)$biographicalHistory);
         }
 
-        if (!empty($record->archival_history)) {
+        if ($archivalHistory = $this->metaValue($record, 'archival_history')) {
             $ch = $c->addChild('custodhist');
-            $ch->addChild('p', (string)$record->archival_history);
+            $ch->addChild('p', (string)$archivalHistory);
         }
 
-        if (!empty($record->acquisition_source)) {
+        if ($acquisitionSource = $this->metaValue($record, 'acquisition_source')) {
             $acq = $c->addChild('acqinfo');
-            $acq->addChild('p', (string)$record->acquisition_source);
+            $acq->addChild('p', (string)$acquisitionSource);
         }
 
-        if (!empty($record->appraisal)) {
+        if ($appraisal = $this->metaValue($record, 'appraisal')) {
             $ap = $c->addChild('appraisal');
-            $ap->addChild('p', (string)$record->appraisal);
+            $ap->addChild('p', (string)$appraisal);
         }
 
-        if (!empty($record->accrual)) {
+        if ($accrual = $this->metaValue($record, 'accrual')) {
             $ac = $c->addChild('accruals');
-            $ac->addChild('p', (string)$record->accrual);
+            $ac->addChild('p', (string)$accrual);
         }
 
-        if (!empty($record->arrangement)) {
+        if ($arrangement = $this->metaValue($record, 'arrangement')) {
             $arr = $c->addChild('arrangement');
-            $arr->addChild('p', (string)$record->arrangement);
+            $arr->addChild('p', (string)$arrangement);
         }
 
-        if (!empty($record->access_conditions)) {
+        if ($accessConditions = $this->metaValue($record, 'access_conditions')) {
             $ar = $c->addChild('accessrestrict');
-            $ar->addChild('p', (string)$record->access_conditions);
+            $ar->addChild('p', (string)$accessConditions);
         }
 
-        if (!empty($record->reproduction_conditions)) {
+        if ($reproductionConditions = $this->metaValue($record, 'reproduction_conditions')) {
             $ur = $c->addChild('userestrict');
-            $ur->addChild('p', (string)$record->reproduction_conditions);
+            $ur->addChild('p', (string)$reproductionConditions);
         }
 
-        if (!empty($record->finding_aids)) {
+        if ($findingAids = $this->metaValue($record, 'finding_aids')) {
             $ofa = $c->addChild('otherfindaid');
-            $ofa->addChild('p', (string)$record->finding_aids);
+            $ofa->addChild('p', (string)$findingAids);
         }
 
-        if (!empty($record->related_unit)) {
+        if ($relatedUnit = $this->metaValue($record, 'related_unit')) {
             $rel = $c->addChild('relatedmaterial');
-            $rel->addChild('p', (string)$record->related_unit);
+            $rel->addChild('p', (string)$relatedUnit);
         }
 
-        if (!empty($record->publication_note)) {
+        if ($publicationNote = $this->metaValue($record, 'publication_note')) {
             $bib = $c->addChild('bibliography');
-            $bib->addChild('p', (string)$record->publication_note);
+            $bib->addChild('p', (string)$publicationNote);
         }
 
         // Misc/general notes (odd)
-        if (!empty($record->note)) {
+        if ($note = $this->metaValue($record, 'note')) {
             $odd = $c->addChild('odd');
-            $odd->addChild('p', (string)$record->note);
+            $odd->addChild('p', (string)$note);
         }
 
-        if (!empty($record->archivist_note)) {
+        if ($archivistNote = $this->metaValue($record, 'archivist_note')) {
             $pi = $c->addChild('processinfo');
-            $pi->addChild('p', (string)$record->archivist_note);
+            $pi->addChild('p', (string)$archivistNote);
         }
 
-        if (!empty($record->rule_convention)) {
+        if ($ruleConvention = $this->metaValue($record, 'rule_convention')) {
             $odd2 = $c->addChild('odd');
             $odd2->addChild('head', 'Rules/Conventions');
-            $odd2->addChild('p', (string)$record->rule_convention);
+            $odd2->addChild('p', (string)$ruleConvention);
         }
 
         // Keywords / subjects from thesaurus
@@ -349,6 +359,20 @@ class EADExport
                 $this->addRecordComponent($c, $child);
             }
         }
+    }
+
+    /**
+     * Lit un champ descriptif ISAD(G). Pour un `Record` (notice unifiée), ces champs
+     * sont désormais des MetadataDefinition système stockées dans `metadata` — pour
+     * un `SlipRecord` (chemin export($slips)), seul `content` existe en colonne directe.
+     */
+    private function metaValue($record, string $field): mixed
+    {
+        if (method_exists($record, 'getMetadataValue')) {
+            return $record->getMetadataValue($field);
+        }
+
+        return $record->{$field} ?? null;
     }
 
     protected function mapDescriptionLevel(?string $levelName): string

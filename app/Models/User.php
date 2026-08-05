@@ -7,9 +7,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\HasApiTokens;
-use App\Models\Organisation;
-use App\Models\Role;
-use App\Models\Permission;
 
 class User extends Authenticatable
 {
@@ -159,6 +156,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Favoris de l'utilisateur (étape 8 — collaboration).
+     */
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class, 'user_id');
+    }
+
+    /**
      * Vérifier si l'utilisateur a un rôle spécifique
      */
     public function hasRole(string $roleName): bool
@@ -188,7 +193,7 @@ class User extends Authenticatable
     public function assignRole(string $roleName): void
     {
         $role = Role::where('name', $roleName)->first();
-        if ($role && !$this->hasRole($roleName)) {
+        if ($role && ! $this->hasRole($roleName)) {
             $this->roles()->attach($role->id);
         }
     }
@@ -210,7 +215,7 @@ class User extends Authenticatable
     public function givePermissionTo(string $permissionName): void
     {
         $permission = Permission::where('name', $permissionName)->first();
-        if ($permission && !$this->hasPermissionTo($permissionName)) {
+        if ($permission && ! $this->hasPermissionTo($permissionName)) {
             $this->permissions()->attach($permission->id);
         }
     }

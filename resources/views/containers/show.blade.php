@@ -46,6 +46,29 @@
                                         <span class="badge bg-primary fs-6">{{ $container->status->name }}</span>
                                     @endif
                                 </div>
+                                @if($container->capacity_cm !== null)
+                                    <div class="mt-3 p-2 bg-white rounded border">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="text-muted small">Capacité</span>
+                                            <strong>{{ number_format($container->capacity_cm, 2) }} cm</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="text-muted small">Occupé</span>
+                                            <strong>{{ number_format($container->usedLinearMeasureCm(), 2) }} cm</strong>
+                                        </div>
+                                        <hr class="my-1">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="text-muted small">Espace restant</span>
+                                            <strong class="{{ $container->remainingSpaceCm() < 0 ? 'text-danger' : 'text-success' }}">
+                                                {{ number_format($container->remainingSpaceCm(), 2) }} cm
+                                            </strong>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="mt-3 p-2 bg-white rounded border text-muted small">
+                                        Capacité non renseignée — {{ number_format($container->usedLinearMeasureCm(), 2) }} cm occupés.
+                                    </div>
+                                @endif
                             </div>
                             
                             <div class="info-list">

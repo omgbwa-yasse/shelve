@@ -40,6 +40,12 @@
                     @endforeach
                 </select>
             </div>
+            <div class="mb-3">
+                <label for="capacity_cm" class="form-label">Capacité linéaire (cm)</label>
+                <input type="number" step="0.01" min="0" class="form-control" id="capacity_cm" name="capacity_cm"
+                       value="{{ $container->capacity_cm }}">
+                <small class="text-muted">Capacité du contenant en centimètres linéaires — permet de calculer l'espace restant.</small>
+            </div>
             <button type="submit" class="btn btn-primary">Update</button>
         </form>
     </div>

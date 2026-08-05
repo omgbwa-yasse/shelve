@@ -23,7 +23,7 @@ use Laravel\Scout\Searchable;
  */
 class Record extends Model
 {
-    use HasFactory, SoftDeletes, Searchable, BelongsToOrganisation;
+    use BelongsToOrganisation, HasFactory, Searchable, SoftDeletes;
 
     protected $table = 'records';
 
@@ -31,29 +31,6 @@ class Record extends Model
         'code',
         'name',
         'description',
-        // ISAD(G)
-        'biographical_history',
-        'archival_history',
-        'acquisition_source',
-        'content',
-        'appraisal',
-        'accrual',
-        'arrangement',
-        'access_conditions',
-        'reproduction_conditions',
-        'language_material',
-        'characteristic',
-        'finding_aids',
-        'location_original',
-        'location_copy',
-        'related_unit',
-        'publication_note',
-        'note',
-        'archivist_note',
-        'rule_convention',
-        // Fonds
-        'extent',
-        'category_precision',
         // Cycle de vie
         'opening_date',
         'closing_date',
@@ -79,19 +56,12 @@ class Record extends Model
         // Confidentialité
         'confidentiality_id',
         'access_limit_id',
-        // Descriptifs non-ISAD
-        'table_of_contents',
-        'quantity',
-        'dimension',
-        'publisher',
         'publication_date',
         'sent_date',
         'received_date',
         'signature_date',
         'final_version_creation',
         'location_before_add',
-        'sort_value',
-        'geographic_scope',
         // Structure
         'type_id',
         'level_id',
@@ -106,6 +76,7 @@ class Record extends Model
         'approved_by',
         'approved_at',
         'metadata',
+        'linear_measure_cm',
         'start_date',
         'end_date',
         'date_exact',
@@ -118,7 +89,6 @@ class Record extends Model
 
     protected $casts = [
         'metadata' => 'array',
-        'geographic_scope' => 'array',
         'unavailable' => 'boolean',
         'annual_opening' => 'boolean',
         'is_essential' => 'boolean',
@@ -276,8 +246,8 @@ class Record extends Model
             'record_id',
             'concept_id'
         )
-        ->withPivot('weight', 'context', 'extraction_note')
-        ->withTimestamps();
+            ->withPivot('weight', 'context', 'extraction_note')
+            ->withTimestamps();
     }
 
     public function thesaurusConceptsByWeight(): BelongsToMany
@@ -311,6 +281,48 @@ class Record extends Model
     public function tasks(): MorphMany
     {
         return $this->morphMany(Task::class, 'taskable');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Collaboration (étape 8 — partage, favoris, commentaires, raccourcis)
+    |--------------------------------------------------------------------------
+    */
+    public function shares(): HasMany
+    {
+        return $this->hasMany(RecordShare::class, 'record_id');
+    }
+
+    public function favorites(): MorphMany
+    {
+        return $this->morphMany(Favorite::class, 'favoriteable');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(RecordComment::class, 'record_id');
+    }
+
+    public function shortcuts(): HasMany
+    {
+        return $this->hasMany(RecordShortcut::class, 'record_id');
+    }
+
+    /**
+     * La notice est-elle partagée avec l'utilisateur courant ?
+     */
+    public function isSharedWith(?int $userId = null): bool
+    {
+        $userId = $userId ?? auth()->id();
+
+        if (! $userId) {
+            return false;
+        }
+
+        return $this->shares()
+            ->where('user_id', $userId)
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->exists();
     }
 
     public function dollies(): BelongsToMany
@@ -411,7 +423,7 @@ class Record extends Model
 
     public function getRequiredMetadataFields(): array
     {
-        if (!$this->type) {
+        if (! $this->type) {
             return [];
         }
 
@@ -427,11 +439,12 @@ class Record extends Model
 
     public function getVisibleMetadataFields(): array
     {
-        if (!$this->type) {
+        if (! $this->type) {
             return [];
         }
 
         return $this->type->getVisibleMetadataDefinitions()
+            ->filter(fn ($definition) => ! $this->isMetadataRestrictedForCurrentUser($definition))
             ->map(function ($definition) {
                 return [
                     'code' => $definition->code,
@@ -440,21 +453,74 @@ class Record extends Model
                     'value' => $this->getMetadataValue($definition->code),
                     'required' => $definition->pivot->mandatory,
                     'readonly' => $definition->pivot->readonly,
+                    'group' => $definition->pivot->group,
+                    'sortable' => $definition->sortable,
+                    'highlightable' => $definition->highlightable,
+                    'autocomplete' => $definition->autocomplete,
                 ];
             })
+            ->values()
             ->toArray();
+    }
+
+    /**
+     * Codes de métadonnées masquées pour l'utilisateur courant (étape 5).
+     * Superadmin et détenteurs d'un rôle autorisé voient tout.
+     */
+    public function getRestrictedMetadataCodes(): array
+    {
+        if (! $this->type) {
+            return [];
+        }
+
+        return $this->type->getVisibleMetadataDefinitions()
+            ->filter(fn ($definition) => $this->isMetadataRestrictedForCurrentUser($definition))
+            ->pluck('code')
+            ->values()
+            ->toArray();
+    }
+
+    /**
+     * Une métadonnée marquée `restricted_to_roles` est-elle invisible pour le
+     * rôle courant ? (étape 5 — filtrée en affichage et en indexation).
+     */
+    private function isMetadataRestrictedForCurrentUser($definition): bool
+    {
+        $rawRoles = $definition->pivot->restricted_to_roles ?? [];
+
+        if (empty($rawRoles)) {
+            return false;
+        }
+
+        $roles = is_array($rawRoles) ? $rawRoles : json_decode((string) $rawRoles, true);
+
+        if (empty($roles)) {
+            return false;
+        }
+
+        $user = auth()->user();
+
+        if (! $user) {
+            return true;
+        }
+
+        if ($user->isSuperAdmin()) {
+            return false;
+        }
+
+        return ! $user->roles()->whereIn('name', $roles)->exists();
     }
 
     public function validateMetadata(): array
     {
-        if (!$this->type) {
+        if (! $this->type) {
             return ['type' => 'Record type not set'];
         }
 
         $service = app(\App\Services\MetadataValidationService::class);
 
         try {
-            $service->validateRecordMetadata($this->type, $this->metadata ?? []);
+            $service->validateRecordMetadata($this->type, $this->metadata ?? [], $this->id);
 
             return [];
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -574,7 +640,7 @@ class Record extends Model
 
     public function generateCode(): string
     {
-        if (!$this->type) {
+        if (! $this->type) {
             throw new \Exception('Cannot generate code without a type');
         }
 
@@ -611,7 +677,7 @@ class Record extends Model
      */
     public function scopeInOrganisation(Builder $query, int $organisationId): Builder
     {
-        return $query->where($this->getTable() . '.organisation_id', $organisationId);
+        return $query->where($this->getTable().'.organisation_id', $organisationId);
     }
 
     public function scopeOfType(Builder $query, string $typeCode): Builder
@@ -634,26 +700,150 @@ class Record extends Model
             'date_start' => $this->start_date,
             'date_end' => $this->end_date,
             'date_exact' => $this->date_exact,
-            'biographical_history' => $this->biographical_history,
-            'archival_history' => $this->archival_history,
-            'acquisition_source' => $this->acquisition_source,
-            'content' => $this->content,
-            'appraisal' => $this->appraisal,
-            'accrual' => $this->accrual,
-            'arrangement' => $this->arrangement,
-            'access_conditions' => $this->access_conditions,
-            'reproduction_conditions' => $this->reproduction_conditions,
-            'language_material' => $this->language_material,
-            'characteristic' => $this->characteristic,
-            'finding_aids' => $this->finding_aids,
-            'location_original' => $this->location_original,
-            'location_copy' => $this->location_copy,
-            'related_unit' => $this->related_unit,
-            'publication_note' => $this->publication_note,
-            'note' => $this->note,
-            'archivist_note' => $this->archivist_note,
-            'rule_convention' => $this->rule_convention,
-            'metadata' => $this->metadata ? json_encode($this->metadata) : null,
+            'metadata_text' => $this->flattenMetadataForSearch(),
         ];
+    }
+
+    /**
+     * Les ~27 anciennes colonnes descriptives (ISAD(G) + non-ISAD) sont désormais
+     * des MetadataDefinition système stockées dans `metadata` (JSON). Un aplatissement
+     * en texte simple indexe mieux que le JSON brut (guillemets/accolades nuisent à
+     * la pertinence du full-text Scout).
+     */
+    private function flattenMetadataForSearch(): string
+    {
+        if (empty($this->metadata) || ! is_array($this->metadata)) {
+            return '';
+        }
+
+        $excluded = $this->getRestrictedMetadataCodes();
+
+        return collect($this->metadata)
+            ->reject(fn ($value, $code) => in_array($code, $excluded, true))
+            ->filter(fn ($value) => is_scalar($value))
+            ->implode(' ');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Étape 4 — métadonnées copiées (parent → enfant) et calculées
+    |--------------------------------------------------------------------------
+    */
+    protected static function booted(): void
+    {
+        static::saving(function (Record $record) {
+            $record->applyCopiedAndComputedMetadata();
+        });
+    }
+
+    /**
+     * Recalcule les champs copiés depuis le parent et les champs calculés
+     * (gabarit interpolé) à chaque sauvegarde. Uniquement si le champ cible
+     * est vide (copie) — le calcul remplace toujours la valeur (étape 4).
+     */
+    public function applyCopiedAndComputedMetadata(): void
+    {
+        if (! $this->type) {
+            return;
+        }
+
+        $profiles = $this->type->metadataProfiles()->with('metadataDefinition')->get();
+
+        foreach ($profiles as $profile) {
+            $definition = $profile->metadataDefinition;
+
+            if ($definition->computed_template) {
+                $this->setMetadataValue($definition->code, $this->interpolateComputedTemplate($definition->computed_template));
+            } elseif ($definition->copy_source_type === 'parent'
+                && $definition->copy_source_field
+                && blank($this->getMetadataValue($definition->code))) {
+                $value = $this->resolveCopiedParentValue($definition->copy_source_field);
+                $this->setMetadataValue($definition->code, $value);
+            }
+        }
+    }
+
+    protected function resolveCopiedParentValue(string $sourceField)
+    {
+        $parent = $this->parent;
+
+        if (! $parent) {
+            return null;
+        }
+
+        if (in_array($sourceField, ['name', 'code', 'description'], true)) {
+            return $parent->{$sourceField};
+        }
+
+        return $parent->getMetadataValue($sourceField);
+    }
+
+    protected function interpolateComputedTemplate(string $template): string
+    {
+        return preg_replace_callback('/\$(\w+)/', function ($matches) {
+            $code = $matches[1];
+
+            if (in_array($code, ['name', 'code', 'description'], true)) {
+                return (string) $this->{$code};
+            }
+
+            $value = $this->getMetadataValue($code);
+
+            return is_scalar($value) ? (string) $value : '';
+        }, $template);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Étape 9 — duplication de notices
+    |--------------------------------------------------------------------------
+    */
+    /**
+     * Duplique la notice : métadonnées seules, ou fiche + arborescence (sans documents).
+     */
+    public function duplicate(bool $withChildren = false, array $overrides = []): self
+    {
+        $copy = $this->replicate();
+
+        $copy->version_number = 1;
+        $copy->is_current_version = true;
+        $copy->parent_id = $this->parent_id;
+        $copy->code = $copy->type
+            ? $this->type->generateCode()
+            : $this->code.'-copie';
+
+        $copy->fill($overrides);
+        $copy->save();
+
+        $this->attachDuplicatedRelations($copy, $this);
+
+        if ($withChildren) {
+            foreach ($this->children as $child) {
+                // La récursion duplique déjà les relations de chaque enfant — ne pas les réattacher ici.
+                $child->duplicate(true, ['parent_id' => $copy->id]);
+            }
+        }
+
+        return $copy;
+    }
+
+    /**
+     * Reproduit les relations pivots liées à la fiche (auteurs, mots-clés, concepts,
+     * pièces jointes). Ne duplique pas les documents.
+     */
+    public function attachDuplicatedRelations(Record $copy, Record $original): void
+    {
+        foreach ($original->authors as $author) {
+            $copy->authors()->attach($author->id);
+        }
+        foreach ($original->keywords as $keyword) {
+            $copy->keywords()->attach($keyword->id);
+        }
+        foreach ($original->thesaurusConcepts as $concept) {
+            $copy->thesaurusConcepts()->attach($concept->id);
+        }
+        foreach ($original->attachments as $attachment) {
+            $copy->attachments()->attach($attachment->id);
+        }
     }
 }

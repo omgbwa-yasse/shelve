@@ -18,7 +18,7 @@ class ContainerController extends Controller
         $currentOrganisationId = Auth::user()->current_organisation_id;
 
         $query = Container::with(['shelf.room.floor.building', 'status', 'property'])
-            ->whereHas('shelf.room.organisations', function($query) use ($currentOrganisationId) {
+            ->whereHas('shelf.room.organisations', function ($query) use ($currentOrganisationId) {
                 $query->where('organisation_id', $currentOrganisationId);
             });
 
@@ -32,20 +32,18 @@ class ContainerController extends Controller
         return view('containers.index', compact('containers'));
     }
 
-
-
     public function create()
     {
         $currentOrganisationId = Auth::user()->current_organisation_id;
 
         $shelves = Shelf::with(['room.floor.building', 'containers'])
-            ->whereHas('room.organisations', function($query) use ($currentOrganisationId) {
+            ->whereHas('room.organisations', function ($query) use ($currentOrganisationId) {
                 $query->where('organisation_id', $currentOrganisationId);
             })
             ->get();
 
         // Calculate statistics for each shelf
-        $shelves->each(function($shelf) {
+        $shelves->each(function ($shelf) {
             $shelf->total_capacity = $shelf->face * $shelf->ear * $shelf->shelf;
             $shelf->occupied_spots = $shelf->containers->count();
             $shelf->available_spots = max(0, $shelf->total_capacity - $shelf->occupied_spots);
@@ -54,10 +52,9 @@ class ContainerController extends Controller
 
         $statuses = ContainerStatus::all();
         $properties = ContainerProperty::all();
+
         return view('containers.create', compact('shelves', 'statuses', 'properties'));
     }
-
-
 
     public function store(Request $request)
     {
@@ -66,6 +63,7 @@ class ContainerController extends Controller
             'shelve_id' => 'required|exists:shelves,id',
             'status_id' => 'required|exists:container_statuses,id',
             'property_id' => 'required|exists:container_properties,id',
+            'capacity_cm' => 'nullable|numeric|min:0',
         ]);
 
         Container::create([
@@ -73,6 +71,7 @@ class ContainerController extends Controller
             'shelve_id' => $request->shelve_id,
             'status_id' => $request->status_id,
             'property_id' => $request->property_id,
+            'capacity_cm' => $request->capacity_cm,
             'creator_id' => Auth::id(),
             'creator_organisation_id' => Auth::user()->current_organisation_id,
         ]);
@@ -80,59 +79,52 @@ class ContainerController extends Controller
         return redirect()->route('containers.index')->with('success', 'Container created successfully.');
     }
 
-
-
-
     public function show(Container $container)
     {
         $currentOrganisationId = Auth::user()->current_organisation_id;
 
         // Vérifier que le container appartient à une shelf de l'organisation courante
-        if (!$container->shelf || !$container->shelf->room || !$container->shelf->room->organisations()->where('organisation_id', $currentOrganisationId)->exists()) {
+        if (! $container->shelf || ! $container->shelf->room || ! $container->shelf->room->organisations()->where('organisation_id', $currentOrganisationId)->exists()) {
             abort(403, self::ACCESS_DENIED_MESSAGE);
         }
 
         return view('containers.show', compact('container'));
     }
 
-
-
-
     public function edit(Container $container)
     {
         $currentOrganisationId = Auth::user()->current_organisation_id;
 
         // Vérifier que le container appartient à une shelf de l'organisation courante
-        if (!$container->shelf || !$container->shelf->room || !$container->shelf->room->organisations()->where('organisation_id', $currentOrganisationId)->exists()) {
+        if (! $container->shelf || ! $container->shelf->room || ! $container->shelf->room->organisations()->where('organisation_id', $currentOrganisationId)->exists()) {
             abort(403, self::ACCESS_DENIED_MESSAGE);
         }
 
-        $shelves = Shelf::whereHas('room.organisations', function($query) use ($currentOrganisationId) {
+        $shelves = Shelf::whereHas('room.organisations', function ($query) use ($currentOrganisationId) {
             $query->where('organisation_id', $currentOrganisationId);
         })->get();
 
         $statuses = ContainerStatus::all();
         $properties = ContainerProperty::all();
+
         return view('containers.edit', compact('container', 'shelves', 'statuses', 'properties'));
     }
-
-
-
 
     public function update(Request $request, Container $container)
     {
         $currentOrganisationId = Auth::user()->current_organisation_id;
 
         // Vérifier que le container appartient à une shelf de l'organisation courante
-        if (!$container->shelf || !$container->shelf->room || !$container->shelf->room->organisations()->where('organisation_id', $currentOrganisationId)->exists()) {
+        if (! $container->shelf || ! $container->shelf->room || ! $container->shelf->room->organisations()->where('organisation_id', $currentOrganisationId)->exists()) {
             abort(403, self::ACCESS_DENIED_MESSAGE);
         }
 
         $request->validate([
-            'code' => 'required|max:20|unique:containers,code,' . $container->id,
+            'code' => 'required|max:20|unique:containers,code,'.$container->id,
             'shelve_id' => 'required|exists:shelves,id',
             'status_id' => 'required|exists:container_statuses,id',
             'property_id' => 'required|exists:container_properties,id',
+            'capacity_cm' => 'nullable|numeric|min:0',
         ]);
 
         $container->update([
@@ -140,6 +132,7 @@ class ContainerController extends Controller
             'shelve_id' => $request->shelve_id,
             'status_id' => $request->status_id,
             'property_id' => $request->property_id,
+            'capacity_cm' => $request->capacity_cm,
             'creator_id' => Auth::id(),
             'creator_organisation_id' => Auth::user()->current_organisation_id,
         ]);
@@ -147,19 +140,17 @@ class ContainerController extends Controller
         return redirect()->route('containers.index')->with('success', 'Container updated successfully.');
     }
 
-
-
-
     public function destroy(Container $container)
     {
         $currentOrganisationId = Auth::user()->current_organisation_id;
 
         // Vérifier que le container appartient à une shelf de l'organisation courante
-        if (!$container->shelf || !$container->shelf->room || !$container->shelf->room->organisations()->where('organisation_id', $currentOrganisationId)->exists()) {
+        if (! $container->shelf || ! $container->shelf->room || ! $container->shelf->room->organisations()->where('organisation_id', $currentOrganisationId)->exists()) {
             abort(403, self::ACCESS_DENIED_MESSAGE);
         }
 
         $container->delete();
+
         return redirect()->route('containers.index')->with('success', 'Container deleted successfully.');
     }
 }
