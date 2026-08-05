@@ -17,7 +17,11 @@ class LawArticle extends Model
     protected $fillable = [
         'code',
         'name',
-        'content',
+        // La colonne réelle est `description`, pas `content` : `$fillable` déclarait
+        // un champ inexistant (même défaut que Role::display_name, corrigé plus tôt).
+        // Trouvé lors du portage de D01 — sans vue ni contrôleur fonctionnel, ce
+        // module n'avait jamais exercé ce chemin.
+        'description',
         'law_id',
     ];
 

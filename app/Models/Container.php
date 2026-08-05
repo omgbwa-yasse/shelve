@@ -60,4 +60,13 @@ class Container extends Model
     {
         return $this->shelf && $this->shelf->room ? $this->shelf->room->organisations : collect();
     }
+
+    /**
+     * Portée organisation (R03) : les conteneurs héritent de l'organisation de leur
+     * rayonnage (salle), comme le fait l'index du contrôleur Blade.
+     */
+    public function scopeInOrganisation($query, int $organisationId)
+    {
+        return $query->whereHas('shelf.room.organisations', fn ($q) => $q->whereKey($organisationId));
+    }
 }

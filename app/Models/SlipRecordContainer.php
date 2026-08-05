@@ -9,6 +9,9 @@ class SlipRecordContainer extends Model
 {
     use HasFactory;
 
+    // Le schéma réel nomme la table au singulier (`slip_record_container`) alors que
+    // la convention Eloquent attendrait `slip_record_containers`.
+    protected $table = 'slip_record_container';
 
     public $incrementing = false;
 
@@ -61,6 +64,15 @@ class SlipRecordContainer extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'creator_id');
+    }
+
+    /**
+     * Portée organisation (R03) : un contenant de bordereau est org-scopé par
+     * héritage de son slip (double organisation émetteur/bénéficiaire).
+     */
+    public function scopeInOrganisation($query, int $organisationId)
+    {
+        return $query->whereHas('slipRecord.slip', fn ($q) => $q->forOrganisation($organisationId));
     }
 
 

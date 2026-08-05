@@ -62,3 +62,6 @@ Thumbs.db
 # Sub-projects
 /opac/node_modules
 /mcp/node_modules
+
+# Node_modules imbriqué de la suite de conformité
+contracts/conformance/node_modules/

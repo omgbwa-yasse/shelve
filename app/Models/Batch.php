@@ -42,7 +42,15 @@ class Batch extends Model
                     ->withTimestamps();
     }
 
-
+    /**
+     * Portée organisation (R03) : un parapheur appartient à l'organisation
+     * qui le détient (`organisation_holder_id`), comme le filtre l'index du
+     * contrôleur Blade (`BatchController::index()`).
+     */
+    public function scopeInOrganisation($query, int $organisationId)
+    {
+        return $query->where('organisation_holder_id', $organisationId);
+    }
 
 }
 

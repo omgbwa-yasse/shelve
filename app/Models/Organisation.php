@@ -9,7 +9,10 @@ class Organisation extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['code', 'name', 'parent_id'];
+    // `description` ajouté au portage D09 : la colonne existe dans le schéma
+    // (text NULL) mais le `$fillable` l'omettait, ce qui la faisait silencieusement
+    // disparaître au `Organisation::create($request->all())` du Blade.
+    protected $fillable = ['code', 'name', 'description', 'parent_id'];
 
     public function parent()
     {

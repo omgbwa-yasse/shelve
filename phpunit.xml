@@ -18,12 +18,30 @@
         </include>
     </source>
     <php>
+        <!-- La suite a grossi avec le portage des 16 domaines : chaque test boot
+             l'application complète (mille routes, centaines de classes). La limite
+             PHP par défaut (128 Mo) est dépassée en fin de course. -->
+        <ini name="memory_limit" value="1G"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_STORE" value="array"/>
-        <!-- <env name="DB_CONNECTION" value="sqlite"/> -->
-        <!-- <env name="DB_DATABASE" value=":memory:"/> -->
+        <!--
+            Le RateLimiter n'utilise PAS le store de cache par défaut mais celui de
+            `cache.limiter` (config/cache.php), piloté par CACHE_LIMITER_STORE. Sans
+            cette ligne il reste sur `database` : les compteurs de quota persistent
+            entre les exécutions et finissent par renvoyer 429 aux tests d'authentification.
+        -->
+        <env name="CACHE_LIMITER_STORE" value="array"/>
+        <!--
+            Base de test dédiée. Sans cette ligne, les tests tournent sur la base de
+            développement (shelve_db) et tout `RefreshDatabase` la détruit.
+            Création : CREATE DATABASE shelve_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+            SQLite n'est pas utilisable ici : le schéma emploie des types et index
+            propres à MySQL (enum, json, fulltext).
+        -->
+        <env name="DB_CONNECTION" value="mysql"/>
+        <env name="DB_DATABASE" value="shelve_test"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

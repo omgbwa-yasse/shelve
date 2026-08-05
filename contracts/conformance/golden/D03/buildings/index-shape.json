@@ -1,0 +1,15 @@
+{
+  "data": "array<empty>",
+  "links": {
+    "first": "string",
+    "last": "string",
+    "next": "null",
+    "prev": "null"
+  },
+  "meta": {
+    "current_page": "number",
+    "last_page": "number",
+    "per_page": "number",
+    "total": "number"
+  }
+}

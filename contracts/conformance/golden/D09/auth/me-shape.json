@@ -1,0 +1,23 @@
+{
+  "data": {
+    "permissions": "array<string>",
+    "user": {
+      "birthday": "string",
+      "created_at": "<timestamp>",
+      "current_organisation": {
+        "code": "string",
+        "id": "<id>",
+        "name": "string"
+      },
+      "current_organisation_id": "<id>",
+      "email": "string",
+      "id": "<id>",
+      "is_superadmin": "boolean",
+      "name": "string",
+      "organisations": "array<[object Object]>",
+      "roles": "array<empty>",
+      "surname": "string",
+      "updated_at": "<timestamp>"
+    }
+  }
+}

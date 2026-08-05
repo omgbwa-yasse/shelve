@@ -34,7 +34,7 @@ use App\Http\Controllers\MailAuthorController;
 use App\Http\Controllers\MailTransactionController;
 use App\Http\Controllers\MailAuthorContactController;
 use App\Http\Controllers\BuildingController;
-use App\Http\Controllers\floorController;
+use App\Http\Controllers\FloorController;
 use App\Http\Controllers\ExternalContactController;
 use App\Http\Controllers\ExternalOrganizationController;
 use App\Http\Controllers\RoomController;
@@ -50,7 +50,7 @@ use App\Http\Controllers\RetentionController;
 use App\Http\Controllers\LawController;
 use App\Http\Controllers\LawArticleController;
 use App\Http\Controllers\RetentionLawArticleController;
-use App\Http\Controllers\retentionActivityController;
+use App\Http\Controllers\RetentionActivityController;
 use App\Http\Controllers\CommunicabilityController;
 use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\OrganisationRoomController;
@@ -774,7 +774,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::prefix('tools')->group(function () {
         Route::get('/', [ActivityController::class , 'index' ] );
         Route::resource('activities', ActivityController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
-        Route::resource('activities.retentions', retentionActivityController::class);
+        Route::resource('activities.retentions', RetentionActivityController::class);
         Route::resource('retentions', RetentionController::class);
         Route::resource('retentions.exigences', RetentionLawArticleController::class);
         Route::resource('laws', LawController::class);

@@ -34,4 +34,17 @@ class BatchTransaction extends Model
         return $this->belongsToMany(Mail::class, 'batch_mail', 'batch_id', 'mail_id');
     }
 
+    /**
+     * Portée organisation (R03) : une transaction de parapheur concerne l'organisation
+     * courante si elle l'a émise (`organisation_send_id`) ou si elle l'a reçue
+     * (`organisation_received_id`) — motif dual-organisation, comme les courriers.
+     */
+    public function scopeInOrganisation($query, int $organisationId)
+    {
+        return $query->where(function ($q) use ($organisationId) {
+            $q->where('organisation_send_id', $organisationId)
+              ->orWhere('organisation_received_id', $organisationId);
+        });
+    }
+
 }

@@ -22,6 +22,129 @@ use App\Http\Controllers\PromptController;
 use App\Http\Controllers\Api\ContainerSearchController;
 use App\Http\Controllers\Api\RecordDigitalFolderApiController;
 use App\Http\Controllers\Api\RecordDigitalDocumentApiController;
+use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\ActivityController;
+use App\Http\Controllers\Api\V1\CommunicabilityController;
+use App\Http\Controllers\Api\V1\KeywordController;
+use App\Http\Controllers\Api\V1\LanguageController;
+use App\Http\Controllers\Api\V1\LawArticleController as ApiLawArticleController;
+use App\Http\Controllers\Api\V1\LawController as ApiLawController;
+use App\Http\Controllers\Api\V1\SortController as ApiSortController;
+use App\Http\Controllers\Api\V1\AuthorController;
+use App\Http\Controllers\Api\V1\AuthorContactController;
+use App\Http\Controllers\Api\V1\ExternalContactController;
+use App\Http\Controllers\Api\V1\ExternalOrganizationController;
+use App\Http\Controllers\Api\V1\SettingController;
+use App\Http\Controllers\Api\V1\SettingCategoryController;
+use App\Http\Controllers\Api\V1\ReferenceListController;
+use App\Http\Controllers\Api\V1\BuildingController;
+use App\Http\Controllers\Api\V1\FloorController;
+use App\Http\Controllers\Api\V1\RoomController;
+use App\Http\Controllers\Api\V1\ShelfController;
+use App\Http\Controllers\Api\V1\ContainerController;
+use App\Http\Controllers\Api\V1\ContainerPropertyController;
+use App\Http\Controllers\Api\V1\ContainerStatusController;
+
+/*
+|--------------------------------------------------------------------------
+| API v1 — authentification des agents
+|--------------------------------------------------------------------------
+| Phase 1 de la migration, étape 1.0.4.
+| Contrat : contracts/CONVENTIONS.md §6.
+|
+| Le guard `web` (session) reste actif pour le back-office Blade : les deux
+| mécanismes coexistent jusqu'à la bascule du frontal (phase 2, étape 2.3).
+*/
+Route::prefix('v1/auth')->name('api.v1.auth.')->group(function () {
+    // 5 tentatives par heure : même quota que le login du portail public
+    Route::post('login', [AuthController::class, 'login'])
+        ->middleware('rate.limit:auth,5,60')
+        ->name('login');
+
+    Route::middleware(['auth:sanctum', 'rate.limit:api_general,200,60'])->group(function () {
+        Route::get('me', [AuthController::class, 'me'])->name('me');
+        Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+        Route::post('logout-all', [AuthController::class, 'logoutAll'])->name('logout-all');
+        Route::post('switch-organisation', [AuthController::class, 'switchOrganisation'])
+            ->name('switch-organisation');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| API v1 — D01 Référentiels (sous-lot 1)
+|--------------------------------------------------------------------------
+| Phase 1, étape 1.1. Contrat : contracts/CONVENTIONS.md.
+| Les alias `Api*Controller` évitent toute collision de nom avec les
+| contrôleurs Blade du même nom, encore actifs dans routes/web.php.
+*/
+Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'rate.limit:api_general,200,60'])->group(function () {
+    // Actions métier déclarées AVANT les apiResource : `list`, `hierarchy`, `search`
+    // ne doivent pas être capturées par le paramètre `{activity}` / `{keyword}`.
+    Route::get('activities/list', [ActivityController::class, 'list'])->name('activities.list');
+    Route::get('activities/hierarchy/{activity?}', [ActivityController::class, 'hierarchy'])->name('activities.hierarchy');
+    Route::get('keywords/search', [KeywordController::class, 'search'])->name('keywords.search');
+    Route::post('keywords/process', [KeywordController::class, 'processKeywords'])->name('keywords.process');
+    Route::post('languages/{locale}/activate', [LanguageController::class, 'activate'])->name('languages.activate');
+
+    Route::apiResource('activities', ActivityController::class)->except(['create', 'edit']);
+    Route::apiResource('communicabilities', CommunicabilityController::class)->except(['create', 'edit']);
+    Route::apiResource('keywords', KeywordController::class)->except(['create', 'edit']);
+    Route::apiResource('languages', LanguageController::class)->except(['create', 'edit']);
+    Route::apiResource('sorts', ApiSortController::class)->except(['create', 'edit']);
+    Route::apiResource('laws', ApiLawController::class)->except(['create', 'edit']);
+    Route::apiResource('law-articles', ApiLawArticleController::class)->except(['create', 'edit']);
+
+    // D01 — sous-lot 2 (porté le 2026-08-04).
+    Route::apiResource('authors', AuthorController::class)->except(['create', 'edit']);
+    Route::get('author-types', [AuthorController::class, 'authorTypes'])->name('author-types.index');
+    Route::apiResource('author-contacts', AuthorContactController::class)->except(['create', 'edit']);
+    Route::apiResource('external-contacts', ExternalContactController::class)->except(['create', 'edit']);
+    Route::apiResource('external-organizations', ExternalOrganizationController::class)->except(['create', 'edit']);
+    Route::apiResource('settings', SettingController::class)->except(['create', 'edit']);
+    Route::post('settings/{setting}/set-value', [SettingController::class, 'setValue'])->name('settings.set-value');
+    Route::delete('settings/{setting}/reset-value', [SettingController::class, 'resetValue'])->name('settings.reset-value');
+    // `tree` précède l'apiResource : sinon `{setting_category}` capturerait `tree`.
+    Route::get('setting-categories/tree', [SettingCategoryController::class, 'tree'])->name('setting-categories.tree');
+    Route::apiResource('setting-categories', SettingCategoryController::class)->except(['create', 'edit']);
+    Route::apiResource('reference-lists', ReferenceListController::class)->except(['create', 'edit']);
+    Route::post('reference-lists/{referenceList}/values', [ReferenceListController::class, 'addValue'])->name('reference-lists.values.store');
+    Route::patch('reference-lists/{referenceList}/values/{value}', [ReferenceListController::class, 'updateValue'])->name('reference-lists.values.update');
+    Route::delete('reference-lists/{referenceList}/values/{value}', [ReferenceListController::class, 'deleteValue'])->name('reference-lists.values.destroy');
+
+    // D03 — Localisation physique (porté le 2026-08-04).
+    Route::apiResource('buildings', BuildingController::class)->except(['create', 'edit']);
+    Route::apiResource('floors', FloorController::class)->except(['create', 'edit']);
+    Route::apiResource('rooms', RoomController::class)->except(['create', 'edit']);
+    Route::apiResource('shelves', ShelfController::class)->except(['create', 'edit']);
+    Route::apiResource('containers', ContainerController::class)->except(['create', 'edit']);
+    Route::apiResource('container-properties', ContainerPropertyController::class)->except(['create', 'edit']);
+    Route::apiResource('container-statuses', ContainerStatusController::class)->except(['create', 'edit']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| API v1 — domaines restants (D02, D04…D16)
+|--------------------------------------------------------------------------
+| Chaque domaine dispose d'un fichier de routes dédié (routes/api/{Dxx}.php),
+| inclus dans un groupe portant le même préfixe, nommage et middleware que le
+| groupe principal. Les fichiers sont remplis au fil du portage (étape 1.x).
+*/
+Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'rate.limit:api_general,200,60'])->group(function () {
+    require __DIR__ . '/api/D02.php';
+    require __DIR__ . '/api/D04.php';
+    require __DIR__ . '/api/D05.php';
+    require __DIR__ . '/api/D06.php';
+    require __DIR__ . '/api/D07.php';
+    require __DIR__ . '/api/D08.php';
+    require __DIR__ . '/api/D09.php';
+    require __DIR__ . '/api/D10.php';
+    require __DIR__ . '/api/D11.php';
+    require __DIR__ . '/api/D12.php';
+    require __DIR__ . '/api/D13.php';
+    require __DIR__ . '/api/D14.php';
+    require __DIR__ . '/api/D16.php';
+});
 
 // Public API routes with rate limiting
 Route::prefix('public')->name('api.public.')->middleware('rate.limit:api_general,100,60')->group(function () {
@@ -52,6 +175,10 @@ Route::prefix('public')->name('api.public.')->middleware('rate.limit:api_general
     Route::post('users/reset-password', [PublicUserApiController::class, 'resetPassword'])
         ->name('users.reset-password')
         ->middleware($authRateLimit); // 3 resets par heure
+
+    // D15 — Portail public / OPAC (dernier domaine, vague 6). Lecture publique
+    // + endpoints usager connecté (auth:sanctum posé par route). Voir le fichier.
+    require __DIR__ . '/api/D15.php';
 });
 
 

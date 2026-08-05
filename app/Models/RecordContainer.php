@@ -13,6 +13,8 @@ class RecordContainer extends Model
 
     protected $primaryKey = ['record_physical_id', 'container_id'];
 
+    protected $keyType = 'array';
+
     public $incrementing = false;
 
 

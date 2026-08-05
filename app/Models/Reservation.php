@@ -60,6 +60,19 @@ class Reservation extends Model
         return $this->belongsTo(Communication::class, 'communication_id');
     }
 
+    /**
+     * Portée organisation (R03) : une réservation est org-scopée par ses deux clés
+     * (organisation de l'opérateur émetteur / organisation du demandeur bénéficiaire),
+     * même motif que `HasDualOrganisation::scopeForOrganisation`.
+     */
+    public function scopeInOrganisation($query, int $organisationId)
+    {
+        return $query->where(function ($q) use ($organisationId) {
+            $q->where('operator_organisation_id', $organisationId)
+              ->orWhere('user_organisation_id', $organisationId);
+        });
+    }
+
     // Méthodes d'aide pour les statuts
     public function isPending(): bool
     {

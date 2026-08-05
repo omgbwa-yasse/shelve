@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\models\Retention;
-use App\models\Sort;
+use App\Models\Retention;
+use App\Models\Sort;
 
 
 class RetentionController extends Controller

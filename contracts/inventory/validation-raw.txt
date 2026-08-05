@@ -1,0 +1,3750 @@
+# Blocs de validation extraits des contrôleurs — étape 1.0.2
+# 360 blocs trouvés
+# Généré par scripts/extract-validation-rules.php — ne pas éditer à la main
+
+──────────────────────────────────────────────────────────────────────────────
+ActivityController::store()  —  app/Http/Controllers/ActivityController.php:31
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|unique:activities|max:10',
+            'name' => 'required|max:100',
+            'observation' => 'nullable',
+            'parent_id' => 'nullable|exists:activities,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ActivityController::update()  —  app/Http/Controllers/ActivityController.php:58
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|unique:activities,code,' . $activity->id . '|max:10',
+            'name' => 'required|max:100',
+            'observation' => 'nullable',
+            'parent_id' => 'nullable|exists:activities,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AgentController::store()  —  app/Http/Controllers/AgentController.php:39
+──────────────────────────────────────────────────────────────────────────────
+([
+           'name' => 'required|string|max:150|unique:ai_agents',
+           'description' => 'required|string',
+           'date_type' => 'required|in:' . implode(',', Agent::DATE_TYPES),
+           'date_start' => 'required_if:date_type,start_only,range|nullable|date',
+           'date_end' => 'required_if:date_type,range|nullable|date|after:date_start',
+           'date_exact' => 'required_if:date_type,exact|nullable|date',
+           'frequence_type' => 'required|in:' . implode(',', Agent::FREQUENCY_TYPES),
+           'frequence_value' => 'required|integer|min:1',
+           'prompt_id' => 'required|exists:prompts,id',
+           'is_public' => 'boolean',
+           'is_trained' => 'boolean'
+       ])
+
+──────────────────────────────────────────────────────────────────────────────
+AgentController::update()  —  app/Http/Controllers/AgentController.php:84
+──────────────────────────────────────────────────────────────────────────────
+([
+           'name' => 'required|string|max:150|unique:ai_agents,name,' . $Agent->id,
+           'description' => 'required|string',
+           'date_type' => 'required|in:' . implode(',', Agent::DATE_TYPES),
+           'date_start' => 'required_if:date_type,start_only,range|nullable|date',
+           'date_end' => 'required_if:date_type,range|nullable|date|after:date_start',
+           'date_exact' => 'required_if:date_type,exact|nullable|date',
+           'frequence_type' => 'required|in:' . implode(',', Agent::FREQUENCY_TYPES),
+           'frequence_value' => 'required|integer|min:1',
+           'prompt_id' => 'required|exists:prompts,id',
+           'is_public' => 'boolean',
+           'is_trained' => 'boolean'
+       ])
+
+──────────────────────────────────────────────────────────────────────────────
+AiSkillController::install()  —  app/Http/Controllers/AiSkillController.php:20
+──────────────────────────────────────────────────────────────────────────────
+([
+            'skill_zip' => 'required|file',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AiTemplateController::store()  —  app/Http/Controllers/AiTemplateController.php:17
+──────────────────────────────────────────────────────────────────────────────
+([
+            'template_file' => 'required|file',
+            'name' => 'nullable|string|max:200',
+            'category' => 'nullable|string|max:100',
+            'description' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AiMailController::saveSummary()  —  app/Http/Controllers/Api/AiMailController.php:86
+──────────────────────────────────────────────────────────────────────────────
+([
+            'summary' => 'required|string|max:65535'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AiRecordApplyController::saveTitle()  —  app/Http/Controllers/Api/AiRecordApplyController.php:28
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => 'nullable|string|min:1|max:255',
+            'raw_text' => self::RULE_RAW,
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AiRecordApplyController::saveSummary()  —  app/Http/Controllers/Api/AiRecordApplyController.php:45
+──────────────────────────────────────────────────────────────────────────────
+([
+            'summary' => 'nullable|string|min:1',
+            'raw_text' => self::RULE_RAW,
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AiRecordApplyController::saveThesaurus()  —  app/Http/Controllers/Api/AiRecordApplyController.php:61
+──────────────────────────────────────────────────────────────────────────────
+([
+            'concepts' => 'nullable|array|min:1',
+            'concepts.*.id' => 'nullable|integer|exists:thesaurus_concepts,id',
+            'concepts.*.preferred_label' => 'nullable|string',
+            'concepts.*.weight' => 'nullable|numeric|min:0|max:1',
+            'raw_text' => self::RULE_RAW,
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AiRecordApplyController::suggestThesaurus()  —  app/Http/Controllers/Api/AiRecordApplyController.php:93
+──────────────────────────────────────────────────────────────────────────────
+([
+            'raw_text' => self::RULE_RAW,
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AiRecordApplyController::suggestThesaurusFromJson()  —  app/Http/Controllers/Api/AiRecordApplyController.php:128
+──────────────────────────────────────────────────────────────────────────────
+([
+            'items' => 'required|array|min:1',
+            'items.*.label' => 'required|string|min:1',
+            'items.*.category' => 'nullable|string',
+            'items.*.synonyms' => 'nullable|array',
+            'items.*.synonyms.*' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AiRecordApplyController::saveActivity()  —  app/Http/Controllers/Api/AiRecordApplyController.php:218
+──────────────────────────────────────────────────────────────────────────────
+([
+            'activity_id' => 'nullable|integer|exists:activities,id',
+            'activity_name' => 'nullable|string',
+            'raw_text' => self::RULE_RAW,
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AiRecordApplyController::suggestActivityCandidates()  —  app/Http/Controllers/Api/AiRecordApplyController.php:263
+──────────────────────────────────────────────────────────────────────────────
+([
+            'raw_text' => self::RULE_RAW,
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AiRecordApplyController::saveKeywords()  —  app/Http/Controllers/Api/AiRecordApplyController.php:681
+──────────────────────────────────────────────────────────────────────────────
+([
+            'keywords' => 'nullable|array|min:1',
+            'keywords.*.name' => 'required|string|min:1|max:255',
+            'keywords.*.create' => 'nullable|boolean',
+            'keywords.*.selected' => 'nullable|boolean',
+            'raw_text' => self::RULE_RAW,
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AiRecordApplyController::suggestKeywords()  —  app/Http/Controllers/Api/AiRecordApplyController.php:745
+──────────────────────────────────────────────────────────────────────────────
+([
+            'raw_text' => self::RULE_RAW,
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AttachmentApiController::extractContent()  —  app/Http/Controllers/Api/AttachmentApiController.php:71
+──────────────────────────────────────────────────────────────────────────────
+([
+            'attachment_id' => 'required|exists:attachments,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AttachmentApiController::upload()  —  app/Http/Controllers/Api/AttachmentApiController.php:184
+──────────────────────────────────────────────────────────────────────────────
+([
+            'file' => 'required|file|max:10240|mimes:pdf,txt,docx,doc,rtf,odt',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicChatMessageApiController::store()  —  app/Http/Controllers/Api/PublicChatMessageApiController.php:100
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'chat_id' => 'required|exists:public_chats,id',
+            'user_id' => 'required|exists:public_users,id',
+            'message' => 'required|string|max:2000',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicChatMessageApiController::update()  —  app/Http/Controllers/Api/PublicChatMessageApiController.php:144
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'message' => 'required|string|max:2000',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicChatMessageApiController::markMultipleAsRead()  —  app/Http/Controllers/Api/PublicChatMessageApiController.php:285
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'message_ids' => 'required|array',
+            'message_ids.*' => 'exists:public_chat_messages,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicChatMessageApiController::search()  —  app/Http/Controllers/Api/PublicChatMessageApiController.php:353
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'query' => 'required|string|min:2',
+            'chat_id' => 'nullable|exists:public_chats,id',
+            'user_id' => 'nullable|exists:public_users,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicChatParticipantApiController::store()  —  app/Http/Controllers/Api/PublicChatParticipantApiController.php:95
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'chat_id' => 'required|exists:public_chats,id',
+            'user_id' => 'required|exists:public_users,id',
+            'is_admin' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicChatParticipantApiController::update()  —  app/Http/Controllers/Api/PublicChatParticipantApiController.php:151
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'is_admin' => 'boolean',
+            'last_read_at' => 'nullable|date',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicEventApiController::index()  —  app/Http/Controllers/Api/PublicEventApiController.php:19
+──────────────────────────────────────────────────────────────────────────────
+([
+            'search' => 'nullable|string|max:255',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date|after_or_equal:date_from',
+            'is_online' => 'nullable|boolean',
+            'per_page' => 'nullable|integer|min:1|max:50',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicEventApiController::register()  —  app/Http/Controllers/Api/PublicEventApiController.php:136
+──────────────────────────────────────────────────────────────────────────────
+([
+            'user_id' => 'required|exists:users,id',
+            'notes' => 'nullable|string|max:500',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicEventApiController::cancelRegistration()  —  app/Http/Controllers/Api/PublicEventApiController.php:210
+──────────────────────────────────────────────────────────────────────────────
+([
+            'user_id' => 'required|exists:users,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicEventRegistrationApiController::store()  —  app/Http/Controllers/Api/PublicEventRegistrationApiController.php:108
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'event_id' => 'required|exists:public_events,id',
+            'user_id' => 'nullable|exists:users,id',
+            'full_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'notes' => 'nullable|string|max:1000',
+            'status' => 'in:pending,confirmed,cancelled',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicEventRegistrationApiController::update()  —  app/Http/Controllers/Api/PublicEventRegistrationApiController.php:171
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'full_name' => 'sometimes|required|string|max:255',
+            'email' => 'sometimes|required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'notes' => 'nullable|string|max:1000',
+            'status' => 'sometimes|in:pending,confirmed,cancelled',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicNewsApiController::index()  —  app/Http/Controllers/Api/PublicNewsApiController.php:17
+──────────────────────────────────────────────────────────────────────────────
+([
+            'search' => 'nullable|string|max:255',
+            'featured' => 'nullable|boolean',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date|after_or_equal:date_from',
+            'sort_by' => 'nullable|string|in:published_at,name,title,created_at',
+            'sort_order' => 'nullable|string|in:asc,desc',
+            'per_page' => 'nullable|integer|min:1|max:50',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicNewsApiController::latest()  —  app/Http/Controllers/Api/PublicNewsApiController.php:146
+──────────────────────────────────────────────────────────────────────────────
+([
+            'limit' => 'nullable|integer|min:1|max:20',
+            'featured_only' => 'nullable|boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicNewsApiController::featured()  —  app/Http/Controllers/Api/PublicNewsApiController.php:192
+──────────────────────────────────────────────────────────────────────────────
+([
+            'limit' => 'nullable|integer|min:1|max:20',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicPageApiController::index()  —  app/Http/Controllers/Api/PublicPageApiController.php:53
+──────────────────────────────────────────────────────────────────────────────
+([
+            'search' => 'nullable|string|max:255',
+            'status' => 'nullable|in:draft,published,archived',
+            'per_page' => 'nullable|integer|min:1|max:50',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicPageApiController::published()  —  app/Http/Controllers/Api/PublicPageApiController.php:200
+──────────────────────────────────────────────────────────────────────────────
+([
+            'search' => 'nullable|string|max:255',
+            'per_page' => 'nullable|integer|min:1|max:50',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicRecordApiController::index()  —  app/Http/Controllers/Api/PublicRecordApiController.php:26
+──────────────────────────────────────────────────────────────────────────────
+([
+            'search' => 'nullable|string|max:255',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date|after_or_equal:date_from',
+            'language' => 'nullable|string|max:50',
+            'publisher_id' => 'nullable|integer|exists:users,id',
+            'per_page' => 'nullable|integer|min:1|max:50',
+            'type' => 'nullable|string|max:100',
+            'limit' => 'nullable|integer|min:1|max:50',
+            'exclude' => 'nullable|integer',
+            'level_id' => 'nullable|integer|exists:record_levels,id',
+            'status_id' => 'nullable|integer|exists:record_statuses,id',
+            'support_id' => 'nullable|integer|exists:record_supports,id',
+            'activity_id' => 'nullable|integer|exists:activities,id',
+            'thesaurus_concept_id' => 'nullable|integer|exists:thesaurus_concepts,id',
+            'date_format' => 'nullable|string|in:exact,approximate,range',
+            'has_digital_copy' => 'nullable|boolean'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicRecordApiController::search()  —  app/Http/Controllers/Api/PublicRecordApiController.php:116
+──────────────────────────────────────────────────────────────────────────────
+([
+            'query' => 'required|string|max:255',
+            'filters' => 'array',
+            'filters.date_from' => 'nullable|date',
+            'filters.date_to' => 'nullable|date',
+            'filters.language' => 'nullable|string',
+            'filters.publisher_id' => 'nullable|integer|exists:users,id',
+            'per_page' => 'nullable|integer|min:1|max:50',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicRecordApiController::autocomplete()  —  app/Http/Controllers/Api/PublicRecordApiController.php:157
+──────────────────────────────────────────────────────────────────────────────
+([
+            'q' => 'required|string|min:2|max:255',
+            'limit' => 'nullable|integer|min:1|max:20',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicRecordAttachmentApiController::store()  —  app/Http/Controllers/Api/PublicRecordAttachmentApiController.php:98
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'public_record_id' => 'required|exists:public_records,id',
+            'file' => 'required|file|max:10240', // 10MB max
+            'description' => 'nullable|string|max:500',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicResponseApiController::index()  —  app/Http/Controllers/Api/PublicResponseApiController.php:43
+──────────────────────────────────────────────────────────────────────────────
+([
+            'document_request_id' => 'required|exists:public_document_requests,id',
+            'per_page' => 'nullable|integer|min:1|max:50',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicResponseAttachmentApiController::index()  —  app/Http/Controllers/Api/PublicResponseAttachmentApiController.php:35
+──────────────────────────────────────────────────────────────────────────────
+([
+            'response_id' => 'required|exists:public_responses,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicSearchLogApiController::index()  —  app/Http/Controllers/Api/PublicSearchLogApiController.php:36
+──────────────────────────────────────────────────────────────────────────────
+([
+            'search' => 'nullable|string|max:255',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date|after_or_equal:date_from',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicSearchLogApiController::statistics()  —  app/Http/Controllers/Api/PublicSearchLogApiController.php:104
+──────────────────────────────────────────────────────────────────────────────
+([
+            'period' => 'nullable|in:day,week,month,year',
+            'limit' => 'nullable|integer|min:1|max:100',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicSearchLogApiController::userHistory()  —  app/Http/Controllers/Api/PublicSearchLogApiController.php:188
+──────────────────────────────────────────────────────────────────────────────
+([
+            'per_page' => 'nullable|integer|min:1|max:50',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicTemplateApiController::index()  —  app/Http/Controllers/Api/PublicTemplateApiController.php:50
+──────────────────────────────────────────────────────────────────────────────
+([
+            'search' => 'nullable|string|max:255',
+            'type' => 'nullable|in:email,document,notification,form',
+            'status' => 'nullable|in:draft,active,archived',
+            'per_page' => 'nullable|integer|min:1|max:50',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicUserApiController::verifyToken()  —  app/Http/Controllers/Api/PublicUserApiController.php:109
+──────────────────────────────────────────────────────────────────────────────
+(['token' => self::REQUIRED_STRING])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicUserApiController::forgotPassword()  —  app/Http/Controllers/Api/PublicUserApiController.php:122
+──────────────────────────────────────────────────────────────────────────────
+(['email' => self::REQUIRED_EMAIL])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicUserApiController::resetPassword()  —  app/Http/Controllers/Api/PublicUserApiController.php:139
+──────────────────────────────────────────────────────────────────────────────
+([
+            'token' => self::REQUIRED_STRING,
+            'password' => 'required|string|min:8|confirmed'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalDocumentApiController::store()  —  app/Http/Controllers/Api/RecordDigitalDocumentApiController.php:200
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'type_id' => 'required|exists:record_digital_document_types,id',
+            'folder_id' => 'required|exists:record_digital_folders,id',
+            'organisation_id' => 'required|exists:organisations,id',
+            'file' => 'nullable|file|max:51200', // 50MB max
+            'access_level' => 'nullable|in:public,internal,confidential,secret',
+            'status' => 'nullable|in:draft,pending_approval,approved,rejected,archived',
+            'assigned_to' => 'nullable|exists:users,id',
+            'document_date' => 'nullable|date',
+            'metadata' => 'nullable|array',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalDocumentApiController::update()  —  app/Http/Controllers/Api/RecordDigitalDocumentApiController.php:333
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'name' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'nullable|in:draft,pending_approval,approved,rejected,archived',
+            'access_level' => 'nullable|in:public,internal,confidential,secret',
+            'assigned_to' => 'nullable|exists:users,id',
+            'metadata' => 'nullable|array',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalDocumentApiController::createVersion()  —  app/Http/Controllers/Api/RecordDigitalDocumentApiController.php:467
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'file' => 'required|file|max:51200',
+            'version_notes' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalDocumentApiController::approve()  —  app/Http/Controllers/Api/RecordDigitalDocumentApiController.php:603
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'approval_notes' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalDocumentApiController::reject()  —  app/Http/Controllers/Api/RecordDigitalDocumentApiController.php:672
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'rejection_notes' => 'required|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalFolderApiController::store()  —  app/Http/Controllers/Api/RecordDigitalFolderApiController.php:135
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'type_id' => 'required|exists:record_digital_folder_types,id',
+            'parent_id' => 'nullable|exists:record_digital_folders,id',
+            'organisation_id' => 'required|exists:organisations,id',
+            'access_level' => 'nullable|in:public,internal,confidential,secret',
+            'assigned_to' => 'nullable|exists:users,id',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'metadata' => 'nullable|array',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalFolderApiController::update()  —  app/Http/Controllers/Api/RecordDigitalFolderApiController.php:242
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'name' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'nullable|in:active,archived,deleted',
+            'metadata' => 'nullable|array',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalFolderApiController::move()  —  app/Http/Controllers/Api/RecordDigitalFolderApiController.php:429
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'parent_id' => 'nullable|exists:record_digital_folders,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordPeriodicApiController::store()  —  app/Http/Controllers/Api/RecordPeriodicApiController.php:122
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'title' => 'required|string|max:255',
+            'organisation_id' => 'required|exists:organisations,id',
+            'type' => 'required|in:journal,magazine,newspaper,bulletin',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SettingsApiController::getSettings()  —  app/Http/Controllers/Api/SettingsApiController.php:68
+──────────────────────────────────────────────────────────────────────────────
+([
+                'settings' => 'required|array',
+                'settings.*' => 'required|string'
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+SettingsApiController::updateSetting()  —  app/Http/Controllers/Api/SettingsApiController.php:135
+──────────────────────────────────────────────────────────────────────────────
+([
+                'value' => 'required'
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusImportController::processSkosImport()  —  app/Http/Controllers/Api/ThesaurusImportController.php:22
+──────────────────────────────────────────────────────────────────────────────
+([
+            'file' => 'required|file|mimes:xml,rdf,ttl,n3|max:20720',
+            'scheme_id' => 'nullable|exists:thesaurus_schemes,id',
+            'language' => 'nullable|string',
+            'merge_mode' => 'required|in:replace,merge,append',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusImportController::processCsvImport()  —  app/Http/Controllers/Api/ThesaurusImportController.php:37
+──────────────────────────────────────────────────────────────────────────────
+([
+            'file' => 'required|file|mimes:csv|max:20720',
+            'scheme_id' => 'nullable|exists:thesaurus_schemes,id',
+            'language' => 'nullable|string',
+            'merge_mode' => 'required|in:replace,merge,append',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RegisterController::validator()  —  app/Http/Controllers/Auth/RegisterController.php:52
+──────────────────────────────────────────────────────────────────────────────
+($data, [
+            'name' => ['required', 'string', 'max:255'],
+            'surname' => ['required', 'string', 'max:255'],
+            'birthday' => ['required', 'date'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', new StrongPassword(), 'confirmed'],
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AuthorController::storeApi()  —  app/Http/Controllers/AuthorController.php:26
+──────────────────────────────────────────────────────────────────────────────
+([
+            'type_id' => 'required|exists:author_types,id',
+            'name' => 'required|string|max:255',
+            'parallel_name' => 'nullable|string|max:255',
+            'other_name' => 'nullable|string|max:255',
+            'lifespan' => 'nullable|string|max:255',
+            'locations' => 'nullable|string|max:255',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AuthorController::store()  —  app/Http/Controllers/AuthorController.php:74
+──────────────────────────────────────────────────────────────────────────────
+([
+            'type_id' => 'required|exists:author_types,id',
+            'name' => 'required|string|max:255',
+            'parallel_name' => 'nullable|string|max:255',
+            'other_name' => 'nullable|string|max:255',
+            'lifespan' => 'nullable|string|max:255',
+            'locations' => 'nullable|string|max:255',
+            'parent_id' => 'nullable|exists:authors,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AuthorController::update()  —  app/Http/Controllers/AuthorController.php:105
+──────────────────────────────────────────────────────────────────────────────
+([
+            'type_id' => 'required|exists:author_types,id',
+            'name' => 'required|string|max:255',
+            'parallel_name' => 'nullable|string|max:255',
+            'other_name' => 'nullable|string|max:255',
+            'lifespan' => 'nullable|string|max:255',
+            'locations' => 'nullable|string|max:255',
+            'parent_id' => 'nullable|exists:authors,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BackupController::update()  —  app/Http/Controllers/BackupController.php:195
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'date_time' => 'sometimes|date',
+            'type' => 'sometimes|in:metadata,full',
+            'description' => 'nullable|string',
+            'status' => 'sometimes|in:in_progress,success,failed',
+            'user_id' => 'sometimes|exists:users,id',
+            'size' => 'sometimes|integer',
+            'backup_file' => 'sometimes|string',
+            'path' => 'sometimes|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BackupFileController::store()  —  app/Http/Controllers/BackupFileController.php:32
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'path_original' => 'required|string',
+            'path_storage' => 'required|string',
+            'size' => 'required|integer',
+            'hash' => 'required|string|size:150',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BackupFileController::update()  —  app/Http/Controllers/BackupFileController.php:74
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'path_original' => 'required|string',
+            'path_storage' => 'required|string',
+            'size' => 'required|integer',
+            'hash' => 'required|string|size:150',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BackupPlanningController::store()  —  app/Http/Controllers/BackupPlanningController.php:30
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'frequence' => 'required|in:daily,weekly,monthly',
+            'week_day' => 'required_if:frequence,weekly|nullable|integer|between:1,7',
+            'month_day' => 'required_if:frequence,monthly|nullable|integer|between:1,31',
+            'hour' => 'required|date_format:H:i',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BackupPlanningController::update()  —  app/Http/Controllers/BackupPlanningController.php:70
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'frequence' => 'required|in:daily,weekly,monthly',
+            'week_day' => 'required_if:frequence,weekly|nullable|integer|between:1,7',
+            'month_day' => 'required_if:frequence,monthly|nullable|integer|between:1,31',
+            'hour' => 'required|date_format:H:i',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BatchController::store()  —  app/Http/Controllers/BatchController.php:33
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'nullable|unique:batches|max:10',
+            'name' => 'required|max:100',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BatchController::update()  —  app/Http/Controllers/BatchController.php:70
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'nullable|unique:batches,code,' . $mailBatch->id . '|max:10',
+            'name' => 'required|max:100',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BatchController::storeMail()  —  app/Http/Controllers/BatchController.php:129
+──────────────────────────────────────────────────────────────────────────────
+([
+                'mail_ids' => 'required|array',
+                'mail_ids.*' => 'exists:mails,id'
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+BatchController::(hors méthode)()  —  app/Http/Controllers/BatchController.php:187
+──────────────────────────────────────────────────────────────────────────────
+([
+                'mail_id' => 'required|exists:mails,id'
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+BatchController::updateMail()  —  app/Http/Controllers/BatchController.php:235
+──────────────────────────────────────────────────────────────────────────────
+([
+            'mail_id' => 'required|exists:mails,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BatchHandlerController::create()  —  app/Http/Controllers/BatchHandlerController.php:44
+──────────────────────────────────────────────────────────────────────────────
+([
+                'code' => 'nullable|string|max:10|unique:batches,code',
+                'name' => 'required|string|max:100',
+                'mail_ids' => 'required|array',
+                'mail_ids.*' => 'integer|exists:mails,id'
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+BatchHandlerController::addItems()  —  app/Http/Controllers/BatchHandlerController.php:106
+──────────────────────────────────────────────────────────────────────────────
+([
+                'batch_id' => 'required|integer|exists:batches,id',
+                'mail_ids' => 'required|array',
+                'mail_ids.*' => 'integer|exists:mails,id'
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+BatchHandlerController::removeItems()  —  app/Http/Controllers/BatchHandlerController.php:176
+──────────────────────────────────────────────────────────────────────────────
+([
+                'batch_id' => 'required|integer|exists:batches,id',
+                'mail_ids' => 'required|array',
+                'mail_ids.*' => 'integer|exists:mails,id'
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+BatchMailController::store()  —  app/Http/Controllers/BatchMailController.php:36
+──────────────────────────────────────────────────────────────────────────────
+([
+            'mail_id' => 'required|exists:mails,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BatchMailController::update()  —  app/Http/Controllers/BatchMailController.php:64
+──────────────────────────────────────────────────────────────────────────────
+([
+            'mail_id' => 'required|exists:mails,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BatchReceivedController::store()  —  app/Http/Controllers/BatchReceivedController.php:73
+──────────────────────────────────────────────────────────────────────────────
+([
+            'batch_id' => 'required|integer',
+            'organisation_send_id' => 'required|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BatchReceivedController::update()  —  app/Http/Controllers/BatchReceivedController.php:131
+──────────────────────────────────────────────────────────────────────────────
+([
+            'batch_id' => 'required|integer',
+            'organisation_send_id' => 'required|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BatchSendController::store()  —  app/Http/Controllers/BatchSendController.php:87
+──────────────────────────────────────────────────────────────────────────────
+([
+            'batch_id' => 'required|integer',
+            'organisation_received_id' => 'required|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BatchSendController::update()  —  app/Http/Controllers/BatchSendController.php:144
+──────────────────────────────────────────────────────────────────────────────
+([
+            'batch_id' => 'required|integer',
+            'organisation_received_id' => 'required|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BatchTransferController::transferToBoxes()  —  app/Http/Controllers/BatchTransferController.php:26
+──────────────────────────────────────────────────────────────────────────────
+([
+            'mail_ids' => ['required','array', self::MIN_ARRAY_RULE],
+            'mail_ids.*' => ['integer', Rule::exists('mails','id')],
+            'box_ids' => ['required','array', self::MIN_ARRAY_RULE],
+            'box_ids.*' => ['integer', Rule::exists('mail_containers','id')],
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BatchTransferController::transferToDollies()  —  app/Http/Controllers/BatchTransferController.php:103
+──────────────────────────────────────────────────────────────────────────────
+([
+            'mail_ids' => ['required','array', self::MIN_ARRAY_RULE],
+            'mail_ids.*' => ['integer', Rule::exists('mails','id')],
+            'dolly_ids' => ['required','array', self::MIN_ARRAY_RULE],
+            'dolly_ids.*' => ['integer', Rule::exists('dollies','id')],
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BuildingController::store()  —  app/Http/Controllers/BuildingController.php:28
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|max:100',
+            'description' => 'nullable',
+            'visibility' => 'required|in:public,private,inherit',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+BuildingController::update()  —  app/Http/Controllers/BuildingController.php:62
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|max:100',
+            'description' => 'nullable',
+            'visibility' => 'required|in:public,private,inherit',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ChatController::store()  —  app/Http/Controllers/ChatController.php:33
+──────────────────────────────────────────────────────────────────────────────
+([
+            'user_id' => 'required|exists:users,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ChatController::storeMessage()  —  app/Http/Controllers/ChatController.php:74
+──────────────────────────────────────────────────────────────────────────────
+(['content' => 'required|string'])
+
+──────────────────────────────────────────────────────────────────────────────
+CommunicabilityController::store()  —  app/Http/Controllers/CommunicabilityController.php:28
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|unique:communicabilities|max:10',
+            'name' => 'required|max:100',
+            'duration' => 'required|integer',
+            'description' => 'nullable',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+CommunicabilityController::update()  —  app/Http/Controllers/CommunicabilityController.php:56
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|unique:communicabilities,code,'.$communicability->id.'|max:10',
+            'name' => 'required|max:100',
+            'duration' => 'required|integer',
+            'decription' => 'nullable',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+CommunicationController::store()  —  app/Http/Controllers/CommunicationController.php:82
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'content' => 'nullable|string',
+            'user_id' => 'required|exists:users,id',
+            'return_date' => 'required|date|after_or_equal:today',
+            'user_organisation_id' => 'required|exists:organisations,id',
+            'status' => 'required|in:' . implode(',', $this->getStatusValues()),
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+CommunicationController::reject()  —  app/Http/Controllers/CommunicationController.php:185
+──────────────────────────────────────────────────────────────────────────────
+([
+            'id' => 'required|exists:communications,id',
+            'reason' => 'nullable|string|max:500',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+CommunicationController::returnEffective()  —  app/Http/Controllers/CommunicationController.php:207
+──────────────────────────────────────────────────────────────────────────────
+([
+            'id' => 'required|exists:communications,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+CommunicationController::update()  —  app/Http/Controllers/CommunicationController.php:257
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|string|max:255',
+            'name' => 'required|string|max:200',
+            'content' => 'nullable|string',
+            'user_id' => 'required|exists:users,id',
+            'return_date' => 'required|date',
+            'status' => 'required|in:' . implode(',', $this->getStatusValues()),
+            'user_organisation_id' => 'required|exists:organisations,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+CommunicationRecordController::store()  —  app/Http/Controllers/CommunicationRecordController.php:48
+──────────────────────────────────────────────────────────────────────────────
+([
+            'record_id' => 'required|exists:records,id',
+            'is_original' => 'required|in:0,1',
+            'content' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+CommunicationRecordController::update()  —  app/Http/Controllers/CommunicationRecordController.php:78
+──────────────────────────────────────────────────────────────────────────────
+([
+            'record_id' => 'required|exists:records,id',
+            'is_original' => 'required|boolean',
+            'content' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ContainerController::store()  —  app/Http/Controllers/ContainerController.php:64
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|max:20|unique:containers,code',
+            'shelve_id' => 'required|exists:shelves,id',
+            'status_id' => 'required|exists:container_statuses,id',
+            'property_id' => 'required|exists:container_properties,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ContainerController::update()  —  app/Http/Controllers/ContainerController.php:131
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|max:20|unique:containers,code,' . $container->id,
+            'shelve_id' => 'required|exists:shelves,id',
+            'status_id' => 'required|exists:container_statuses,id',
+            'property_id' => 'required|exists:container_properties,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ContainerPropertyController::store()  —  app/Http/Controllers/ContainerPropertyController.php:24
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|unique:container_properties|max:100',
+            'width' => 'required|numeric',
+            'length' => 'required|numeric',
+            'depth' => 'required|numeric',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ContainerPropertyController::update()  —  app/Http/Controllers/ContainerPropertyController.php:55
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|unique:container_properties,name,'.$containerProperty->id.'|max:100',
+            'width' => 'required|numeric',
+            'length' => 'required|numeric',
+            'depth' => 'required|numeric',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ContainerStatusController::store()  —  app/Http/Controllers/ContainerStatusController.php:28
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|max:50|unique:container_statuses,name',
+            'description' => 'nullable',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ContainerStatusController::update()  —  app/Http/Controllers/ContainerStatusController.php:62
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|max:50|unique:container_statuses,name,' . $containerStatus->id,
+            'description' => 'nullable',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DeclassementListController::store()  —  app/Http/Controllers/DeclassementListController.php:93
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|max:20|unique:declassement_lists,code',
+            'name' => 'required|max:200',
+            'description' => 'nullable',
+            'record_ids' => 'nullable|array',
+            'record_ids.*' => 'exists:record_physicals,id',
+            'generate_from_query' => 'nullable|boolean',
+            'activity_id' => 'nullable|exists:activities,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DeclassementListController::update()  —  app/Http/Controllers/DeclassementListController.php:177
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|max:200',
+            'description' => 'nullable',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DeclassementListController::addRecords()  —  app/Http/Controllers/DeclassementListController.php:212
+──────────────────────────────────────────────────────────────────────────────
+([
+            'record_ids' => 'required|array',
+            'record_ids.*' => 'exists:record_physicals,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DeclassementListController::comment()  —  app/Http/Controllers/DeclassementListController.php:251
+──────────────────────────────────────────────────────────────────────────────
+([
+            'content' => 'required',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DeclassementListController::reject()  —  app/Http/Controllers/DeclassementListController.php:353
+──────────────────────────────────────────────────────────────────────────────
+([
+            'reason' => 'required',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyController::store()  —  app/Http/Controllers/DollyController.php:42
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'category' => 'required|exists:dollies,category',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyController::update()  —  app/Http/Controllers/DollyController.php:99
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required',
+            'description' => 'required',
+            'category' => 'required|exists:dollies,category',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyController::apiCreate()  —  app/Http/Controllers/DollyController.php:162
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyController::addRecord()  —  app/Http/Controllers/DollyController.php:182
+──────────────────────────────────────────────────────────────────────────────
+([
+            'record_id' => 'required|exists:record_physicals,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyController::addMail()  —  app/Http/Controllers/DollyController.php:204
+──────────────────────────────────────────────────────────────────────────────
+([
+            'mail_id' => 'required|exists:mails,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyController::addCommunication()  —  app/Http/Controllers/DollyController.php:226
+──────────────────────────────────────────────────────────────────────────────
+([
+            'communication_id' => 'required|exists:communications,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyController::addRoom()  —  app/Http/Controllers/DollyController.php:248
+──────────────────────────────────────────────────────────────────────────────
+([
+            'room_id' => 'required|exists:rooms,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyController::addContainer()  —  app/Http/Controllers/DollyController.php:270
+──────────────────────────────────────────────────────────────────────────────
+([
+            'container_id' => 'required|exists:containers,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyController::addShelve()  —  app/Http/Controllers/DollyController.php:292
+──────────────────────────────────────────────────────────────────────────────
+([
+            'shelve_id' => 'required|exists:shelves,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyController::addSlipRecord()  —  app/Http/Controllers/DollyController.php:314
+──────────────────────────────────────────────────────────────────────────────
+([
+            'slip_record_id' => 'required|exists:slip_records,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyController::addDigitalFolder()  —  app/Http/Controllers/DollyController.php:336
+──────────────────────────────────────────────────────────────────────────────
+([
+            'folder_id' => 'required|exists:record_digital_folders,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyController::addDigitalDocument()  —  app/Http/Controllers/DollyController.php:358
+──────────────────────────────────────────────────────────────────────────────
+([
+            'document_id' => 'required|exists:record_digital_documents,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyExportController::export()  —  app/Http/Controllers/DollyExportController.php:33
+──────────────────────────────────────────────────────────────────────────────
+([
+            'dolly_id' => 'required|exists:dollies,id',
+            'export_type' => 'required|in:records,slips',
+            'export_format' => 'required|in:excel,seda,ead',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyHandlerController::(hors méthode)()  —  app/Http/Controllers/DollyHandlerController.php:17
+──────────────────────────────────────────────────────────────────────────────
+([
+                'category' => 'required|string|in:mail,communication,building,transferring,room,record,slip,container,shelf,digital_folder,digital_document'
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyHandlerController::addDolly()  —  app/Http/Controllers/DollyHandlerController.php:57
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:70',
+            'description' => 'nullable|string|max:100',
+            'category' => 'required|string|in:mail,transaction,record,slip,building,shelf,container,communication,room,digital_folder,digital_document',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyHandlerController::addItems()  —  app/Http/Controllers/DollyHandlerController.php:81
+──────────────────────────────────────────────────────────────────────────────
+([
+            'dolly_id' => 'required|integer|exists:dollies,id',
+            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf,digital_folder,digital_document',
+            'items' => 'required|array',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyHandlerController::removeItems()  —  app/Http/Controllers/DollyHandlerController.php:207
+──────────────────────────────────────────────────────────────────────────────
+([
+            'dolly_id' => 'required|integer|exists:dollies,id',
+            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf,digital_folder,digital_document',
+            'items' => 'required|array',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyHandlerController::clean()  —  app/Http/Controllers/DollyHandlerController.php:262
+──────────────────────────────────────────────────────────────────────────────
+([
+            'dolly_id' => 'required|integer|exists:dollies,id',
+            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf,digital_folder,digital_document',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DollyHandlerController::deleteDolly()  —  app/Http/Controllers/DollyHandlerController.php:314
+──────────────────────────────────────────────────────────────────────────────
+([
+            'dolly_id' => 'required|integer|exists:dollies,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ExternalContactController::store()  —  app/Http/Controllers/ExternalContactController.php:39
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:30',
+            'address' => 'nullable|string|max:500',
+            'position' => 'nullable|string|max:255',
+            'external_organization_id' => 'nullable|exists:external_organizations,id',
+            'is_primary_contact' => 'boolean',
+            'notes' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ExternalContactController::update()  —  app/Http/Controllers/ExternalContactController.php:101
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:30',
+            'address' => 'nullable|string|max:500',
+            'position' => 'nullable|string|max:255',
+            'external_organization_id' => 'nullable|exists:external_organizations,id',
+            'is_primary_contact' => 'boolean',
+            'notes' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ExternalOrganizationController::store()  —  app/Http/Controllers/ExternalOrganizationController.php:33
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'name' => 'required|string|max:255',
+            'legal_form' => 'nullable|string|max:100',
+            'registration_number' => 'nullable|string|max:100',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:30',
+            'website' => 'nullable|url|max:255',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:100',
+            'postal_code' => 'nullable|string|max:20',
+            'country' => 'nullable|string|max:100',
+            'notes' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ExternalOrganizationController::update()  —  app/Http/Controllers/ExternalOrganizationController.php:87
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'name' => 'required|string|max:255',
+            'legal_form' => 'nullable|string|max:100',
+            'registration_number' => 'nullable|string|max:100',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:30',
+            'website' => 'nullable|url|max:255',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:100',
+            'postal_code' => 'nullable|string|max:20',
+            'country' => 'nullable|string|max:100',
+            'notes' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+FloorController::store()  —  app/Http/Controllers/FloorController.php:25
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|max:100',
+            'description' => 'nullable',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+FloorController::update()  —  app/Http/Controllers/FloorController.php:53
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|max:100',
+            'description' => 'nullable',
+            'building_id' => 'required|exists:buildings,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+KeywordController::store()  —  app/Http/Controllers/KeywordController.php:57
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:100|unique:keywords,name',
+            'description' => 'nullable|string|max:1000'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+KeywordController::update()  —  app/Http/Controllers/KeywordController.php:75
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:100|unique:keywords,name,' . $keyword->id,
+            'description' => 'nullable|string|max:1000'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+KeywordController::processKeywords()  —  app/Http/Controllers/KeywordController.php:113
+──────────────────────────────────────────────────────────────────────────────
+([
+            'keywords' => 'required|string'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+LanguageController::store()  —  app/Http/Controllers/LanguageController.php:40
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|string|max:2|unique:languages',
+            'name' => 'required|string|max:50',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+LanguageController::update()  —  app/Http/Controllers/LanguageController.php:69
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|string|max:3|unique:languages,code,' . $language->id,
+            'name' => 'required|string|max:50',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+LogController::store()  —  app/Http/Controllers/LogController.php:32
+──────────────────────────────────────────────────────────────────────────────
+([
+            'user_id' => 'required|exists:users,id',
+            'action' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'ip_address' => 'nullable|ip',
+            'user_agent' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+LogController::update()  —  app/Http/Controllers/LogController.php:59
+──────────────────────────────────────────────────────────────────────────────
+([
+            'action' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'ip_address' => 'nullable|ip',
+            'user_agent' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailActionController::store()  —  app/Http/Controllers/MailActionController.php:23
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|unique:mail_actions|max:100',
+            'duration' => 'required|integer',
+            'to_return' => 'nullable|boolean',
+            'description' => 'required',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailActionController::update()  —  app/Http/Controllers/MailActionController.php:42
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|unique:mail_actions,name,' . $mailAction->id . '|max:100',
+            'duration' => 'required|integer',
+            'to_return' => 'nullable|boolean',
+            'description' => 'required',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailArchiveController::store()  —  app/Http/Controllers/MailArchiveController.php:64
+──────────────────────────────────────────────────────────────────────────────
+([
+            'container_id' => 'required|exists:mail_containers,id',
+            'mails' => 'required|array',
+            'mails.*.id' => 'required|exists:mails,id',
+            'mails.*.document_type' => 'required|in:original,duplicate,copy',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailArchiveController::update()  —  app/Http/Controllers/MailArchiveController.php:118
+──────────────────────────────────────────────────────────────────────────────
+([
+            'container_id' => 'required|exists:mail_containers,id',
+            'mail_id' => 'required|exists:mails,id',
+            'document_type' => 'required|in:original,duplicate,copy',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailArchiveController::removeMails()  —  app/Http/Controllers/MailArchiveController.php:196
+──────────────────────────────────────────────────────────────────────────────
+([
+            'archive_mail_id' => 'required|exists:mail_archives,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailArchiveController::addMails()  —  app/Http/Controllers/MailArchiveController.php:221
+──────────────────────────────────────────────────────────────────────────────
+([
+            'mails' => 'required|array',
+            'mails.*.id' => 'required|exists:mails,id',
+            'mails.*.document_type' => 'required|in:original,duplicate,copy',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailAttachmentController::store()  —  app/Http/Controllers/MailAttachmentController.php:37
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|max:100',
+            'file' => 'required|file|mimes:pdf,jpg,jpeg,png,gif,mp4,avi,mov|max:20480', // 20MB max
+            'thumbnail' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailContainerController::store()  —  app/Http/Controllers/MailContainerController.php:37
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|unique:mail_containers', // Added unique validation
+            'name' => 'required',
+            'property_id' => 'required|exists:container_properties,id', // Changed type_id to property_id and container_types to container_properties
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailContainerController::update()  —  app/Http/Controllers/MailContainerController.php:77
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|unique:mail_containers,code,' . $mailContainer->id, // Added unique validation
+            'name' => 'required',
+            'property_id' => 'required|exists:container_properties,id', // Changed type_id to property_id and container_types to container_properties
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailContainerTransferController::transfer()  —  app/Http/Controllers/MailContainerTransferController.php:28
+──────────────────────────────────────────────────────────────────────────────
+([
+            'service_id' => 'required|exists:organisations,id',
+            'description' => 'required|string|max:1000',
+            'transfer_number' => 'required|string|max:50',
+            'activity_id' => 'required|exists:activities,id',
+            'shelf_id' => 'required|exists:shelves,id',
+            'containers' => 'required|array|min:1',
+            'containers.*' => 'exists:mail_containers,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailController::storeIncoming()  —  app/Http/Controllers/MailController.php:124
+──────────────────────────────────────────────────────────────────────────────
+([
+                'name' => 'required|max:150',
+                'date' => 'required|date',
+                'description' => 'nullable',
+                'document_type' => 'required|in:original,duplicate,copy',
+                'typology_id' => 'required|exists:mail_typologies,id',
+                'priority_id' => 'nullable|exists:mail_priorities,id',
+                'action_id' => 'nullable|exists:mail_actions,id',
+                'sender_type' => 'required|in:external_contact,external_organization,organisation',
+                'external_sender_id' => 'nullable|exists:external_contacts,id',
+                'external_sender_organization_id' => 'nullable|exists:external_organizations,id',
+                'sender_organisation_id' => 'nullable|exists:organisations,id',
+                'delivery_method' => 'nullable|string|max:50',
+                'tracking_number' => 'nullable|string|max:100',
+                'deadline' => 'nullable|date|after:today',
+                'estimated_processing_time' => 'nullable|integer|min:1',
+                'attachments' => 'nullable|array',
+                'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailController::storeOutgoing()  —  app/Http/Controllers/MailController.php:201
+──────────────────────────────────────────────────────────────────────────────
+([
+                'code' => 'nullable|max:10',
+                'name' => 'required|max:150',
+                'date' => 'required|date',
+                'description' => 'nullable',
+                'document_type' => 'required|in:original,duplicate,copy',
+                'typology_id' => 'required|exists:mail_typologies,id',
+                'priority_id' => 'nullable|exists:mail_priorities,id',
+                'action_id' => 'nullable|exists:mail_actions,id',
+                'recipient_type' => 'required|in:external_contact,external_organization',
+                'external_recipient_id' => 'nullable|exists:external_contacts,id',
+                'external_recipient_organization_id' => 'nullable|exists:external_organizations,id',
+                'delivery_method' => 'nullable|string|max:50',
+                'tracking_number' => 'nullable|string|max:100',
+                'deadline' => 'nullable|date|after:today',
+                'estimated_processing_time' => 'nullable|integer|min:1',
+                'attachments' => 'nullable|array',
+                'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailController::updateIncoming()  —  app/Http/Controllers/MailController.php:392
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|exists:mails,code,' . $mail->id,
+            'name' => 'required|max:150',
+            'date' => 'required|date',
+            'description' => 'nullable',
+            'document_type' => 'required|in:original,duplicate,copy',
+            'typology_id' => 'required|exists:mail_typologies,id',
+            'priority_id' => 'nullable|exists:mail_priorities,id',
+            'action_id' => 'nullable|exists:mail_actions,id',
+            'sender_type' => 'required|in:user,external_contact,external_organization,organisation',
+            'sender_user_id' => 'nullable|exists:users,id',
+            'external_sender_id' => 'nullable|exists:external_contacts,id',
+            'external_sender_organization_id' => 'nullable|exists:external_organizations,id',
+            'sender_organisation_id' => 'nullable|exists:organisations,id',
+            'delivery_method' => 'nullable|string|max:50',
+            'tracking_number' => 'nullable|string|max:100',
+            'deadline' => 'nullable|date|after:today',
+            'estimated_processing_time' => 'nullable|integer|min:1',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailController::updateOutgoing()  —  app/Http/Controllers/MailController.php:439
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|exists:mails,code,' . $mail->id,
+            'name' => 'required|max:150',
+            'date' => 'required|date',
+            'description' => 'nullable',
+            'document_type' => 'required|in:original,duplicate,copy',
+            'typology_id' => 'required|exists:mail_typologies,id',
+            'priority_id' => 'nullable|exists:mail_priorities,id',
+            'action_id' => 'nullable|exists:mail_actions,id',
+            'recipient_type' => 'required|in:user,external_contact,external_organization,organisation',
+            'recipient_user_id' => 'nullable|exists:users,id',
+            'external_recipient_id' => 'nullable|exists:external_contacts,id',
+            'external_recipient_organization_id' => 'nullable|exists:external_organizations,id',
+            'recipient_organisation_id' => 'nullable|exists:organisations,id',
+            'delivery_method' => 'nullable|string|max:50',
+            'tracking_number' => 'nullable|string|max:100',
+            'deadline' => 'nullable|date|after:today',
+            'estimated_processing_time' => 'nullable|integer|min:1',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailPriorityController::store()  —  app/Http/Controllers/MailPriorityController.php:26
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|unique:mail_priorities|max:50', // Added validation rules
+            'duration' => 'required|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailPriorityController::update()  —  app/Http/Controllers/MailPriorityController.php:55
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|unique:mail_priorities,name,' . $mailPriority->id . '|max:50', // Added validation rules
+            'duration' => 'required|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailReceivedController::reject()  —  app/Http/Controllers/MailReceivedController.php:53
+──────────────────────────────────────────────────────────────────────────────
+([
+            'id' => 'required|exists:mails,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailReceivedController::update()  —  app/Http/Controllers/MailReceivedController.php:335
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|max:150',
+            'date' => 'required|date',
+            'description' => 'nullable',
+            'document_type' => 'required|in:original,duplicate,copy',
+            'action_id' => 'required|exists:mail_actions,id',
+            'sender_user_id' => 'required|exists:users,id',
+            'sender_organisation_id' => 'required|exists:organisations,id',
+            'priority_id' => 'required|exists:mail_priorities,id',
+            'typology_id' => 'required|exists:mail_typologies,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailReceivedExternalController::store()  —  app/Http/Controllers/MailReceivedExternalController.php:76
+──────────────────────────────────────────────────────────────────────────────
+([
+                'name' => 'required|max:150',
+                'date' => 'required|date',
+                'description' => 'nullable',
+                'document_type' => 'required|in:original,duplicate,copy',
+                'typology_id' => 'required|exists:mail_typologies,id',
+                'priority_id' => 'nullable|exists:mail_priorities,id',
+                'action_id' => 'nullable|exists:mail_actions,id',
+                'sender_type' => 'required|in:external_contact,external_organization,organisation',
+                'external_sender_id' => 'nullable|exists:external_contacts,id',
+                'external_sender_organization_id' => 'nullable|exists:external_organizations,id',
+                'sender_organisation_id' => 'nullable|exists:organisations,id',
+                'delivery_method' => 'nullable|string|max:50',
+                'tracking_number' => 'nullable|string|max:100',
+                'deadline' => 'nullable|date|after:today',
+                'estimated_processing_time' => 'nullable|integer|min:1',
+                'attachments' => 'nullable|array',
+                'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailReceivedExternalController::update()  —  app/Http/Controllers/MailReceivedExternalController.php:203
+──────────────────────────────────────────────────────────────────────────────
+([
+                'code' => 'required|exists:mails,code,' . $mail->id,
+                'name' => 'required|max:150',
+                'date' => 'required|date',
+                'description' => 'nullable',
+                'document_type' => 'required|in:original,duplicate,copy',
+                'typology_id' => 'required|exists:mail_typologies,id',
+                'priority_id' => 'nullable|exists:mail_priorities,id',
+                'action_id' => 'nullable|exists:mail_actions,id',
+                'sender_type' => 'required|in:external_contact,external_organization,organisation',
+                'external_sender_id' => 'nullable|exists:external_contacts,id',
+                'external_sender_organization_id' => 'nullable|exists:external_organizations,id',
+                'sender_organisation_id' => 'nullable|exists:organisations,id',
+                'delivery_method' => 'nullable|string|max:50',
+                'tracking_number' => 'nullable|string|max:100',
+                'deadline' => 'nullable|date|after:today',
+                'estimated_processing_time' => 'nullable|integer|min:1',
+                'attachments' => 'nullable|array',
+                'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailSendController::transfer()  —  app/Http/Controllers/MailSendController.php:303
+──────────────────────────────────────────────────────────────────────────────
+([
+                'mail_id' => 'required|exists:mails,id',
+                'recipient_user_id' => 'required|exists:users,id',
+                'recipient_organisation_id' => 'required|exists:organisations,id',
+                'comment' => 'nullable|string|max:1000',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailSendController::update()  —  app/Http/Controllers/MailSendController.php:395
+──────────────────────────────────────────────────────────────────────────────
+([
+                'name' => 'required|max:150',
+                'date' => 'required|date',
+                'description' => 'nullable',
+                'document_type' => 'required|in:original,duplicate,copy',
+                'action_id' => 'required|exists:mail_actions,id',
+                'recipient_user_id' => 'nullable|exists:users,id',
+                'recipient_organisation_id' => 'required|exists:organisations,id',
+                'priority_id' => 'required|exists:mail_priorities,id',
+                'typology_id' => 'required|exists:mail_typologies,id',
+                'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailSendController::validateAttachment()  —  app/Http/Controllers/MailSendController.php:571
+──────────────────────────────────────────────────────────────────────────────
+([
+            'file' => 'required|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailSendController::approve()  —  app/Http/Controllers/MailSendController.php:683
+──────────────────────────────────────────────────────────────────────────────
+(['id' => 'required|exists:mails,id'])
+
+──────────────────────────────────────────────────────────────────────────────
+MailSendExternalController::store()  —  app/Http/Controllers/MailSendExternalController.php:71
+──────────────────────────────────────────────────────────────────────────────
+([
+                'code' => 'nullable|max:10',
+                'name' => 'required|max:150',
+                'date' => 'required|date',
+                'description' => 'nullable',
+                'document_type' => 'required|in:original,duplicate,copy',
+                'typology_id' => 'required|exists:mail_typologies,id',
+                'priority_id' => 'nullable|exists:mail_priorities,id',
+                'action_id' => 'nullable|exists:mail_actions,id',
+                'recipient_type' => 'required|in:external_contact,external_organization',
+                'external_recipient_id' => 'nullable|exists:external_contacts,id',
+                'external_recipient_organization_id' => 'nullable|exists:external_organizations,id',
+                'delivery_method' => 'nullable|string|max:50',
+                'tracking_number' => 'nullable|string|max:100',
+                'deadline' => 'nullable|date|after:today',
+                'estimated_processing_time' => 'nullable|integer|min:1',
+                'attachments' => 'nullable|array',
+                'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailSendExternalController::update()  —  app/Http/Controllers/MailSendExternalController.php:194
+──────────────────────────────────────────────────────────────────────────────
+([
+                'code' => 'required|exists:mails,code,' . $mail->id,
+                'name' => 'required|max:150',
+                'date' => 'required|date',
+                'description' => 'nullable',
+                'document_type' => 'required|in:original,duplicate,copy',
+                'typology_id' => 'required|exists:mail_typologies,id',
+                'priority_id' => 'nullable|exists:mail_priorities,id',
+                'action_id' => 'nullable|exists:mail_actions,id',
+                'recipient_type' => 'required|in:external_contact,external_organization',
+                'external_recipient_id' => 'nullable|exists:external_contacts,id',
+                'external_recipient_organization_id' => 'nullable|exists:external_organizations,id',
+                'delivery_method' => 'nullable|string|max:50',
+                'tracking_number' => 'nullable|string|max:100',
+                'deadline' => 'nullable|date|after:today',
+                'estimated_processing_time' => 'nullable|integer|min:1',
+                'attachments' => 'nullable|array',
+                'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailTransactionController::export()  —  app/Http/Controllers/MailTransactionController.php:20
+──────────────────────────────────────────────────────────────────────────────
+([
+            'selectedIds' => 'required|array',
+            'selectedIds.*' => 'integer|exists:mails,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailTransactionController::(hors méthode)()  —  app/Http/Controllers/MailTransactionController.php:40
+──────────────────────────────────────────────────────────────────────────────
+([
+            'selectedIds' => 'required|array',
+            'selectedIds.*' => 'integer|exists:mails,id' // Valider sur la table mails
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailTransactionController::archive()  —  app/Http/Controllers/MailTransactionController.php:76
+──────────────────────────────────────────────────────────────────────────────
+([
+            'mail_ids' => 'required|array',
+            'mail_ids.*' => 'exists:mails,id',
+            'container_id' => 'required|exists:mail_containers,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailTypologyController::store()  —  app/Http/Controllers/MailTypologyController.php:33
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|unique:mail_typologies|max:50',
+            'description' => 'nullable|max:100',
+            'activity_id' => 'required|exists:activities,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MailTypologyController::update()  —  app/Http/Controllers/MailTypologyController.php:71
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|unique:mail_typologies,name,'.$mailTypology->id.'|max:50',
+            'description' => 'nullable|max:100',
+            'activity_id' => 'required|exists:activities,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+OllamaController::test()  —  app/Http/Controllers/OllamaController.php:44
+──────────────────────────────────────────────────────────────────────────────
+([
+            'model' => 'required|string',
+            'prompt' => 'required|string',
+            'options' => 'nullable|array'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AuthController::login()  —  app/Http/Controllers/OPAC/AuthController.php:31
+──────────────────────────────────────────────────────────────────────────────
+([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+AuthController::register()  —  app/Http/Controllers/OPAC/AuthController.php:76
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:public_users',
+            'password' => ['required', 'confirmed', Password::defaults()],
+            'institution' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:500',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DashboardController::updatePreferences()  —  app/Http/Controllers/OPAC/DashboardController.php:113
+──────────────────────────────────────────────────────────────────────────────
+([
+            'email_notifications' => 'boolean',
+            'sms_notifications' => 'boolean',
+            'newsletter_subscription' => 'boolean',
+            'event_reminders' => 'boolean',
+            'language' => 'in:fr,en',
+            'theme' => 'in:auto,light,dark',
+            'timezone' => 'string',
+            'items_per_page' => 'in:10,20,50,100',
+            'save_search_history' => 'boolean',
+            'auto_suggestions' => 'boolean',
+            'default_sort' => 'in:relevance,title,date_desc,date_asc',
+            'search_results_view' => 'in:list,grid,compact',
+            'profile_public' => 'boolean',
+            'show_activity' => 'boolean',
+            'two_factor_auth' => 'boolean'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DocumentRequestController::store()  —  app/Http/Controllers/OPAC/DocumentRequestController.php:48
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:2000',
+            'document_type' => 'required|in:book,article,thesis,report,map,photo,video,audio,other',
+            'author' => 'nullable|string|max:255',
+            'publisher' => 'nullable|string|max:255',
+            'publication_date' => 'nullable|date',
+            'isbn_issn' => 'nullable|string|max:50',
+            'language' => 'nullable|string|max:50',
+            'urgency' => 'required|in:low,normal,high,urgent',
+            'usage_purpose' => 'required|in:research,education,personal,professional',
+            'preferred_format' => 'required|in:physical,digital,both',
+            'notes' => 'nullable|string|max:1000',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DocumentRequestController::update()  —  app/Http/Controllers/OPAC/DocumentRequestController.php:128
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:2000',
+            'document_type' => 'required|in:book,article,thesis,report,map,photo,video,audio,other',
+            'author' => 'nullable|string|max:255',
+            'publisher' => 'nullable|string|max:255',
+            'publication_date' => 'nullable|date',
+            'isbn_issn' => 'nullable|string|max:50',
+            'language' => 'nullable|string|max:50',
+            'urgency' => 'required|in:low,normal,high,urgent',
+            'usage_purpose' => 'required|in:research,education,personal,professional',
+            'preferred_format' => 'required|in:physical,digital,both',
+            'notes' => 'nullable|string|max:1000',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+FeedbackController::store()  —  app/Http/Controllers/OPAC/FeedbackController.php:28
+──────────────────────────────────────────────────────────────────────────────
+([
+            'type' => 'required|in:suggestion,complaint,compliment,question,bug_report',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string|max:2000',
+            'rating' => 'nullable|integer|min:1|max:5',
+            'email' => 'nullable|email|max:255',
+            'name' => 'nullable|string|max:255',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ProfileController::update()  —  app/Http/Controllers/OPAC/ProfileController.php:28
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:public_users,email,' . $user->id],
+            'phone' => ['nullable', 'string', 'max:255'],
+            'address' => ['nullable', 'string', 'max:500'],
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RequestController::store()  —  app/Http/Controllers/OPAC/RequestController.php:29
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => 'required|string|max:255',
+            'author' => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'type' => 'required|string|in:book,article,document,other',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ReservationController::store()  —  app/Http/Controllers/OPAC/ReservationController.php:29
+──────────────────────────────────────────────────────────────────────────────
+([
+            'record_id' => 'required|integer',
+            'notes' => 'nullable|string|max:500',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SearchController::search()  —  app/Http/Controllers/OPAC/SearchController.php:43
+──────────────────────────────────────────────────────────────────────────────
+([
+            'q' => 'nullable|string|max:255',
+            'title' => 'nullable|string|max:255',
+            'author' => 'nullable|string|max:255',
+            'subject' => 'nullable|string|max:255',
+            'isbn' => 'nullable|string|max:50',
+            'language' => 'nullable|string|max:50',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date',
+            'type' => 'nullable|string',
+            'category' => 'nullable|string',
+            'sort' => 'nullable|in:relevance,title_asc,title_desc,author_asc,date_asc,date_desc',
+            'page' => 'nullable|integer|min:1',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SearchController::saveSearch()  —  app/Http/Controllers/OPAC/SearchController.php:339
+──────────────────────────────────────────────────────────────────────────────
+([
+            'query' => 'required|string',
+            'filters' => 'nullable|array',
+            'name' => 'required|string|max:255',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+TemplateController::customize()  —  app/Http/Controllers/OPAC/TemplateController.php:81
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'primary_color' => 'nullable|string|max:7',
+            'secondary_color' => 'nullable|string|max:7',
+            'font_size' => 'nullable|in:small,medium,large',
+            'layout_style' => 'nullable|in:compact,standard,expanded',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+OrganisationActivityController::store()  —  app/Http/Controllers/OrganisationActivityController.php:29
+──────────────────────────────────────────────────────────────────────────────
+([
+            'activity_id' => 'required|exists:activities,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+OrganisationActivityController::update()  —  app/Http/Controllers/OrganisationActivityController.php:59
+──────────────────────────────────────────────────────────────────────────────
+([
+            'activity_id' => 'required|exists:activities,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+OrganisationContactController::validateContact()  —  app/Http/Controllers/OrganisationContactController.php:69
+──────────────────────────────────────────────────────────────────────────────
+([
+            'type' => 'required|in:' . implode(',', $types),
+            'value' => 'required|string|max:5000',
+            'label' => 'nullable|string|max:190',
+            'notes' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+OrganisationController::store()  —  app/Http/Controllers/OrganisationController.php:47
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|unique:organisations|max:10',
+            'name' => 'required|max:200',
+            'description' => 'nullable',
+            'parent_id' => 'nullable|exists:organisations,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+OrganisationController::update()  —  app/Http/Controllers/OrganisationController.php:82
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|unique:organisations,code,'.$organisation->id.'|max:10',
+            'name' => 'required|max:200',
+            'description' => 'nullable',
+            'parent_id' => 'nullable|exists:organisations,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+OrganisationRoomController::store()  —  app/Http/Controllers/OrganisationRoomController.php:29
+──────────────────────────────────────────────────────────────────────────────
+([
+            'room_id' => 'required|exists:rooms,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PromptManagementController::store()  —  app/Http/Controllers/PromptManagementController.php:70
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => [
+                'nullable',
+                'string',
+                'max:100',
+                Rule::unique('prompts')->where(function ($query) use ($request, $currentOrganisation) {
+                    return $query->where('is_system', $request->boolean('is_system'))
+                                ->where('organisation_id', $currentOrganisation?->id)
+                                ->where('user_id', Auth::id());
+                }),
+            ],
+            'content' => 'required|string',
+            'is_system' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PromptManagementController::update()  —  app/Http/Controllers/PromptManagementController.php:133
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => [
+                'nullable',
+                'string',
+                'max:100',
+                Rule::unique('prompts')->where(function ($query) use ($request, $currentOrganisation, $prompt) {
+                    return $query->where('is_system', $request->boolean('is_system'))
+                                ->where('organisation_id', $currentOrganisation?->id)
+                                ->where('user_id', Auth::id())
+                                ->where('id', '!=', $prompt->id);
+                }),
+            ],
+            'content' => 'required|string',
+            'is_system' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicAutocompleteController::records()  —  app/Http/Controllers/PublicAutocompleteController.php:16
+──────────────────────────────────────────────────────────────────────────────
+([
+            'q' => 'required|string|min:3|max:255',
+            'limit' => 'nullable|integer|min:1|max:5',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicChatController::store()  —  app/Http/Controllers/PublicChatController.php:42
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => 'required|string|max:255',
+            'is_group' => 'boolean',
+            'is_active' => 'boolean',
+            'user_ids' => 'required|array',
+            'user_ids.*' => 'exists:public_users,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicChatController::update()  —  app/Http/Controllers/PublicChatController.php:105
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => 'required|string|max:255',
+            'is_group' => 'boolean',
+            'is_active' => 'boolean',
+            'user_ids' => 'required|array',
+            'user_ids.*' => 'exists:public_users,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicChatMessageController::store()  —  app/Http/Controllers/PublicChatMessageController.php:38
+──────────────────────────────────────────────────────────────────────────────
+([
+            'chat_id' => 'required|exists:public_chats,id',
+            'type' => 'required|in:text,file,image,system',
+            'content' => 'required_if:type,text,system|string|max:5000',
+            'file' => 'required_if:type,file,image|file|max:10240', // 10MB max
+            'parent_id' => 'nullable|exists:public_chat_messages,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicChatMessageController::update()  —  app/Http/Controllers/PublicChatMessageController.php:98
+──────────────────────────────────────────────────────────────────────────────
+([
+            'chat_id' => 'required|exists:public_chats,id',
+            'type' => 'required|in:text,file,image,system',
+            'content' => 'required_if:type,text,system|string|max:5000',
+            'file' => 'nullable|file|max:10240', // 10MB max
+            'parent_id' => 'nullable|exists:public_chat_messages,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicChatParticipantController::store()  —  app/Http/Controllers/PublicChatParticipantController.php:34
+──────────────────────────────────────────────────────────────────────────────
+([
+            'chat_id' => 'required|exists:public_chats,id',
+            'user_id' => 'required|exists:public_users,id',
+            'role' => 'required|in:admin,moderator,member',
+            'is_active' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicChatParticipantController::update()  —  app/Http/Controllers/PublicChatParticipantController.php:81
+──────────────────────────────────────────────────────────────────────────────
+([
+            'chat_id' => 'required|exists:public_chats,id',
+            'user_id' => 'required|exists:public_users,id',
+            'role' => 'required|in:admin,moderator,member',
+            'is_active' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicDocumentRequestController::store()  —  app/Http/Controllers/PublicDocumentRequestController.php:35
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'document_type' => 'required|string|max:100',
+            'urgency_level' => 'required|in:low,medium,high',
+            'requested_date' => 'required|date',
+            'attachments.*' => 'nullable|file|max:10240', // 10MB max per file
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicDocumentRequestController::update()  —  app/Http/Controllers/PublicDocumentRequestController.php:86
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'document_type' => 'required|string|max:100',
+            'urgency_level' => 'required|in:low,medium,high',
+            'requested_date' => 'required|date',
+            'attachments.*' => 'nullable|file|max:10240',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicDocumentRequestController::updateStatus()  —  app/Http/Controllers/PublicDocumentRequestController.php:135
+──────────────────────────────────────────────────────────────────────────────
+([
+            'status' => 'required|in:pending,processing,completed,rejected'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicEventController::store()  —  app/Http/Controllers/PublicEventController.php:94
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'start_date' => 'required|date|after_or_equal:today',
+            'end_date' => 'required|date|after:start_date',
+            'location' => 'nullable|string|max:255',
+            'is_online' => 'boolean',
+            'online_link' => 'nullable|url|required_if:is_online,1',
+            'max_participants' => 'nullable|integer|min:1',
+            'registration_required' => 'boolean',
+            'registration_deadline' => 'nullable|date|before:start_date',
+            'image' => 'nullable|image|max:2048', // 2MB max
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicEventController::update()  —  app/Http/Controllers/PublicEventController.php:157
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'location' => 'nullable|string|max:255',
+            'is_online' => 'boolean',
+            'online_link' => 'nullable|url|required_if:is_online,1',
+            'max_participants' => 'nullable|integer|min:1',
+            'registration_required' => 'boolean',
+            'registration_deadline' => 'nullable|date|before:start_date',
+            'image' => 'nullable|image|max:2048',
+            'remove_image' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicEventController::bulkAction()  —  app/Http/Controllers/PublicEventController.php:222
+──────────────────────────────────────────────────────────────────────────────
+([
+            'event_ids' => 'required|array',
+            'event_ids.*' => 'exists:public_events,id',
+            'action' => 'required|in:delete',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicEventController::updateRegistrationStatus()  —  app/Http/Controllers/PublicEventController.php:306
+──────────────────────────────────────────────────────────────────────────────
+([
+            'status' => 'required|in:confirmed,pending,cancelled'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicEventRegistrationController::store()  —  app/Http/Controllers/PublicEventRegistrationController.php:35
+──────────────────────────────────────────────────────────────────────────────
+([
+            'event_id' => 'required|exists:public_events,id',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'notes' => 'nullable|string|max:1000',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicEventRegistrationController::update()  —  app/Http/Controllers/PublicEventRegistrationController.php:84
+──────────────────────────────────────────────────────────────────────────────
+([
+            'event_id' => 'required|exists:public_events,id',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'status' => 'required|in:pending,confirmed,cancelled',
+            'notes' => 'nullable|string|max:1000',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicFeedbackController::store()  —  app/Http/Controllers/PublicFeedbackController.php:35
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'type' => 'required|in:bug,feature,improvement,other',
+            'priority' => 'required|in:low,medium,high',
+            'status' => 'required|in:new,in_progress,resolved,closed',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicFeedbackController::update()  —  app/Http/Controllers/PublicFeedbackController.php:71
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'type' => 'required|in:bug,feature,improvement,other',
+            'priority' => 'required|in:low,medium,high',
+            'status' => 'required|in:new,in_progress,resolved,closed',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicFeedbackController::updateStatus()  —  app/Http/Controllers/PublicFeedbackController.php:101
+──────────────────────────────────────────────────────────────────────────────
+([
+            'status' => 'required|in:new,in_progress,resolved,closed'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicFeedbackController::addComment()  —  app/Http/Controllers/PublicFeedbackController.php:116
+──────────────────────────────────────────────────────────────────────────────
+([
+            'content' => 'required|string'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicNewsController::store()  —  app/Http/Controllers/PublicNewsController.php:35
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'summary' => 'required|string|max:500',
+            'image' => 'nullable|image|max:2048',
+            'published_at' => 'required|date',
+            'status' => 'required|in:draft,published,archived',
+            'featured' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicNewsController::update()  —  app/Http/Controllers/PublicNewsController.php:78
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'summary' => 'required|string|max:500',
+            'image' => 'nullable|image|max:2048',
+            'published_at' => 'required|date',
+            'status' => 'required|in:draft,published,archived',
+            'featured' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicNewsController::updateStatus()  —  app/Http/Controllers/PublicNewsController.php:134
+──────────────────────────────────────────────────────────────────────────────
+([
+            'status' => 'required|in:draft,published,archived'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicPageController::store()  —  app/Http/Controllers/PublicPageController.php:91
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255|unique:public_pages,name',
+            'content' => 'nullable|string',
+            'meta_description' => 'nullable|string|max:500',
+            'status' => 'required|in:draft,published,private',
+            'is_published' => 'boolean',
+            'order' => 'nullable|integer|min:0',
+            'parent_id' => 'nullable|exists:public_pages,id',
+            'image' => 'nullable|image|max:2048', // 2MB max
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicPageController::update()  —  app/Http/Controllers/PublicPageController.php:165
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255|unique:public_pages,name,' . $page->id,
+            'content' => 'nullable|string',
+            'meta_description' => 'nullable|string|max:500',
+            'status' => 'required|in:draft,published,private',
+            'is_published' => 'boolean',
+            'order' => 'nullable|integer|min:0',
+            'parent_id' => 'nullable|exists:public_pages,id|not_in:' . $page->id,
+            'image' => 'nullable|image|max:2048',
+            'remove_image' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicPageController::bulkPublish()  —  app/Http/Controllers/PublicPageController.php:246
+──────────────────────────────────────────────────────────────────────────────
+([
+            'page_ids' => 'required|array',
+            'page_ids.*' => 'exists:public_pages,id',
+            'action' => 'required|in:publish,unpublish',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicPageController::reorder()  —  app/Http/Controllers/PublicPageController.php:273
+──────────────────────────────────────────────────────────────────────────────
+([
+            'pages' => 'required|array',
+            'pages.*.id' => 'required|exists:public_pages,id',
+            'pages.*.order' => 'required|integer|min:0',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicRecordController::store()  —  app/Http/Controllers/PublicRecordController.php:38
+──────────────────────────────────────────────────────────────────────────────
+([
+            'record_id' => 'required|exists:records,id',
+            'published_at' => 'nullable|date',
+            'expires_at' => 'nullable|date|after:published_at',
+            'publication_notes' => 'nullable|string',
+            'attachments.*' => 'nullable|file|max:10240', // 10MB max per file
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicRecordController::update()  —  app/Http/Controllers/PublicRecordController.php:95
+──────────────────────────────────────────────────────────────────────────────
+([
+            'record_id' => 'required|exists:records,id',
+            'published_at' => 'nullable|date',
+            'expires_at' => 'nullable|date|after:published_at',
+            'publication_notes' => 'nullable|string',
+            'attachments.*' => 'nullable|file|max:10240',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicRecordController::autocomplete()  —  app/Http/Controllers/PublicRecordController.php:185
+──────────────────────────────────────────────────────────────────────────────
+([
+            'q' => 'required|string|min:3|max:255',
+            'limit' => 'nullable|integer|min:1|max:5',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicResponseAttachmentController::store()  —  app/Http/Controllers/PublicResponseAttachmentController.php:35
+──────────────────────────────────────────────────────────────────────────────
+([
+            'response_id' => 'required|exists:public_responses,id',
+            'file' => 'required|file|max:10240', // 10MB max
+            'description' => 'nullable|string|max:1000',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicResponseAttachmentController::update()  —  app/Http/Controllers/PublicResponseAttachmentController.php:82
+──────────────────────────────────────────────────────────────────────────────
+([
+            'response_id' => 'required|exists:public_responses,id',
+            'file' => 'nullable|file|max:10240', // 10MB max
+            'description' => 'nullable|string|max:1000',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicResponseController::store()  —  app/Http/Controllers/PublicResponseController.php:36
+──────────────────────────────────────────────────────────────────────────────
+([
+            'content' => 'required|string',
+            'status' => 'required|in:draft,sent',
+            'attachments.*' => 'nullable|file|max:10240', // 10MB max per file
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicResponseController::update()  —  app/Http/Controllers/PublicResponseController.php:89
+──────────────────────────────────────────────────────────────────────────────
+([
+            'content' => 'required|string',
+            'status' => 'required|in:draft,sent',
+            'attachments.*' => 'nullable|file|max:10240',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicTemplateController::store()  —  app/Http/Controllers/PublicTemplateController.php:33
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'type' => 'required|in:page,email,notification',
+            'content' => 'required|string',
+            'variables' => 'nullable|array',
+            'status' => 'required|in:active,inactive',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicTemplateController::update()  —  app/Http/Controllers/PublicTemplateController.php:70
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'type' => 'required|in:page,email,notification',
+            'content' => 'required|string',
+            'variables' => 'nullable|array',
+            'status' => 'required|in:active,inactive',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicUserController::store()  —  app/Http/Controllers/PublicUserController.php:41
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'phone1' => 'nullable|string|max:20',
+            'phone2' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'email' => 'required|string|email|max:255|unique:public_users',
+            'password' => 'required|string|min:8|confirmed',
+            'is_approved' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+PublicUserController::update()  —  app/Http/Controllers/PublicUserController.php:93
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'phone1' => 'nullable|string|max:20',
+            'phone2' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'email' => 'required|string|email|max:255|unique:public_users,email,' . $user->id,
+            'password' => 'nullable|string|min:8|confirmed',
+            'is_approved' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordAttachmentController::store()  —  app/Http/Controllers/RecordAttachmentController.php:38
+──────────────────────────────────────────────────────────────────────────────
+([
+                'name' => 'required|max:100',
+                'file' => 'required|file|mimes:pdf,jpg,jpeg,png,gif,mp4,avi,mov|max:102400', // 100MB max
+                'thumbnail' => 'nullable|string',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordAttachmentController::update()  —  app/Http/Controllers/RecordAttachmentController.php:174
+──────────────────────────────────────────────────────────────────────────────
+([
+            'file_path' => 'required|string',
+            'description' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordAttachmentController::uploadTemp()  —  app/Http/Controllers/RecordAttachmentController.php:228
+──────────────────────────────────────────────────────────────────────────────
+([
+                'file' => 'required|file|mimes:pdf,txt,docx,doc,rtf,odt,jpg,jpeg,png,gif,mp4,avi,mov|max:102400', // 100MB max
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordAuthorController::storeAjax()  —  app/Http/Controllers/RecordAuthorController.php:94
+──────────────────────────────────────────────────────────────────────────────
+([
+                'type_id' => 'required|exists:author_types,id',
+                'name' => 'required|string|max:255',
+                'parallel_name' => 'nullable|string|max:255',
+                'other_name' => 'nullable|string|max:255',
+                'lifespan' => 'nullable|string|max:255',
+                'locations' => 'nullable|string|max:255',
+                'parent_id' => 'nullable|exists:authors,id',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordAuthorController::store()  —  app/Http/Controllers/RecordAuthorController.php:160
+──────────────────────────────────────────────────────────────────────────────
+([
+            'type_id' => 'required|exists:author_types,id',
+            'name' => 'required|string|max:255',
+            'parallel_name' => 'nullable|string|max:255',
+            'other_name' => 'nullable|string|max:255',
+            'lifespan' => 'nullable|string|max:255',
+            'locations' => 'nullable|string|max:255',
+            'parent_id' => 'nullable|exists:authors,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordAuthorController::update()  —  app/Http/Controllers/RecordAuthorController.php:194
+──────────────────────────────────────────────────────────────────────────────
+([
+            'type_id' => 'required|exists:author_types,id',
+            'name' => 'required|string|max:255',
+            'parallel_name' => 'nullable|string|max:255',
+            'other_name' => 'nullable|string|max:255',
+            'lifespan' => 'nullable|string|max:255',
+            'locations' => 'nullable|string|max:255',
+            'parent_id' => 'nullable|exists:authors,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordChildController::store()  —  app/Http/Controllers/RecordChildController.php:45
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|string|max:10',
+            'name' => 'required|string',
+            'date_format' => 'required|string|max:1',
+            'date_start' => 'nullable|string|max:10',
+            'date_end' => 'nullable|string|max:10',
+            'date_exact' => 'nullable|date',
+            'level_id' => 'required|integer|exists:record_levels,id',
+            'width' => 'nullable|numeric|between:0,99999999.99',
+            'width_description' => 'nullable|string|max:100',
+            'biographical_history' => 'nullable|string',
+            'archival_history' => 'nullable|string',
+            'acquisition_source' => 'nullable|string',
+            'content' => 'nullable|string',
+            'appraisal' => 'nullable|string',
+            'accrual' => 'nullable|string',
+            'arrangement' => 'nullable|string',
+            'access_conditions' => 'nullable|string|max:50',
+            'reproduction_conditions' => 'nullable|string|max:50',
+            'language_material' => 'nullable|string|max:50',
+            'characteristic' => 'nullable|string|max:100',
+            'finding_aids' => 'nullable|string|max:100',
+            'location_original' => 'nullable|string|max:100',
+            'location_copy' => 'nullable|string|max:100',
+            'related_unit' => 'nullable|string|max:100',
+            'publication_note' => 'nullable|string',
+            'note' => 'nullable|string',
+            'archivist_note' => 'nullable|string',
+            'rule_convention' => 'nullable|string|max:100',
+            'created_at' => 'nullable|date',
+            'updated_at' => 'nullable|date',
+            'status_id' => 'required|integer|exists:record_statuses,id',
+            'support_id' => 'required|integer|exists:record_supports,id',
+            'activity_id' => 'required|integer|exists:activities,id',
+            'parent_id' => 'nullable|integer|exists:records,id',
+            'container_id' => 'nullable|integer|exists:containers,id',
+            'accession_id' => 'nullable|integer|exists:accessions,id',
+            'user_id' => 'required|integer|exists:users,id',
+            'author_ids' => 'required|array',
+            'term_ids' => 'required|array',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordContainerController::store()  —  app/Http/Controllers/RecordContainerController.php:15
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|exists:containers,code',
+            'r_id' => 'required|exists:records,id',
+            'description' => 'nullable|string|max:100',
+
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordContainerController::destroy()  —  app/Http/Controllers/RecordContainerController.php:46
+──────────────────────────────────────────────────────────────────────────────
+([
+            'c_id' => 'required|exists:containers,id',
+            'r_id' => 'required|exists:records,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordController::move()  —  app/Http/Controllers/RecordController.php:286
+──────────────────────────────────────────────────────────────────────────────
+(['parent_id' => 'nullable|exists:records,id'])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordController::addMedium()  —  app/Http/Controllers/RecordController.php:364
+──────────────────────────────────────────────────────────────────────────────
+([
+            'support_id' => 'required|exists:record_supports,id',
+            'container_id' => 'nullable|exists:containers,id',
+            'attachment' => 'nullable|file|max:51200',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordController::sign()  —  app/Http/Controllers/RecordController.php:445
+──────────────────────────────────────────────────────────────────────────────
+(['email' => $request->user()->email, 'password' => $request->input('password')])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordController::bulkTransfer()  —  app/Http/Controllers/RecordController.php:550
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|max:20',
+            'name' => 'required|max:200',
+            'description' => 'nullable',
+            'record_ids' => 'required|array',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordController::bulkCommunicate()  —  app/Http/Controllers/RecordController.php:604
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|max:200',
+            'content' => 'nullable',
+            'user_id' => 'required|exists:users,id',
+            'user_organisation_id' => 'required|exists:organisations,id',
+            'record_ids' => 'required|array',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordController::typeMetadataFields()  —  app/Http/Controllers/RecordController.php:642
+──────────────────────────────────────────────────────────────────────────────
+(['type_id' => 'required|exists:record_types,id'])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalTransferController::showTransferForm()  —  app/Http/Controllers/RecordDigitalTransferController.php:23
+──────────────────────────────────────────────────────────────────────────────
+([
+            'type' => 'required|in:document,folder',
+            'id' => 'required|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalTransferController::store()  —  app/Http/Controllers/RecordDigitalTransferController.php:62
+──────────────────────────────────────────────────────────────────────────────
+([
+            'type' => 'required|in:document,folder',
+            'digital_id' => 'required|integer',
+            'physical_id' => 'required|integer',
+            'notes' => 'nullable|string|max:500',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalTransferController::cancel()  —  app/Http/Controllers/RecordDigitalTransferController.php:118
+──────────────────────────────────────────────────────────────────────────────
+([
+            'type' => 'required|in:document,folder',
+            'id' => 'required|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDragDropController::validateAndGetFiles()  —  app/Http/Controllers/RecordDragDropController.php:231
+──────────────────────────────────────────────────────────────────────────────
+([
+            'files' => 'required',
+            'files.*' => 'file|max:' . $maxKilobytes . '|mimes:pdf,jpeg,jpg,png,gif,doc,docx,txt,rtf,odt',
+            'per_file_char_limit' => 'nullable|integer|min:200|max:100000',
+            'pdf_page_count' => 'nullable|integer|min:1|max:2000',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordReactivationController::store()  —  app/Http/Controllers/RecordReactivationController.php:40
+──────────────────────────────────────────────────────────────────────────────
+([
+            'reason' => 'required',
+            'new_transfer_date' => 'nullable|date',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordReactivationController::reject()  —  app/Http/Controllers/RecordReactivationController.php:84
+──────────────────────────────────────────────────────────────────────────────
+([
+            'reason' => 'required',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordStatusController::store()  —  app/Http/Controllers/RecordStatusController.php:26
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|unique:record_status|max:100',
+            'description' => 'nullable',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordStatusController::update()  —  app/Http/Controllers/RecordStatusController.php:60
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|unique:record_status,name,'.$id.'|max:100',
+            'description' => 'nullable',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordSupportController::store()  —  app/Http/Controllers/RecordSupportController.php:29
+──────────────────────────────────────────────────────────────────────────────
+([
+                'name' => 'required|unique:record_supports|max:100',
+                'description' => 'nullable',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordSupportController::update()  —  app/Http/Controllers/RecordSupportController.php:60
+──────────────────────────────────────────────────────────────────────────────
+([
+                'name' => 'required|unique:record_supports|max:100',
+                'description' => 'nullable',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+ReservationController::approved()  —  app/Http/Controllers/ReservationController.php:41
+──────────────────────────────────────────────────────────────────────────────
+([
+            'id' => 'required|exists:reservations,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ReservationController::store()  —  app/Http/Controllers/ReservationController.php:144
+──────────────────────────────────────────────────────────────────────────────
+([
+                'name' => 'required|string|max:200',
+                'content' => 'nullable|string',
+                'user_id' => 'required|exists:users,id',
+                'user_organisation_id' => 'required|exists:organisations,id',
+                'status' => 'required|in:' . implode(',', array_map(fn($case) => $case->value, ReservationStatus::cases())),
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+ReservationController::update()  —  app/Http/Controllers/ReservationController.php:200
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|unique:reservations,code,'.$reservation->id.'|max:10',
+            'name' => 'required|string|max:200',
+            'content' => 'nullable|string',
+            'user_id' => 'required|exists:users,id',
+            'user_organisation_id' => 'required|exists:organisations,id',
+            'status' => 'required|in:' . implode(',', array_map(fn($case) => $case->value, ReservationStatus::cases())),
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ReservationRecordController::store()  —  app/Http/Controllers/ReservationRecordController.php:59
+──────────────────────────────────────────────────────────────────────────────
+([
+            'record_id' => 'required|exists:records,id',
+            'is_original' => 'required|boolean',
+            'reservation_date' => 'required|date',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ReservationRecordController::update()  —  app/Http/Controllers/ReservationRecordController.php:81
+──────────────────────────────────────────────────────────────────────────────
+([
+            'record_id' => 'required|exists:records,id',
+            'is_original' => 'required|boolean',
+            'reservation_date' => 'required|date',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RetentionActivityController::store()  —  app/Http/Controllers/RetentionActivityController.php:31
+──────────────────────────────────────────────────────────────────────────────
+([
+            'retention_id' => 'required|exists:retentions,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RetentionActivityController::update()  —  app/Http/Controllers/RetentionActivityController.php:57
+──────────────────────────────────────────────────────────────────────────────
+([
+            'retention_id' => 'required|exists:retentions,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RetentionController::store()  —  app/Http/Controllers/RetentionController.php:26
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|string|max:10',
+            'name' => 'required|string|max:200',
+            'duration' => 'required|integer',
+            'sort_id' => 'required|exists:sorts,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RetentionController::update()  —  app/Http/Controllers/RetentionController.php:52
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|string|max:10',
+            'name' => 'required|string|max:200',
+            'duration' => 'required|integer',
+            'sort_id' => 'required|exists:sorts,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RoleController::store()  —  app/Http/Controllers/RoleController.php:28
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|unique:roles|max:255',
+            'description' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RoleController::update()  —  app/Http/Controllers/RoleController.php:57
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|unique:roles,name,'.$role->id.'|max:255',
+            'description' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RolePermissionController::store()  —  app/Http/Controllers/RolePermissionController.php:85
+──────────────────────────────────────────────────────────────────────────────
+([
+            'role_id' => 'required|exists:roles,id',
+            'permissions' => 'required|array',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RolePermissionController::update()  —  app/Http/Controllers/RolePermissionController.php:137
+──────────────────────────────────────────────────────────────────────────────
+([
+            'role_id' => 'required|exists:roles,id',
+            'permission_id' => 'required|exists:permissions,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RoomController::store()  —  app/Http/Controllers/RoomController.php:50
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|max:10',
+            'name' => 'required|max:100',
+            'description' => 'nullable',
+            'visibility' => 'required|in:public,private,inherit',
+            'type' => 'required|in:archives,producer',
+            'floor_id' => 'required|exists:floors,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RoomController::update()  —  app/Http/Controllers/RoomController.php:99
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|max:10',
+            'name' => 'required|max:100',
+            'description' => 'nullable',
+            'visibility' => 'required|in:public,private,inherit',
+            'type' => 'required|in:archives,producer',
+            'floor_id' => 'required|exists:floors,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SettingCategoryController::store()  —  app/Http/Controllers/SettingCategoryController.php:45
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'parent_id' => 'nullable|exists:setting_categories,id',
+            'is_system' => 'boolean'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SettingCategoryController::update()  —  app/Http/Controllers/SettingCategoryController.php:86
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'name' => 'string|max:100|unique:setting_categories,name,' . $id,
+            'description' => 'nullable|string',
+            'parent_id' => 'nullable|exists:setting_categories,id|not_in:' . $id,
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SettingController::store()  —  app/Http/Controllers/SettingController.php:86
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'name' => 'required|string|max:100|unique:settings,name',
+            'category_id' => 'required|exists:setting_categories,id',
+            'type' => 'required|in:integer,string,boolean,json,float,array',
+            'default_value' => 'required|json',
+            'description' => 'required|string',
+            'is_system' => 'boolean',
+            'constraints' => 'nullable|json',
+            'user_id' => 'nullable|exists:users,id',
+            'organisation_id' => 'nullable|exists:organisations,id',
+            'value' => 'nullable|json',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SettingController::update()  —  app/Http/Controllers/SettingController.php:118
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'value' => 'nullable', // La validation sera faite par convertValueToType
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SettingController::setValue()  —  app/Http/Controllers/SettingController.php:173
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'value' => 'required',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DocumentTypeMetadataProfileController::store()  —  app/Http/Controllers/Settings/DocumentTypeMetadataProfileController.php:33
+──────────────────────────────────────────────────────────────────────────────
+([
+            'metadata_definition_id' => 'required|exists:metadata_definitions,id',
+            'mandatory' => 'boolean',
+            'visible' => 'boolean',
+            'readonly' => 'boolean',
+            'default_value' => 'nullable|string',
+            'validation_rules' => 'nullable|json',
+            'sort_order' => 'nullable|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DocumentTypeMetadataProfileController::update()  —  app/Http/Controllers/Settings/DocumentTypeMetadataProfileController.php:63
+──────────────────────────────────────────────────────────────────────────────
+([
+            'mandatory' => 'boolean',
+            'visible' => 'boolean',
+            'readonly' => 'boolean',
+            'default_value' => 'nullable|string',
+            'validation_rules' => 'nullable|json',
+            'sort_order' => 'nullable|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+DocumentTypeMetadataProfileController::bulkUpdate()  —  app/Http/Controllers/Settings/DocumentTypeMetadataProfileController.php:94
+──────────────────────────────────────────────────────────────────────────────
+([
+            'profiles' => 'required|array',
+            'profiles.*.id' => 'required|exists:record_digital_document_metadata_profiles,id',
+            'profiles.*.sort_order' => 'required|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+FolderTypeMetadataProfileController::store()  —  app/Http/Controllers/Settings/FolderTypeMetadataProfileController.php:33
+──────────────────────────────────────────────────────────────────────────────
+([
+            'metadata_definition_id' => 'required|exists:metadata_definitions,id',
+            'mandatory' => 'boolean',
+            'visible' => 'boolean',
+            'readonly' => 'boolean',
+            'default_value' => 'nullable|string',
+            'validation_rules' => 'nullable|json',
+            'sort_order' => 'nullable|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+FolderTypeMetadataProfileController::update()  —  app/Http/Controllers/Settings/FolderTypeMetadataProfileController.php:63
+──────────────────────────────────────────────────────────────────────────────
+([
+            'mandatory' => 'boolean',
+            'visible' => 'boolean',
+            'readonly' => 'boolean',
+            'default_value' => 'nullable|string',
+            'validation_rules' => 'nullable|json',
+            'sort_order' => 'nullable|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+FolderTypeMetadataProfileController::bulkUpdate()  —  app/Http/Controllers/Settings/FolderTypeMetadataProfileController.php:94
+──────────────────────────────────────────────────────────────────────────────
+([
+            'profiles' => 'required|array',
+            'profiles.*.id' => 'required|exists:record_digital_folder_metadata_profiles,id',
+            'profiles.*.sort_order' => 'required|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MetadataDefinitionController::store()  —  app/Http/Controllers/Settings/MetadataDefinitionController.php:44
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:100',
+            'code' => 'required|string|max:50|unique:metadata_definitions,code',
+            'description' => 'nullable|string',
+            'data_type' => 'required|in:text,textarea,number,date,datetime,boolean,select,multi_select,reference_list,email,url',
+            'validation_rules' => 'nullable|json',
+            'options' => 'nullable|json',
+            'reference_list_id' => 'nullable|exists:reference_lists,id',
+            'searchable' => 'boolean',
+            'active' => 'boolean',
+            'sort_order' => 'nullable|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+MetadataDefinitionController::update()  —  app/Http/Controllers/Settings/MetadataDefinitionController.php:87
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:100',
+            'code' => 'required|string|max:50|unique:metadata_definitions,code,' . $metadataDefinition->id,
+            'description' => 'nullable|string',
+            'data_type' => 'required|in:text,textarea,number,date,datetime,boolean,select,multi_select,reference_list,email,url',
+            'validation_rules' => 'nullable|json',
+            'options' => 'nullable|json',
+            'reference_list_id' => 'nullable|exists:reference_lists,id',
+            'searchable' => 'boolean',
+            'active' => 'boolean',
+            'sort_order' => 'nullable|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalDocumentTypeController::store()  —  app/Http/Controllers/Settings/RecordDigitalDocumentTypeController.php:62
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|string|unique:record_digital_document_types,code|max:50',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'icon' => 'nullable|string|max:100',
+            'color' => 'nullable|string|regex:/^#[0-9A-F]{6}$/i',
+            'mime_types' => 'nullable|array',
+            'max_file_size' => 'nullable|integer|min:1',
+            'code_prefix' => 'nullable|string|max:10',
+            'code_pattern' => 'nullable|string|max:50',
+            'default_access_level' => 'nullable|in:public,internal,confidential,secret',
+            'requires_approval' => 'boolean',
+            'metadata_template_id' => 'nullable|exists:metadata_templates,id',
+            'mandatory_metadata' => 'nullable|array',
+            'allowed_folder_types' => 'nullable|array',
+            'require_virus_scan' => 'boolean',
+            'is_active' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalDocumentTypeController::update()  —  app/Http/Controllers/Settings/RecordDigitalDocumentTypeController.php:130
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|string|unique:record_digital_document_types,code,' . $documentType->id . '|max:50',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'icon' => 'nullable|string|max:100',
+            'color' => 'nullable|string|regex:/^#[0-9A-F]{6}$/i',
+            'mime_types' => 'nullable|array',
+            'max_file_size' => 'nullable|integer|min:1',
+            'code_prefix' => 'nullable|string|max:10',
+            'code_pattern' => 'nullable|string|max:50',
+            'default_access_level' => 'nullable|in:public,internal,confidential,secret',
+            'requires_approval' => 'boolean',
+            'metadata_template_id' => 'nullable|exists:metadata_templates,id',
+            'mandatory_metadata' => 'nullable|array',
+            'allowed_folder_types' => 'nullable|array',
+            'require_virus_scan' => 'boolean',
+            'is_active' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalDocumentTypeController::updateOrder()  —  app/Http/Controllers/Settings/RecordDigitalDocumentTypeController.php:187
+──────────────────────────────────────────────────────────────────────────────
+([
+            'types' => 'required|array',
+            'types.*' => 'required|integer|exists:record_digital_document_types,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalFolderTypeController::store()  —  app/Http/Controllers/Settings/RecordDigitalFolderTypeController.php:60
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|string|unique:record_digital_folder_types,code|max:50',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'icon' => 'nullable|string|max:100',
+            'color' => 'nullable|string|regex:/^#[0-9A-F]{6}$/i',
+            'code_prefix' => 'nullable|string|max:10',
+            'code_pattern' => 'nullable|string|max:50',
+            'default_access_level' => 'nullable|in:public,internal,confidential,secret',
+            'requires_approval' => 'boolean',
+            'metadata_template_id' => 'nullable|exists:metadata_templates,id',
+            'mandatory_metadata' => 'nullable|array',
+            'allowed_document_types' => 'nullable|array',
+            'is_active' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalFolderTypeController::update()  —  app/Http/Controllers/Settings/RecordDigitalFolderTypeController.php:123
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|string|unique:record_digital_folder_types,code,' . $folderType->id . '|max:50',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'icon' => 'nullable|string|max:100',
+            'color' => 'nullable|string|regex:/^#[0-9A-F]{6}$/i',
+            'code_prefix' => 'nullable|string|max:10',
+            'code_pattern' => 'nullable|string|max:50',
+            'default_access_level' => 'nullable|in:public,internal,confidential,secret',
+            'requires_approval' => 'boolean',
+            'metadata_template_id' => 'nullable|exists:metadata_templates,id',
+            'mandatory_metadata' => 'nullable|array',
+            'allowed_document_types' => 'nullable|array',
+            'is_active' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordDigitalFolderTypeController::updateOrder()  —  app/Http/Controllers/Settings/RecordDigitalFolderTypeController.php:176
+──────────────────────────────────────────────────────────────────────────────
+([
+            'types' => 'required|array',
+            'types.*' => 'required|integer|exists:record_digital_folder_types,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+RecordTypeController::validateType()  —  app/Http/Controllers/Settings/RecordTypeController.php:86
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|string|max:50|unique:record_types,code,' . ($request->route('recordType')->id ?? 'NULL'),
+            'name' => 'required|string|max:150',
+            'description' => 'nullable|string',
+            'parent_id' => 'nullable|exists:record_types,id',
+            'reference_list_id' => 'nullable|exists:reference_lists,id',
+            'is_container' => 'boolean',
+            'icon' => 'nullable|string|max:100',
+            'color' => 'nullable|string|max:20',
+            'code_prefix' => 'nullable|string|max:20',
+            'code_pattern' => 'nullable|string|max:100',
+            'default_access_level' => 'nullable|string|max:20',
+            'requires_versioning' => 'boolean',
+            'requires_approval' => 'boolean',
+            'requires_signature' => 'boolean',
+            'max_file_size' => 'nullable|integer',
+            'is_active' => 'boolean',
+            'display_order' => 'nullable|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ReferenceListController::store()  —  app/Http/Controllers/Settings/ReferenceListController.php:30
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:100|unique:reference_lists,name',
+            'code' => 'required|string|max:50|unique:reference_lists,code',
+            'description' => 'nullable|string',
+            'active' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ReferenceListController::update()  —  app/Http/Controllers/Settings/ReferenceListController.php:61
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:100|unique:reference_lists,name,' . $referenceList->id,
+            'code' => 'required|string|max:50|unique:reference_lists,code,' . $referenceList->id,
+            'description' => 'nullable|string',
+            'active' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ReferenceListController::addValue()  —  app/Http/Controllers/Settings/ReferenceListController.php:90
+──────────────────────────────────────────────────────────────────────────────
+([
+            'value' => 'required|string|max:190',
+            'code' => 'required|string|max:50',
+            'description' => 'nullable|string',
+            'active' => 'boolean',
+            'sort_order' => 'nullable|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ReferenceListController::updateValue()  —  app/Http/Controllers/Settings/ReferenceListController.php:118
+──────────────────────────────────────────────────────────────────────────────
+([
+            'value' => 'required|string|max:190',
+            'code' => 'required|string|max:50',
+            'description' => 'nullable|string',
+            'active' => 'boolean',
+            'sort_order' => 'nullable|integer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ShelfController::store()  —  app/Http/Controllers/ShelfController.php:51
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|max:30',
+            'observation' => 'nullable',
+            'face' => 'required|numeric|max:10',
+            'ear' => 'required|numeric|max:10',
+            'shelf' => 'required|numeric|max:10',
+            'shelf_length' => 'required|numeric',
+            'room_id' => 'required|exists:rooms,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ShelfController::update()  —  app/Http/Controllers/ShelfController.php:156
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|max:30',
+            'observation' => 'nullable',
+            'face' => 'required|max:10',
+            'ear' => 'required|max:10',
+            'shelf' => 'required|max:10',
+            'shelf_length' => 'required|numeric',
+            'room_id' => 'required|exists:rooms,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SlipContainerController::store()  —  app/Http/Controllers/SlipContainerController.php:44
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|max:20|unique:containers,code',
+            'description' => 'required|string|max:200',
+            'shelve_id' => 'required|exists:shelves,id',
+            'status_id' => 'required|exists:container_statuses,id',
+            'property_id' => 'required|exists:container_properties,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SlipContainerController::update()  —  app/Http/Controllers/SlipContainerController.php:92
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|max:20|unique:containers,code,' . $container->id,
+            'description' => 'required|string|max:200',
+            'shelve_id' => 'required|exists:shelves,id',
+            'status_id' => 'required|exists:container_statuses,id',
+            'property_id' => 'required|exists:container_properties,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SlipController::store()  —  app/Http/Controllers/SlipController.php:92
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|max:20',
+            'name' => 'required|max:200',
+            'description' => 'nullable',
+            'user_organisation_id' => 'required|exists:organisations,id',
+            'user_id' => 'nullable|exists:users,id',
+            'is_received' => 'nullable|boolean',
+            'received_date' => 'nullable|date',
+            'is_approved' => 'nullable|boolean',
+            'approved_date' => 'nullable|date',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SlipController::mailArchiving()  —  app/Http/Controllers/SlipController.php:132
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|max:20',
+            'name' => 'required|max:200',
+            'description' => 'nullable',
+            'mail_containers' => 'required|array',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SlipController::storetransfert()  —  app/Http/Controllers/SlipController.php:192
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|max:20',
+            'name' => 'required|max:200',
+            'description' => 'nullable',
+            'user_organisation_id' => 'required|exists:organisations,id',
+            'user_id' => 'nullable|exists:users,id',
+            'slip_status_id' => 'nullable|exists:slip_statuses,id',
+            'selected_records' => 'required|array',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SlipController::reception()  —  app/Http/Controllers/SlipController.php:256
+──────────────────────────────────────────────────────────────────────────────
+([
+            'id' => 'required|exists:slips,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SlipController::approve()  —  app/Http/Controllers/SlipController.php:274
+──────────────────────────────────────────────────────────────────────────────
+([
+            'id' => [
+                'required',
+                'exists:slips,id',
+                function ($_, $value, $fail) {
+                    $slip = Slip::find($value);
+                    if (!$slip) {
+                        $fail('Le slip spécifié n\'existe pas.');
+                    } elseif (!$slip->is_received) {
+                        $fail('Le slip sélectionné n\'a pas encore été reçu.');
+                    } elseif (empty($slip->received_date)) {
+                        $fail('La date de réception du slip n\'est pas définie.');
+                    }
+                },
+            ],
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SlipController::integrate()  —  app/Http/Controllers/SlipController.php:309
+──────────────────────────────────────────────────────────────────────────────
+([
+            'id' => 'required|exists:slips,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SlipController::update()  —  app/Http/Controllers/SlipController.php:383
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|max:20',
+            'name' => 'required|max:200',
+            'description' => 'nullable',
+            'user_organisation_id' => 'required|exists:organisations,id',
+            'user_id' => 'nullable|exists:users,id',
+            'slip_status_id' => 'required|exists:slip_statuses,id',
+            'is_received' => 'nullable|boolean',
+            'received_date' => 'nullable|date',
+            'is_approved' => 'nullable|boolean',
+            'approved_date' => 'nullable|date',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SlipController::import()  —  app/Http/Controllers/SlipController.php:565
+──────────────────────────────────────────────────────────────────────────────
+([
+            'file' => [
+                'required',
+                'file',
+                function ($_, $value, $fail) use ($format) {
+                    $extension = strtolower($value->getClientOriginalExtension());
+                    if ($format === 'excel' && $extension !== 'xlsx') {
+                        $fail('The file must be an Excel file (.xlsx)');
+                    } elseif ($format === 'ead' && $extension !== 'xml') {
+                        $fail('The file must be an XML file (.xml)');
+                    } elseif ($format === 'seda' && !in_array($extension, ['xml','zip'])) {
+                        $fail('The file must be a SEDA XML (.xml) or package (.zip)');
+                    }
+                },
+            ],
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+slipRecordAttachmentController::upload()  —  app/Http/Controllers/slipRecordAttachmentController.php:16
+──────────────────────────────────────────────────────────────────────────────
+([
+            'file' => 'required|mimes:jpg,jpeg,png,pdf|max:2048',
+            'thumbnail' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+slipRecordAttachmentController::show()  —  app/Http/Controllers/slipRecordAttachmentController.php:84
+──────────────────────────────────────────────────────────────────────────────
+([
+            'a_id' => 'required|exists:attachments,id',
+            'r_id' => 'required|exists:slip_records,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SlipRecordContainerController::store()  —  app/Http/Controllers/SlipRecordContainerController.php:15
+──────────────────────────────────────────────────────────────────────────────
+([
+                'slip_record_id' => 'required|exists:slips,id',
+                'container_id' => 'required|exists:containers,id',
+                'creator_id' => 'required|exists:users,id',
+                'description' => 'required|string|max:200',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+SlipRecordContainerController::update()  —  app/Http/Controllers/SlipRecordContainerController.php:42
+──────────────────────────────────────────────────────────────────────────────
+([
+                'slip_record_id' => 'required|exists:slips,id',
+                'container_id' => 'required|exists:containers,id',
+                'creator_id' => 'required|exists:users,id',
+                'description' => 'required|string|max:200',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+SlipRecordController::store()  —  app/Http/Controllers/SlipRecordController.php:44
+──────────────────────────────────────────────────────────────────────────────
+([
+            'slip_id' => 'required|exists:slips,id',
+            'code' => 'required|string|max:10',
+            'name' => 'required|string',
+            'date_format' => 'required|string|max:1',
+            'date_start' => 'nullable|string|max:10',
+            'date_end' => 'nullable|string|max:10',
+            'date_exact' => 'nullable|date',
+            'content' => 'nullable|string',
+            'level_id' => 'required|exists:record_levels,id',
+            'width' => 'nullable|numeric',
+            'width_description' => 'nullable|string|max:100',
+            'support_id' => 'required|exists:record_supports,id',
+            'activity_id' => 'required|exists:activities,id',
+            'container_id' => 'nullable|exists:containers,id',
+            'creator_id' => 'required|exists:users,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SlipRecordController::update()  —  app/Http/Controllers/SlipRecordController.php:157
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|max:10',
+            'name' => 'required',
+            'date_format' => 'required|max:1',
+            'date_start' => 'nullable|max:10',
+            'date_end' => 'nullable|max:10',
+            'date_exact' => 'nullable|date',
+            'content' => 'nullable',
+            'level_id' => 'required',
+            'width' => 'nullable|numeric',
+            'width_description' => 'nullable|max:100',
+            'support_id' => 'required|exists:record_supports,id',
+            'activity_id' => 'required|exists:activities,id',
+            'container_ids' => 'nullable|array',
+            'container_ids.*' => 'exists:containers,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SlipStatusController::store()  —  app/Http/Controllers/SlipStatusController.php:31
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|max:50|unique:slip_statuses,name',
+            'description' => 'nullable',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SlipStatusController::update()  —  app/Http/Controllers/SlipStatusController.php:60
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|max:50|unique:slip_statuses,name',
+            'description' => 'nullable',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SortController::store()  —  app/Http/Controllers/SortController.php:24
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|unique:sorts|in:E,T,C',
+            'name' => 'required|max:45',
+            'description' => 'nullable|max:100',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SortController::update()  —  app/Http/Controllers/SortController.php:48
+──────────────────────────────────────────────────────────────────────────────
+([
+            'code' => 'required|unique:sorts,code,' . $sort->id . '|in:E,T,C',
+            'name' => 'required|max:45',
+            'description' => 'nullable|max:100',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SystemUpdateController::updateToVersion()  —  app/Http/Controllers/SystemUpdateController.php:123
+──────────────────────────────────────────────────────────────────────────────
+([
+                'confirm' => 'required|boolean|accepted'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+SystemUpdateController::rollback()  —  app/Http/Controllers/SystemUpdateController.php:209
+──────────────────────────────────────────────────────────────────────────────
+([
+                'backup_path' => 'required|string',
+                'confirm' => 'required|boolean|accepted'
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+TaskController::store()  —  app/Http/Controllers/TaskController.php:33
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => 'required|string|max:190',
+            'description' => 'nullable|string',
+            'status' => 'required|in:pending,in_progress,completed,cancelled',
+            'priority' => 'required|in:low,normal,high,urgent',
+            'assigned_to' => 'nullable|exists:users,id',
+            'due_date' => 'nullable|date',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+TaskController::update()  —  app/Http/Controllers/TaskController.php:69
+──────────────────────────────────────────────────────────────────────────────
+([
+            'title' => 'required|string|max:190',
+            'description' => 'nullable|string',
+            'status' => 'required|in:pending,in_progress,completed,cancelled',
+            'priority' => 'required|in:low,normal,high,urgent',
+            'assigned_to' => 'nullable|exists:users,id',
+            'due_date' => 'nullable|date',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusAssociativeRelationController::store()  —  app/Http/Controllers/ThesaurusAssociativeRelationController.php:47
+──────────────────────────────────────────────────────────────────────────────
+([
+            'related_term_id' => 'required|exists:thesaurus_concepts,id',
+            'relation_subtype' => 'required|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusController::store()  —  app/Http/Controllers/ThesaurusController.php:61
+──────────────────────────────────────────────────────────────────────────────
+([
+                'identifier' => 'required|string|max:50|unique:thesaurus_schemes',
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'language' => 'required|string|max:10',
+                'namespace_uri' => 'nullable|url|max:255',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusController::exportScheme()  —  app/Http/Controllers/ThesaurusController.php:173
+──────────────────────────────────────────────────────────────────────────────
+([
+            'scheme_id' => 'required|exists:thesaurus_schemes,id',
+            'format' => 'required|in:skos-rdf,csv,json',
+            'include_relations' => 'boolean',
+            'language' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusController::importFile()  —  app/Http/Controllers/ThesaurusController.php:217
+──────────────────────────────────────────────────────────────────────────────
+([
+            'file' => 'required|file|mimes:xml,rdf,csv,json,ttl,n3|max:20720',
+            'scheme_id' => 'nullable|exists:thesaurus_schemes,id',
+            'format' => 'required|in:skos-rdf,csv,json',
+            'language' => 'nullable|string',
+            'merge_mode' => 'required|in:replace,merge,append',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusController::apiAssociateTerms()  —  app/Http/Controllers/ThesaurusController.php:436
+──────────────────────────────────────────────────────────────────────────────
+([
+            'concept_ids' => 'required|array',
+            'concept_ids.*' => 'exists:thesaurus_concepts,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusController::apiConceptsAutocomplete()  —  app/Http/Controllers/ThesaurusController.php:471
+──────────────────────────────────────────────────────────────────────────────
+([
+                'search' => 'required|string|min:2',
+                'limit' => 'nullable|integer|min:1|max:10',
+                'scheme_id' => 'nullable|exists:thesaurus_schemes,id'
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusController::autoAssociateConcepts()  —  app/Http/Controllers/ThesaurusController.php:806
+──────────────────────────────────────────────────────────────────────────────
+([
+            'scheme_id' => 'required|exists:thesaurus_schemes,id',
+            'record_ids' => 'nullable|array',
+            'record_ids.*' => 'exists:records,id',
+            'min_weight' => 'nullable|numeric|min:0|max:1',
+            'max_concepts' => 'nullable|integer|min:1|max:10',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusController::storeBroaderRelation()  —  app/Http/Controllers/ThesaurusController.php:872
+──────────────────────────────────────────────────────────────────────────────
+([
+            'broader_term_id' => 'required|exists:thesaurus_concepts,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusController::storeNarrowerRelation()  —  app/Http/Controllers/ThesaurusController.php:906
+──────────────────────────────────────────────────────────────────────────────
+([
+            'narrower_term_id' => 'required|exists:thesaurus_concepts,id'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusController::searchApi()  —  app/Http/Controllers/ThesaurusController.php:1121
+──────────────────────────────────────────────────────────────────────────────
+([
+                'keywords' => 'required|array',
+                'keywords.*' => 'string|min:2',
+                'limit' => 'nullable|integer|min:1|max:50'
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusExportImportController::importCsv()  —  app/Http/Controllers/ThesaurusExportImportController.php:120
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+            'file' => 'required|file|mimes:csv,txt|max:10240',
+            'mode' => 'required|in:add,update,merge,replace'
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusExportImportController::importRdf()  —  app/Http/Controllers/ThesaurusExportImportController.php:155
+──────────────────────────────────────────────────────────────────────────────
+($request->all(), [
+                'file' => 'required|file|mimes:xml,rdf|max:10240',
+                'mode' => 'required|in:add,update,merge,replace'
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusSchemeController::store()  —  app/Http/Controllers/ThesaurusSchemeController.php:40
+──────────────────────────────────────────────────────────────────────────────
+([
+                'identifier' => 'required|string|max:50|unique:thesaurus_schemes',
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'language' => 'required|string|max:10',
+                'namespace_uri' => 'nullable|url|max:255',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusSchemeController::update()  —  app/Http/Controllers/ThesaurusSchemeController.php:117
+──────────────────────────────────────────────────────────────────────────────
+([
+                'identifier' => 'required|string|max:50|unique:thesaurus_schemes,identifier,' . $scheme->id,
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'language' => 'required|string|max:10',
+                'uri' => 'required|url|max:255|unique:thesaurus_schemes,uri,' . $scheme->id,
+                'namespace_uri' => 'nullable|url|max:255',
+            ])
+
+──────────────────────────────────────────────────────────────────────────────
+ThesaurusTranslationController::store()  —  app/Http/Controllers/ThesaurusTranslationController.php:30
+──────────────────────────────────────────────────────────────────────────────
+([
+            'target_term_id' => 'required|exists:thesaurus_concepts,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+UserController::store()  —  app/Http/Controllers/UserController.php:33
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'surname' => 'nullable|string|max:255',
+            'birthday' => 'required|date',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+UserController::update()  —  app/Http/Controllers/UserController.php:77
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'surname' => 'nullable|string|max:255',
+            'birthday' => 'required|date',
+            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
+            'password' => 'nullable|string|min:8|confirmed',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+UserOrganisationRoleController::store()  —  app/Http/Controllers/UserOrganisationRoleController.php:37
+──────────────────────────────────────────────────────────────────────────────
+([
+            'user_id' => 'required|exists:users,id',
+            'organisation_id' => 'required|exists:organisations,id',
+            'role_id' => 'required|exists:roles,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+UserOrganisationRoleController::update()  —  app/Http/Controllers/UserOrganisationRoleController.php:89
+──────────────────────────────────────────────────────────────────────────────
+([
+            'user_id' => 'required|exists:users,id',
+            'organisation_id' => 'required|exists:organisations,id',
+            'role_id' => 'required|exists:roles,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+UserOrganisationRoleController::destroy()  —  app/Http/Controllers/UserOrganisationRoleController.php:108
+──────────────────────────────────────────────────────────────────────────────
+([
+            'user_id' => 'required|exists:users,id',
+            'organisation_id' => 'required|exists:organisations,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+UserRoleController::store()  —  app/Http/Controllers/UserRoleController.php:25
+──────────────────────────────────────────────────────────────────────────────
+([
+            'role_id' => 'required|exists:roles,id',
+            'user_id' => 'required|exists:users,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+UserRoleController::update()  —  app/Http/Controllers/UserRoleController.php:60
+──────────────────────────────────────────────────────────────────────────────
+([
+            'role_id' => 'required|exists:roles,id',
+            'user_id' => 'required|exists:users,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkflowDefinitionController::store()  —  app/Http/Controllers/WorkflowDefinitionController.php:36
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:100',
+            'description' => 'nullable|string',
+            'bpmn_xml' => 'required|string',
+            'status' => 'required|string|in:draft,active,archived',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkflowDefinitionController::update()  —  app/Http/Controllers/WorkflowDefinitionController.php:75
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:100',
+            'description' => 'nullable|string',
+            'bpmn_xml' => 'required|string',
+            'status' => 'required|string|in:draft,active,archived',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkflowDefinitionController::storeConfiguration()  —  app/Http/Controllers/WorkflowDefinitionController.php:116
+──────────────────────────────────────────────────────────────────────────────
+([
+            'bpmn_xml' => 'required|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkflowDefinitionController::updateConfiguration()  —  app/Http/Controllers/WorkflowDefinitionController.php:146
+──────────────────────────────────────────────────────────────────────────────
+([
+            'bpmn_xml' => 'required|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkflowInstanceController::store()  —  app/Http/Controllers/WorkflowInstanceController.php:50
+──────────────────────────────────────────────────────────────────────────────
+([
+            'definition_id' => 'required|exists:workflow_definitions,id',
+            'name' => 'required|string|max:190',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkplaceBookmarkController::store()  —  app/Http/Controllers/WorkplaceBookmarkController.php:29
+──────────────────────────────────────────────────────────────────────────────
+([
+            'bookmarkable_type' => 'required|string',
+            'bookmarkable_id' => 'required|integer',
+            'note' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkplaceContentController::shareFolder()  —  app/Http/Controllers/WorkplaceContentController.php:41
+──────────────────────────────────────────────────────────────────────────────
+([
+            'folder_id' => 'required|exists:record_digital_folders,id',
+            'access_level' => 'required|in:view,edit,full',
+            'share_note' => 'nullable|string',
+            'is_pinned' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkplaceContentController::shareDocument()  —  app/Http/Controllers/WorkplaceContentController.php:75
+──────────────────────────────────────────────────────────────────────────────
+([
+            'document_id' => 'required|exists:record_digital_documents,id',
+            'access_level' => 'required|in:view,edit,full',
+            'share_note' => 'nullable|string',
+            'is_featured' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkplaceController::store()  —  app/Http/Controllers/WorkplaceController.php:50
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'category_id' => 'required|exists:workplace_categories,id',
+            'template_id' => 'nullable|exists:workplace_templates,id',
+            'is_public' => 'boolean',
+            'allow_external_sharing' => 'boolean',
+            'max_members' => 'nullable|integer|min:1',
+            'max_storage_mb' => 'nullable|integer|min:1',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkplaceController::update()  —  app/Http/Controllers/WorkplaceController.php:133
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'category_id' => 'required|exists:workplace_categories,id',
+            'is_public' => 'boolean',
+            'allow_external_sharing' => 'boolean',
+            'max_members' => 'nullable|integer|min:1',
+            'max_storage_mb' => 'nullable|integer|min:1',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkplaceMemberController::store()  —  app/Http/Controllers/WorkplaceMemberController.php:39
+──────────────────────────────────────────────────────────────────────────────
+([
+            'user_id' => 'nullable|exists:users,id',
+            'email' => 'nullable|email',
+            'role' => 'required|in:admin,editor,contributor,viewer',
+            'message' => 'nullable|string',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkplaceMemberController::update()  —  app/Http/Controllers/WorkplaceMemberController.php:91
+──────────────────────────────────────────────────────────────────────────────
+([
+            'role' => 'required|in:admin,editor,contributor,viewer',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkplaceMemberController::updatePermissions()  —  app/Http/Controllers/WorkplaceMemberController.php:129
+──────────────────────────────────────────────────────────────────────────────
+([
+            'can_create_folders' => 'boolean',
+            'can_create_documents' => 'boolean',
+            'can_delete' => 'boolean',
+            'can_share' => 'boolean',
+            'can_invite' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkplaceMemberController::updateNotifications()  —  app/Http/Controllers/WorkplaceMemberController.php:148
+──────────────────────────────────────────────────────────────────────────────
+([
+            'notify_on_new_content' => 'boolean',
+            'notify_on_mentions' => 'boolean',
+            'notify_on_updates' => 'boolean',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkplaceMessageController::store()  —  app/Http/Controllers/WorkplaceMessageController.php:43
+──────────────────────────────────────────────────────────────────────────────
+([
+            'type' => 'required|in:group,channel,private',
+            'name' => 'required_if:type,group,channel|max:150',
+            'participant_ids' => 'required|array',
+            'participant_ids.*' => 'exists:users,id',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkplaceMessageController::storeMessage()  —  app/Http/Controllers/WorkplaceMessageController.php:98
+──────────────────────────────────────────────────────────────────────────────
+(['content' => 'required|string'])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkplaceTemplateController::store()  —  app/Http/Controllers/WorkplaceTemplateController.php:27
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'icon' => 'nullable|string',
+            'category' => 'nullable|string',
+            'default_structure' => 'nullable|json',
+            'default_settings' => 'nullable|json',
+        ])
+
+──────────────────────────────────────────────────────────────────────────────
+WorkplaceTemplateController::update()  —  app/Http/Controllers/WorkplaceTemplateController.php:69
+──────────────────────────────────────────────────────────────────────────────
+([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'icon' => 'nullable|string',
+            'category' => 'nullable|string',
+            'default_structure' => 'nullable|json',
+            'default_settings' => 'nullable|json',
+        ])
+

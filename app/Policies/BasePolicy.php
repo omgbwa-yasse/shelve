@@ -45,11 +45,17 @@ abstract class BasePolicy
     }
 
     /**
-     * Check if the user has the required permission using Gate.
+     * Check if the user has the required permission using the native permission system.
+     *
+     * On passe par `User::hasPermission()` et non par `Gate::forUser()->allows()` :
+     * les Gates dynamiques de PolicyService ne sont enregistrés qu'au boot à partir
+     * des permissions présentes en base. Une permission créée plus tard (seed, test)
+     * n'aurait aucun Gate et `allows()` renverrait false — refus silencieux. La
+     * méthode du modèle interroge directement `user_permissions` / `role_permissions`.
      */
     protected function hasPermission(User $user, string $permission): bool
     {
-        return Gate::forUser($user)->allows($permission);
+        return $user->hasPermission($permission);
     }
 
     /**

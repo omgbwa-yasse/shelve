@@ -20,6 +20,10 @@ class Backup extends Model
         'path',
     ];
 
+    protected $casts = [
+        'date_time' => 'datetime',
+    ];
+
 
 
 

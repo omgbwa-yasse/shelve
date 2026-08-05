@@ -42,7 +42,15 @@ class MailContainer extends Model
         return $this->belongsTo(Organisation::class, 'creator_organisation_id');
     }
 
-
+    /**
+     * Portée organisation (R03) : un contenant de courrier appartient à l'organisation
+     * qui l'a créé (`creator_organisation_id`), comme le filtre l'index du contrôleur
+     * Blade (`MailContainerController::index()`).
+     */
+    public function scopeInOrganisation($query, int $organisationId)
+    {
+        return $query->where('creator_organisation_id', $organisationId);
+    }
 
     public $timestamps = true;
 }

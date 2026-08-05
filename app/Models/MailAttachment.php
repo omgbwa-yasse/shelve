@@ -32,4 +32,14 @@ class MailAttachment extends Model
                     ->withPivot('added_by') // Ajouté pour correspondre au schéma SQL
                     ->withTimestamps();
     }
+
+    /**
+     * Portée organisation (R03) : une pièce jointe de courrier est visible par une
+     * organisation si elle est rattachée à au moins un courrier qui l'implique
+     * (`Mail::inOrganisation`). Sans lien courrier, la pièce jointe est hors périmètre.
+     */
+    public function scopeInOrganisation($query, int $organisationId)
+    {
+        return $query->whereHas('mails', fn ($q) => $q->inOrganisation($organisationId));
+    }
 }

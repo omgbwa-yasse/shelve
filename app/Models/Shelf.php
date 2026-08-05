@@ -31,4 +31,13 @@ class Shelf extends Model
     {
         return $this->room ? $this->room->organisations : collect();
     }
+
+    /**
+     * Portée organisation (R03) : les rayonnages héritent de l'organisation de leur
+     * salle, comme le fait l'index du contrôleur Blade.
+     */
+    public function scopeInOrganisation($query, int $organisationId)
+    {
+        return $query->whereHas('room.organisations', fn ($q) => $q->whereKey($organisationId));
+    }
 }

@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\models\RecordStatus;
+use App\Models\RecordStatus;
 use Illuminate\Http\Request;
 
 class RecordStatusController extends Controller

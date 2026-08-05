@@ -72,7 +72,7 @@ class Communication extends Model
      */
     public function isReturned(): bool
     {
-        return $this->status === 'returned';
+        return $this->status === \App\Enums\CommunicationStatus::RETURNED;
     }
 
     /**
@@ -88,7 +88,7 @@ class Communication extends Model
      */
     public function isPending(): bool
     {
-        return $this->status === 'pending';
+        return $this->status === \App\Enums\CommunicationStatus::PENDING;
     }
 
     /**
@@ -96,7 +96,7 @@ class Communication extends Model
      */
     public function isApproved(): bool
     {
-        return $this->status === 'approved';
+        return $this->status === \App\Enums\CommunicationStatus::APPROVED;
     }
 
     /**
@@ -104,7 +104,7 @@ class Communication extends Model
      */
     public function isRejected(): bool
     {
-        return $this->status === 'rejected';
+        return $this->status === \App\Enums\CommunicationStatus::REJECTED;
     }
 
     /**
@@ -112,7 +112,7 @@ class Communication extends Model
      */
     public function isInConsultation(): bool
     {
-        return $this->status === 'in_consultation';
+        return $this->status === \App\Enums\CommunicationStatus::IN_CONSULTATION;
     }
 
     /**

@@ -88,6 +88,15 @@ class Dolly extends Model
         return $this->belongsTo(Organisation::class, 'owner_organisation_id');
     }
 
+    /**
+     * Portée organisation (R03) : les chariots sont org-scopés par
+     * `owner_organisation_id`, comme le fait l'index du contrôleur Blade.
+     */
+    public function scopeInOrganisation($query, int $organisationId)
+    {
+        return $query->where('owner_organisation_id', $organisationId);
+    }
+
 
 
     public static function categories()

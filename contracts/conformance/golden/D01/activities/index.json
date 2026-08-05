@@ -1,0 +1,18 @@
+{
+  "body": {
+    "data": [],
+    "links": {
+      "first": "<url>",
+      "last": "<url>",
+      "next": null,
+      "prev": null
+    },
+    "meta": {
+      "current_page": 1,
+      "last_page": 1,
+      "per_page": 25,
+      "total": 0
+    }
+  },
+  "status": 200
+}

@@ -13,6 +13,8 @@ class RetentionActivity extends Model
 
     protected $table = 'retention_activity';
 
+    public $timestamps = false;
+
     protected $fillable = ['retention_id', 'activity_id'];
 
     public function retention()

@@ -37,5 +37,15 @@ class MailArchive extends Model
         return $this->belongsTo(User::class, 'archived_by');
     }
 
+    /**
+     * Portée organisation (R03) : une archive de courrier appartient à l'organisation qui
+     * possède le contenant (`mail_containers.creator_organisation_id`) — l'archive n'a pas
+     * de colonne d'organisation propre, le contenant fait foi.
+     */
+    public function scopeInOrganisation($query, int $organisationId)
+    {
+        return $query->whereHas('container', fn ($q) => $q->where('creator_organisation_id', $organisationId));
+    }
+
 
 }

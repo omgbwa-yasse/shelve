@@ -137,11 +137,16 @@ class ThesaurusConcept extends Model
     }
 
     /**
-     * Vérifier si c'est un concept de tête
+     * Vérifier si c'est un concept de tête.
+     *
+     * Un concept de tête est un concept sans concept plus large (relation
+     * « broader »), conformément au filtre `is_top_term` du moteur de recherche
+     * SKOS. La table `thesaurus_top_concepts` n'existe pas dans le schéma :
+     * l'information est dérivée de `thesaurus_concept_relations`.
      */
     public function isTopConcept()
     {
-        return $this->belongsToMany(ThesaurusScheme::class, 'thesaurus_top_concepts', 'concept_id', 'scheme_id')->exists();
+        return !$this->broaderConcepts()->exists();
     }
 
     /**

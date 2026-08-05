@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\models\User;
-use App\models\UserType;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 

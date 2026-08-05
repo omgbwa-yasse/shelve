@@ -233,7 +233,29 @@ class Record extends Model
     */
     public function authors(): BelongsToMany
     {
-        return $this->belongsToMany(Author::class, 'record_author', 'record_id', 'author_id');
+        return $this->belongsToMany(Author::class, 'record_author', 'record_id', 'author_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Pièces jointes (table `attachments`, partagée avec D06), via la pivot
+     * `record_physical_attachment` (FK `record_id` repointée vers `records` en phase 4).
+     */
+    public function attachments(): BelongsToMany
+    {
+        return $this->belongsToMany(Attachment::class, 'record_physical_attachment', 'record_id', 'attachment_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Contenants de la notice (pivot `record_physical_container`). Depuis l'unification
+     * (2026-08-04), la colonne `record_physical_id` porte l'id de la notice (`records.id`).
+     */
+    public function containers(): BelongsToMany
+    {
+        return $this->belongsToMany(Container::class, 'record_physical_container', 'record_physical_id', 'container_id')
+            ->withPivot(['description', 'creator_id'])
+            ->withTimestamps();
     }
 
     public function keywords(): BelongsToMany
@@ -580,6 +602,16 @@ class Record extends Model
     public function scopeCurrentVersion(Builder $query): Builder
     {
         return $query->where('is_current_version', true);
+    }
+
+    /**
+     * Portée organisation (R03) : les notices sont org-scopées par `organisation_id`
+     * (trait BelongsToOrganisation). Une notice hors de l'organisation courante répond
+     * 404, jamais 403 (motif D03).
+     */
+    public function scopeInOrganisation(Builder $query, int $organisationId): Builder
+    {
+        return $query->where($this->getTable() . '.organisation_id', $organisationId);
     }
 
     public function scopeOfType(Builder $query, string $typeCode): Builder

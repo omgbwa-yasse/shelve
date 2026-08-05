@@ -5,29 +5,40 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Pivot notice ↔ pièce jointe (table `record_physical_attachment`, FK `record_id`
+ * repointée vers `records` en phase 4).
+ *
+ * Clé composite `(record_id, attachment_id)` sans colonne `id` : chaque ressource est
+ * résolue sur ces deux clés (motif D04 SlipRecordAttachment). Le modèle est org-scopé
+ * par héritage de sa notice parente dans le contrôleur.
+ */
 class RecordAttachment extends Model
 {
-protected $table="record_attachment";
     use HasFactory;
 
+    protected $table = 'record_physical_attachment';
+
+    protected $primaryKey = ['record_id', 'attachment_id'];
+
+    protected $keyType = 'array';
+
+    public $incrementing = false;
+
+    public $timestamps = true;
+
     protected $fillable = [
-        'path',
-        'name',
-        'crypt',
-        'size',
-        'creator_id',
-        'crypt_sha512',
-        'thumbnail_path',
+        'record_id',
+        'attachment_id',
     ];
 
-    public function creator()
+    public function record()
     {
-        return $this->belongsTo(User::class, 'creator_id');
+        return $this->belongsTo(Record::class, 'record_id');
     }
 
-    public function records()
+    public function attachment()
     {
-        return $this->belongsToMany(record::class, 'record_attachment', 'attachment_id', 'mail_id');
+        return $this->belongsTo(Attachment::class, 'attachment_id');
     }
-
 }

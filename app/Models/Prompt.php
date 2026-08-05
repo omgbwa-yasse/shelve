@@ -48,4 +48,19 @@ class Prompt extends Model
     {
         return $this->hasMany(PromptTransaction::class);
     }
+
+    /**
+     * Portée de visibilité (D14) : un prompt est visible si système, s'il appartient
+     * à l'organisation courante, ou s'il est personnel (`organisation_id` nul et
+     * créé par l'agent). Reprise du `where` de `PromptManagementController::index()`
+     * et de `authorizePromptAccess()`.
+     */
+    public function scopeVisibleTo($query, ?int $organisationId, ?int $userId)
+    {
+        return $query->where(function ($q) use ($organisationId, $userId) {
+            $q->where('is_system', true)
+                ->orWhere('organisation_id', $organisationId)
+                ->orWhere(fn ($q2) => $q2->whereNull('organisation_id')->where('user_id', $userId));
+        });
+    }
 }

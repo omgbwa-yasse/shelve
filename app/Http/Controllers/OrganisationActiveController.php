@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
-use App\models\OrganisationActive;
+use App\Models\OrganisationActive;
+// FIXME (D09) : App\models\UserOrganisation n'existe pas — la classe est introuvable,
+// et `index()` (ligne ~57) lève donc une erreur fatale à l'exécution. Il s'agit
+// probablement de UserOrganisationRole ; à trancher lors du portage de D09.
 use App\models\UserOrganisation;
-use App\models\Organisation;
+use App\Models\Organisation;
 use Illuminate\Support\Facades\Auth;
 
 class OrganisationActiveController extends Controller

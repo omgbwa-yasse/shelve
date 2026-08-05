@@ -50,4 +50,14 @@ class RecordReactivation extends Model
     {
         return $this->belongsTo(User::class, 'approved_by');
     }
+
+    /**
+     * Portée organisation (R03) : les demandes de réactivation sont org-scopées par
+     * `organisation_id` (trait BelongsToOrganisation). Une demande hors de l'organisation
+     * courante répond 404, jamais 403 (motif D03).
+     */
+    public function scopeInOrganisation($query, int $organisationId)
+    {
+        return $query->where($this->getTable() . '.organisation_id', $organisationId);
+    }
 }

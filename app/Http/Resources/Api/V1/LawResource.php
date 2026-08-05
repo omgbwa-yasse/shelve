@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Http\Resources\Api\V1;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
+
+/**
+ * D01 — relu et validé le 2026-08-04 contre le contrôleur Blade et le schéma.
+ */
+class LawResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'code' => $this->code,
+            'name' => $this->name,
+            'description' => $this->description,
+            'publish_date' => $this->publish_date ? Carbon::parse($this->publish_date)->toDateString() : null,
+            'law_type_id' => $this->law_type_id,
+            'created_at' => $this->created_at?->toIso8601ZuluString(),
+            'updated_at' => $this->updated_at?->toIso8601ZuluString(),
+        ];
+    }
+}

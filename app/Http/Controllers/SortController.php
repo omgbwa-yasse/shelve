@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\models\Sort;
+use App\Models\Sort;
 use Illuminate\Http\Request;
 
 

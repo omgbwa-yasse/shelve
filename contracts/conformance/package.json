@@ -1,0 +1,17 @@
+{
+  "name": "shelve-api-conformance",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Suite de conformité de l'API shelve — rejouable à l'identique contre Laravel puis Spring Boot",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:laravel": "API_BASE_URL=http://localhost:8000/api/v1 vitest run",
+    "test:springboot": "API_BASE_URL=http://localhost:8080/api/v1 vitest run",
+    "golden:update": "UPDATE_GOLDEN=1 vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  }
+}

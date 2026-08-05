@@ -10,9 +10,11 @@ class Role extends Model
     use HasFactory;
     protected $table = 'roles';
 
+    // `display_name` a été retiré : la colonne n'existe pas dans la table `roles`.
+    // Combinée au `Role::create($request->all())` de RoleController, sa présence ici
+    // transformait un champ inattendu en erreur SQL 1054.
     protected $fillable = [
         'name',
-        'display_name',
         'description',
         'guard_name',
     ];

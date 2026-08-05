@@ -36,6 +36,15 @@ class Room extends Model
         return $this->belongsToMany(Organisation::class, 'organisation_room', 'room_id', 'organisation_id');
     }
 
+    /**
+     * Portée organisation (R03) : les salles sont org-scopées par la pivot
+     * `organisation_room`, comme le fait l'index du contrôleur Blade.
+     */
+    public function scopeInOrganisation($query, int $organisationId)
+    {
+        return $query->whereHas('organisations', fn ($q) => $q->whereKey($organisationId));
+    }
+
     // Méthodes pour la visibilité
     public function isPublic()
     {

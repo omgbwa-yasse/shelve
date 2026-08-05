@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class PublicUser extends Authenticatable
 {
-    use HasFactory, SoftDeletes, Notifiable;
+    use HasApiTokens, HasFactory, SoftDeletes, Notifiable;
 
     protected $table = 'public_users';
 

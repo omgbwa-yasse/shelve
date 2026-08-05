@@ -101,17 +101,22 @@ class PolicyService
                 return $model->involvesOrganisation($user->current_organisation_id);
             }
 
-            // Si le modèle a une relation avec l'organisation
-            if (method_exists($model, 'organisations')) {
-                return $model->organisations()->where('id', $user->current_organisation_id)->exists();
+            // Si le modèle a une colonne organisation_id : propriété directe, on restreint.
+            // Une ligne sans organisation (organisation_id NULL) est un réglage/élément
+            // global : lisible par tous les agents authentifiés (ex. `settings`).
+            if (isset($model->organisation_id) || in_array('organisation_id', array_keys($model->getAttributes()))) {
+                return $model->organisation_id === null
+                    || $model->organisation_id === $user->current_organisation_id;
             }
 
-            // Si le modèle a un champ organisation_id
-            if (isset($model->organisation_id)) {
-                return $model->organisation_id === $user->current_organisation_id;
-            }
-
-            return false;
+            // Tous les autres modèles sont des référentiels partagés ou des données
+            // globales (activités, langues, sorts, mots-clés, auteurs, listes de
+            // référence, catégories de paramètres, contacts/organisations externes...).
+            // La relation `organisations()` en many-to-many est une affectation, pas
+            // une propriété : restreindre sur elle casserait l'accès aux référentiels
+            // partagés sans apporter la moindre garantie d'isolation (le risque R03 ne
+            // concerne que les modèles org-scopés).
+            return true;
         });
 
         // 8. Gate dynamique pour toutes les permissions existantes
