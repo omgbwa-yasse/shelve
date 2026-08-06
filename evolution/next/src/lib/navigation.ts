@@ -175,23 +175,8 @@ export const navigation: NavDomain[] = [
   },
 
   // ------------------------------------------------------------------
-  // 6. Communications — submenu/communications.blade.php
-  // ------------------------------------------------------------------
-  {
-    key: 'communications',
-    label: 'Communications',
-    href: '/communications',
-    icon: 'communications',
-    items: [
-      { key: 'communications-all', group: 'Communications', label: 'Voir toutes les communications', href: '/communications', icon: 'inbox' },
-      { key: 'reservations-all', group: 'Réservations', label: 'Voir toutes les réservations', href: '/communications/reservations', icon: 'listOrdered' },
-      { key: 'communications-create', group: 'Création', label: 'Nouvelle communication', href: '/communications/create', icon: 'plusCircle' },
-      { key: 'reservations-create', group: 'Création', label: 'Nouvelle réservation', href: '/communications/reservations/create', icon: 'calendarCheck' },
-    ],
-  },
-
-  // ------------------------------------------------------------------
   // 7. Transfers / Transferts — submenu/transferrings.blade.php
+  //    (intègre Communications & Réservations en sous-sections)
   // ------------------------------------------------------------------
   {
     key: 'transferrings',
@@ -211,6 +196,12 @@ export const navigation: NavDomain[] = [
 
       { key: 'transferrings-create', group: 'Création', label: 'Bordereau', href: '/transferrings/create', icon: 'building2' },
       { key: 'transferrings-containers', group: 'Création', label: 'Boîte chrono', href: '/transferrings/containers', icon: 'archive' },
+
+      // Communications & Réservations : sous-sections de Transferts.
+      { key: 'communications-all', group: 'Communications', label: 'Voir toutes les communications', href: '/communications', icon: 'inbox' },
+      { key: 'communications-create', group: 'Communications', label: 'Nouvelle communication', href: '/communications/create', icon: 'plusCircle' },
+      { key: 'reservations-all', group: 'Réservations', label: 'Voir toutes les réservations', href: '/communications/reservations', icon: 'listOrdered' },
+      { key: 'reservations-create', group: 'Réservations', label: 'Nouvelle réservation', href: '/communications/reservations/create', icon: 'calendarCheck' },
 
       // Cycle de vie fusionné dans Déclassement (même rôle : suivi du sort des
       // dossiers) — plus de section "Cycle de vie" séparée dans le menu. Les
