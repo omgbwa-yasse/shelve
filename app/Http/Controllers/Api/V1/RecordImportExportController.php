@@ -22,11 +22,14 @@ use Symfony\Component\HttpFoundation\Response;
 class RecordImportExportController extends Controller
 {
     /**
-     * GET /api/v1/records/export?format=excel|seda|ead
+     * GET /api/v1/records/export?format=excel|seda|ead&fields=code,name,...
      */
     public function export(Request $request): Response
     {
         $format = $request->query('format', 'excel');
+        $fields = $request->query('fields')
+            ? array_values(array_filter(array_map('trim', explode(',', (string) $request->query('fields')))))
+            : null;
 
         $records = Record::inOrganisation(Auth::user()->current_organisation_id)
             ->currentVersion()
@@ -41,12 +44,12 @@ class RecordImportExportController extends Controller
                 (new EADExport())->exportRecords($records),
                 'notices-ead.xml',
             ),
-            default => Excel::download(new UnifiedRecordsExport($records), 'notices.xlsx'),
+            default => Excel::download(new UnifiedRecordsExport($records, $fields), 'notices.xlsx'),
         };
     }
 
     /**
-     * POST /api/v1/records/import (multipart : file)
+     * POST /api/v1/records/import (multipart : file, fields, defaults)
      */
     public function import(Request $request)
     {
@@ -54,9 +57,18 @@ class RecordImportExportController extends Controller
             'file' => 'required|file|mimes:xlsx,xls',
         ]);
 
+        $fields = $request->input('fields')
+            ? array_values(array_filter(array_map('trim', explode(',', (string) $request->input('fields')))))
+            : null;
+        $defaults = $request->input('defaults')
+            ? json_decode((string) $request->input('defaults'), true) ?: []
+            : [];
+
         $service = new RecordsBulkImportService(
             Auth::user()->current_organisation_id,
             Auth::id(),
+            $fields,
+            is_array($defaults) ? $defaults : [],
         );
 
         $report = $service->import($request->file('file'));

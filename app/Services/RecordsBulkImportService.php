@@ -11,10 +11,9 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
 /**
- * Import en masse de notices depuis un fichier Excel (gabarit : code | name |
- * description | type_id | start_date | end_date). Idempotent par code : si le
- * code existe, la notice est mise à jour. Rapport ligne par ligne (aucune
- * erreur silencieuse).
+ * Import en masse de notices depuis un fichier Excel. Étape intermédiaire :
+ * choix des champs à importer (`$fields`) et valeurs par défaut des champs
+ * obligatoires (`$defaults`). Idempotent par code. Rapport ligne par ligne.
  */
 class RecordsBulkImportService implements ToCollection, WithHeadingRow
 {
@@ -23,6 +22,8 @@ class RecordsBulkImportService implements ToCollection, WithHeadingRow
     public function __construct(
         private int $organisationId,
         private ?int $userId = null,
+        private ?array $fields = null,
+        private ?array $defaults = null,
     ) {
     }
 
@@ -30,19 +31,20 @@ class RecordsBulkImportService implements ToCollection, WithHeadingRow
     {
         foreach ($rows as $index => $row) {
             $line = $index + 2;
-            $code = trim((string) ($row['code'] ?? ''));
-            $name = trim((string) ($row['name'] ?? ''));
 
-            if ($code === '' || $name === '') {
-                $this->report['errors'][] = "Ligne {$line} : code et nom sont obligatoires.";
+            $code = $this->field($row, 'code', required: true, line: $line);
+            $name = $this->field($row, 'name', required: true, line: $line);
+
+            if ($code === null || $name === null) {
                 continue;
             }
 
+            $typeId = $this->field($row, 'type_id');
             $type = null;
-            if (!empty($row['type_id'])) {
-                $type = RecordType::find($row['type_id']);
+            if ($typeId !== null && $typeId !== '') {
+                $type = RecordType::find($typeId);
                 if (!$type) {
-                    $this->report['errors'][] = "Ligne {$line} : type_id {$row['type_id']} inconnu.";
+                    $this->report['errors'][] = "Ligne {$line} : type_id {$typeId} inconnu.";
                     continue;
                 }
             }
@@ -50,14 +52,14 @@ class RecordsBulkImportService implements ToCollection, WithHeadingRow
             $data = [
                 'code' => $code,
                 'name' => $name,
-                'description' => $row['description'] ?? null,
+                'description' => $this->field($row, 'description'),
                 'type_id' => $type?->id,
                 'level_id' => RecordLevel::query()->value('id'),
                 'status_id' => RecordStatus::query()->value('id'),
                 'organisation_id' => $this->organisationId,
                 'creator_id' => $this->userId,
-                'start_date' => !empty($row['start_date']) ? $row['start_date'] : null,
-                'end_date' => !empty($row['end_date']) ? $row['end_date'] : null,
+                'start_date' => $this->field($row, 'start_date'),
+                'end_date' => $this->field($row, 'end_date'),
             ];
 
             $existing = Record::withTrashed()->where('code', $code)->first();
@@ -70,6 +72,36 @@ class RecordsBulkImportService implements ToCollection, WithHeadingRow
                 $this->report['created']++;
             }
         }
+    }
+
+    /**
+     * Lit un champ depuis la ligne, en tenant compte des champs choisis et des
+     * valeurs par défaut. Retourne null si absent (avec erreur si requis).
+     */
+    protected function field(Collection $row, string $field, bool $required = false, int $line = 0): ?string
+    {
+        // Champ non choisi → ignoré.
+        if ($this->fields !== null && !in_array($field, $this->fields, true)) {
+            return null;
+        }
+
+        $value = trim((string) ($row[$field] ?? ''));
+
+        if ($value !== '') {
+            return $value;
+        }
+
+        // Valeur par défaut (champs obligatoires ou réglés par l'utilisateur).
+        if (isset($this->defaults[$field]) && $this->defaults[$field] !== '') {
+            return trim((string) $this->defaults[$field]);
+        }
+
+        if ($required) {
+            $this->report['errors'][] = "Ligne {$line} : le champ « {$field} » est obligatoire.";
+            return null;
+        }
+
+        return null;
     }
 
     public function import($file): array

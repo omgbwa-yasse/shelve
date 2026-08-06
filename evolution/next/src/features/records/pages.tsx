@@ -903,43 +903,121 @@ export function AuthorDetail({ id }: { id: string }) {
   );
 }
 
-/** Export des notices : choix du format (Excel / SEDA / EAD). */
+const EXPORT_FIELDS: { key: string; label: string }[] = [
+  { key: 'code', label: 'Code' }, { key: 'name', label: 'Nom' }, { key: 'type', label: 'Typologie' },
+  { key: 'level', label: 'Niveau' }, { key: 'status', label: 'Statut' }, { key: 'activity', label: 'Activité' },
+  { key: 'date_exact', label: 'Date exacte' }, { key: 'date_start', label: 'Date début' }, { key: 'date_end', label: 'Date fin' },
+  { key: 'description', label: 'Description' }, { key: 'content', label: 'Contenu' },
+  { key: 'archival_history', label: 'Historique archivistique' }, { key: 'biographical_history', label: 'Notice biographique' },
+  { key: 'access_conditions', label: "Conditions d'accès" }, { key: 'note', label: 'Note' },
+  { key: 'organisation', label: 'Organisation' }, { key: 'parent', label: 'Parent' },
+  { key: 'version', label: 'Version' }, { key: 'created_at', label: 'Créée le' },
+];
+
+/** Export des notices : format + choix des champs (étape intermédiaire). */
 export function RecordsExport() {
   const [format, setFormat] = useState('excel');
+  const [fields, setFields] = useState<string[]>(['code', 'name', 'description', 'date_start', 'date_end']);
+  const [ready, setReady] = useState(false);
+
+  function toggle(field: string) {
+    setFields((prev) => (prev.includes(field) ? prev.filter((f) => f !== field) : [...prev, field]));
+  }
+
+  const exportUrl = format === 'excel'
+    ? `/api/proxy/api/v1/records/export?format=excel&fields=${fields.join(',')}`
+    : `/api/proxy/api/v1/records/export?format=${format}`;
+
   return (
     <div className="flex h-full flex-col gap-4">
       <header>
         <h1 className="text-xl font-semibold">Exporter les notices</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Choisissez un format, puis exportez toutes les notices de l'organisation.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Choisissez le format, puis les champs à inclure avant d'exporter.</p>
       </header>
       <div className="grid max-w-2xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4">
         <label className="flex flex-col gap-1 text-sm">
           <span>Format d'export</span>
-          <select value={format} onChange={(e) => setFormat(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm">
+          <select
+            value={format}
+            onChange={(e) => { setFormat(e.target.value); setReady(false); }}
+            className="rounded border border-border bg-background px-2 py-1.5 text-sm"
+          >
             <option value="excel">Excel (.xlsx)</option>
             <option value="seda">SEDA 2.1 (.xml)</option>
             <option value="ead">EAD (.xml)</option>
           </select>
         </label>
-        <a
-          href={`/api/proxy/api/v1/records/export?format=${format}`}
-          className="inline-flex w-fit items-center gap-2 rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-        >
-          Exporter
-        </a>
-        <p className="text-xs text-muted-foreground">Le fichier est téléchargé directement depuis l'API.</p>
+
+        {format === 'excel' && !ready ? (
+          <>
+            <div>
+              <p className="mb-2 text-sm font-medium">Champs à exporter</p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 md:grid-cols-3">
+                {EXPORT_FIELDS.map((f) => (
+                  <label key={f.key} className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={fields.includes(f.key)} onChange={() => toggle(f.key)} />
+                    {f.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={() => setReady(true)}
+                disabled={fields.length === 0}
+                className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+              >
+                Continuer
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <a
+              href={exportUrl}
+              className="inline-flex w-fit items-center gap-2 rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+            >
+              Exporter
+            </a>
+            {format === 'excel' && (
+              <button type="button" onClick={() => setReady(false)} className="w-fit text-xs text-muted-foreground hover:underline">
+                ← Modifier les champs exportés ({fields.length} sélectionnés)
+              </button>
+            )}
+            <p className="text-xs text-muted-foreground">
+              {format === 'excel' ? `Export Excel avec ${fields.length} champ(s).` : 'Le format XML exporte la structure complète.'}
+            </p>
+          </>
+        )}
       </div>
     </div>
   );
 }
 
-/** Import des notices : choix du format + fichier. */
+const IMPORT_FIELDS: { key: string; label: string; required?: boolean }[] = [
+  { key: 'code', label: 'Code', required: true },
+  { key: 'name', label: 'Nom', required: true },
+  { key: 'description', label: 'Description' },
+  { key: 'type_id', label: 'Typologie (id)' },
+  { key: 'start_date', label: 'Date début' },
+  { key: 'end_date', label: 'Date fin' },
+];
+
+/** Import des notices : format + fichier, puis choix des champs et valeurs par défaut. */
 export function RecordsImport() {
   const [format, setFormat] = useState('excel');
   const [file, setFile] = useState<File | null>(null);
+  const [step, setStep] = useState<'choose' | 'map'>('choose');
+  const [selected, setSelected] = useState<string[]>(['code', 'name', 'description']);
+  const [defaults, setDefaults] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ created: number; updated: number; errors: string[] } | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  function toggle(field: string) {
+    setSelected((prev) => (prev.includes(field) ? prev.filter((f) => f !== field) : [...prev, field]));
+  }
 
   async function doImport(e: React.FormEvent) {
     e.preventDefault();
@@ -950,6 +1028,8 @@ export function RecordsImport() {
     try {
       const fd = new FormData();
       fd.append('file', file);
+      fd.append('fields', selected.join(','));
+      fd.append('defaults', JSON.stringify(defaults));
       const res = await fetch('/api/proxy/api/v1/records/import', { method: 'POST', body: fd });
       const json = await res.json().catch(() => null);
       if (!res.ok) {
@@ -968,41 +1048,79 @@ export function RecordsImport() {
     <div className="flex h-full flex-col gap-4">
       <header>
         <h1 className="text-xl font-semibold">Importer des notices</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Choisissez le format et le fichier à importer. Gabarit Excel : code | name | description | type_id | start_date | end_date.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Choisissez le format et le fichier, puis les champs et valeurs par défaut.</p>
       </header>
-      <form onSubmit={doImport} className="grid max-w-2xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4">
-        <label className="flex flex-col gap-1 text-sm">
-          <span>Format</span>
-          <select value={format} onChange={(e) => setFormat(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm">
-            <option value="excel">Excel (.xlsx, .xls)</option>
-            <option value="seda">SEDA 2.1 (.xml)</option>
-            <option value="ead">EAD (.xml)</option>
-          </select>
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span>Fichier</span>
-          <input type="file" accept={format === 'excel' ? '.xlsx,.xls' : '.xml'} onChange={(e) => setFile(e.target.files?.[0] ?? null)} required className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
-        </label>
-        <div>
-          <button type="submit" disabled={busy || !file} className="inline-flex items-center gap-2 rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
-            {busy ? 'Import en cours…' : 'Importer'}
-          </button>
-        </div>
-        {message && <p className="text-sm text-danger">{message}</p>}
-        {result && (
-          <div className="rounded border border-border bg-background p-3 text-sm">
-            <p className="font-medium">{result.created} notice(s) créée(s) · {result.updated} mise(s) à jour · {result.errors.length} erreur(s).</p>
-            {result.errors.length > 0 && (
-              <ul className="mt-2 list-disc pl-5 text-xs text-danger">
-                {result.errors.map((err, i) => <li key={i}>{err}</li>)}
-              </ul>
-            )}
+
+      {step === 'choose' ? (
+        <form
+          onSubmit={(e) => { e.preventDefault(); setStep('map'); }}
+          className="grid max-w-2xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4"
+        >
+          <label className="flex flex-col gap-1 text-sm">
+            <span>Format</span>
+            <select value={format} onChange={(e) => setFormat(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm">
+              <option value="excel">Excel (.xlsx, .xls)</option>
+              <option value="seda">SEDA 2.1 (.xml)</option>
+              <option value="ead">EAD (.xml)</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span>Fichier</span>
+            <input type="file" accept={format === 'excel' ? '.xlsx,.xls' : '.xml'} onChange={(e) => setFile(e.target.files?.[0] ?? null)} required className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
+          </label>
+          <div>
+            <button type="submit" disabled={!file} className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
+              Suivant : champs et valeurs par défaut
+            </button>
           </div>
-        )}
-        {format !== 'excel' && (
-          <p className="text-xs text-muted-foreground">Les formats SEDA/EAD sont détectés automatiquement ; pour un import Excel utilisez le gabarit indiqué.</p>
-        )}
-      </form>
+          {format !== 'excel' && <p className="text-xs text-muted-foreground">Import Excel uniquement pour la sélection de champs.</p>}
+        </form>
+      ) : (
+        <form onSubmit={doImport} className="grid max-w-2xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4">
+          <p className="text-sm">
+            <strong>{file?.name}</strong> — choisissez les champs à importer et les valeurs par défaut des champs obligatoires.
+          </p>
+          <div>
+            <p className="mb-2 text-sm font-medium">Champs à importer</p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 md:grid-cols-3">
+              {IMPORT_FIELDS.map((f) => (
+                <label key={f.key} className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" checked={selected.includes(f.key)} onChange={() => toggle(f.key)} disabled={f.required} />
+                  {f.label} {f.required && <span className="text-danger">*</span>}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="mb-2 text-sm font-medium">Valeurs par défaut (si colonne absente ou vide)</p>
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              {IMPORT_FIELDS.map((f) => (
+                <label key={f.key} className="flex flex-col gap-1 text-sm">
+                  <span>{f.label} {f.required && <span className="text-danger">*</span>}</span>
+                  <input value={defaults[f.key] ?? ''} onChange={(e) => setDefaults((p) => ({ ...p, [f.key]: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5" />
+                </label>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button type="button" onClick={() => setStep('choose')} className="rounded border border-border px-4 py-2 text-sm hover:bg-muted">← Retour</button>
+            <button type="submit" disabled={busy || selected.length === 0} className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
+              {busy ? 'Import en cours…' : 'Importer'}
+            </button>
+          </div>
+          {message && <p className="text-sm text-danger">{message}</p>}
+          {result && (
+            <div className="rounded border border-border bg-background p-3 text-sm">
+              <p className="font-medium">{result.created} notice(s) créée(s) · {result.updated} mise(s) à jour · {result.errors.length} erreur(s).</p>
+              {result.errors.length > 0 && (
+                <ul className="mt-2 list-disc pl-5 text-xs text-danger">
+                  {result.errors.map((err, i) => <li key={i}>{err}</li>)}
+                </ul>
+              )}
+            </div>
+          )}
+        </form>
+      )}
     </div>
   );
 }
