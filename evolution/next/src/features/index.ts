@@ -1,6 +1,7 @@
 import type { FeatureRoute } from '@/lib/routing';
 import { routes as mailsRoutes } from './mails/pages';
 import { routes as workflowRoutes } from './workflow/pages';
+import { routes as projectsRoutes } from './projects/pages';
 import { routes as workplacesRoutes } from './workplaces/pages';
 import { routes as chatsRoutes } from './chats/pages';
 import { routes as recordsRoutes } from './records/pages';
@@ -21,6 +22,7 @@ import { routes as settingsRoutes } from './settings/pages';
 export const featureRoutes: FeatureRoute[] = [
   ...mailsRoutes,
   ...workflowRoutes,
+  ...projectsRoutes,
   ...workplacesRoutes,
   ...chatsRoutes,
   ...recordsRoutes,

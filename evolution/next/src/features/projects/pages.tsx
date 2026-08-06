@@ -1,0 +1,690 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { apiFetch } from '@/lib/api/client';
+import type { ResourceApi } from '@/lib/api/resources';
+import type { Entity } from '@/lib/api/types';
+import type { TableColumn } from '@/components/ui/table';
+import { useResourceList, useResource, useDestroy, useCreate, useUpdate } from '@/lib/api/hooks';
+import { DataTable, Pagination } from '@/components/ui/table';
+import { PageHeader, InfoPanel, StatCard } from '@/components/ui/page';
+import type { FeatureRoute } from '@/lib/routing';
+import * as api from './services/project.service';
+import { ATTACHABLE_LABELS, RESOURCE_TYPE_LABELS, type AttachableAlias } from './services/project.service';
+
+// ---------------------------------------------------------------------------
+// Primitives partagées (mêmes idiomes que les autres features — voir workflow/pages.tsx)
+// ---------------------------------------------------------------------------
+
+function makeList(r: ResourceApi, key: string, columns: TableColumn<Entity>[], o: { title: string; create?: string; del?: boolean }) {
+  return function List() {
+    const [page, setPage] = useState(1);
+    const { data, isLoading, isError } = useResourceList(r, key, { page, 'page.size': 20 } as never);
+    const destroy = useDestroy(r, key);
+    const rows = (data?.data ?? []) as Entity[];
+    const m = data?.meta;
+    return (
+      <div className="flex h-full flex-col gap-4">
+        <PageHeader
+          title={o.title}
+          actions={o.create ? <Link href={o.create} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">+ Nouveau</Link> : undefined}
+        />
+        <DataTable
+          columns={columns}
+          rows={rows}
+          loading={isLoading}
+          error={isError}
+          actions={o.del ? (row) => (
+            <button type="button" onClick={() => { if (window.confirm('Supprimer ?')) destroy.mutate(row.id); }} className="rounded border border-border px-2 py-1 text-xs text-danger">
+              Supprimer
+            </button>
+          ) : undefined}
+        />
+        <Pagination page={page} totalPages={m?.last_page ?? 1} total={m?.total} onChange={setPage} />
+      </div>
+    );
+  };
+}
+
+function Field({ label, value, onChange, required, type = 'text', options }: {
+  label: string; value?: string; onChange: (v: string) => void; required?: boolean; type?: string; options?: { value: string; label: string }[];
+}) {
+  return (
+    <label className="flex flex-col gap-1 text-sm">
+      <span>{label} {required && <span className="text-danger">*</span>}</span>
+      {options ? (
+        <select value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm">
+          <option value="">—</option>
+          {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      ) : (
+        <input type={type} value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
+      )}
+    </label>
+  );
+}
+
+function attachableLabel(row: Entity): string {
+  const type = row.attachable_type as AttachableAlias | undefined;
+  const attachable = row.attachable as { label?: string } | undefined;
+  if (!type) return '—';
+  return `${ATTACHABLE_LABELS[type] ?? type}${attachable?.label ? ` — ${attachable.label}` : ` #${row.attachable_id}`}`;
+}
+
+const ATTACHABLE_OPTIONS = (Object.keys(ATTACHABLE_LABELS) as AttachableAlias[]).map((value) => ({ value, label: ATTACHABLE_LABELS[value] }));
+
+// ---------------------------------------------------------------------------
+// Projets
+// ---------------------------------------------------------------------------
+
+const PROJECT_COLS: TableColumn<Entity>[] = [
+  { key: 'code', label: 'Code', render: (r) => <span className="font-mono text-xs">{String(r.code ?? '')}</span> },
+  { key: 'name', label: 'Nom', render: (r) => <Link href={`/projects/${r.id}`} className="hover:underline">{String(r.name ?? '')}</Link> },
+  { key: 'status', label: 'Statut' },
+  { key: 'attachable', label: 'Rattaché à', render: attachableLabel },
+];
+
+function ProjectForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
+  const router = useRouter();
+  const { data } = useResource(api.projectsApi, 'projects', id);
+  const create = useCreate(api.projectsApi, 'projects');
+  const update = useUpdate(api.projectsApi, 'projects');
+  const [v, setV] = useState<Record<string, string>>({});
+  if (mode === 'edit' && data?.data && Object.keys(v).length === 0) {
+    const d = data.data;
+    setV({
+      code: String(d.code ?? ''), name: String(d.name ?? ''), description: String(d.description ?? ''),
+      status: String(d.status ?? ''), attachable_type: String(d.attachable_type ?? ''), attachable_id: String(d.attachable_id ?? ''),
+    });
+  }
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (mode === 'edit' && id) await update.mutateAsync({ id, payload: v });
+    else await create.mutateAsync(v);
+    router.push('/projects');
+  }
+  return (
+    <form onSubmit={submit} className="flex w-full flex-col gap-4">
+      <PageHeader
+        title={mode === 'edit' ? 'Modifier — projet' : 'Nouveau projet'}
+        actions={<button type="button" onClick={() => router.push('/projects')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>}
+      />
+      <div className="grid max-w-3xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2">
+        <Field label="Code" value={v.code} onChange={(x) => setV((p) => ({ ...p, code: x }))} required={mode === 'create'} />
+        <Field label="Nom" value={v.name} onChange={(x) => setV((p) => ({ ...p, name: x }))} required />
+        <Field label="Description" value={v.description} onChange={(x) => setV((p) => ({ ...p, description: x }))} />
+        <Field label="Statut" value={v.status} onChange={(x) => setV((p) => ({ ...p, status: x }))}
+          options={['draft', 'active', 'on_hold', 'completed', 'archived'].map((s) => ({ value: s, label: s }))} />
+        <Field label="Rattaché à" value={v.attachable_type} onChange={(x) => setV((p) => ({ ...p, attachable_type: x }))} required={mode === 'create'} options={ATTACHABLE_OPTIONS} />
+        <Field label="Identifiant de la cible" value={v.attachable_id} onChange={(x) => setV((p) => ({ ...p, attachable_id: x }))} required={mode === 'create'} type="number" />
+      </div>
+      <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">Enregistrer</button></footer>
+    </form>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Extension MS-Project-parity : jalons, livrables, ressources, alertes,
+// rapports d'étape — panneaux de la fiche projet (voir ProjectDetail).
+// ---------------------------------------------------------------------------
+
+const MILESTONE_STATUS_LABELS: Record<string, string> = { pending: 'En attente', reached: 'Atteint', missed: 'Manqué' };
+const DELIVERABLE_STATUS_LABELS: Record<string, string> = { draft: 'Brouillon', submitted: 'Soumis', approved: 'Approuvé', rejected: 'Rejeté' };
+const ALERT_SEVERITY_STYLES: Record<string, string> = { high: 'border-danger/40 bg-danger/10 text-danger', medium: 'border-warning/40 bg-warning/10 text-warning', low: 'border-border bg-muted text-muted-foreground' };
+
+function AlertsPanel({ projectId }: { projectId: string }) {
+  const { data } = useQuery({ queryKey: ['project-alerts', projectId], queryFn: () => api.getProjectAlerts(projectId) });
+  const alerts = (data?.data ?? []) as Entity[];
+  return (
+    <div className="rounded border border-border bg-surface p-4">
+      <h2 className="mb-2 text-sm font-semibold">Alertes</h2>
+      {alerts.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucune alerte — tout est sous contrôle.</p>
+      ) : (
+        <ul className="flex flex-col gap-2 text-sm">
+          {alerts.map((a, i) => (
+            <li key={i} className={`rounded border px-3 py-2 ${ALERT_SEVERITY_STYLES[String(a.severity)] ?? ALERT_SEVERITY_STYLES.low}`}>
+              {String(a.message)}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function MilestonesPanel({ projectId }: { projectId: string }) {
+  const queryClient = useQueryClient();
+  const { data } = useQuery({ queryKey: ['project-milestones', projectId], queryFn: () => api.getProjectMilestones(projectId) });
+  const milestones = (data?.data ?? []) as Entity[];
+  const [v, setV] = useState({ name: '', due_date: '' });
+
+  function invalidate() {
+    queryClient.invalidateQueries({ queryKey: ['project-milestones', projectId] });
+    queryClient.invalidateQueries({ queryKey: ['project-alerts', projectId] });
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    await api.createProjectMilestone(projectId, { name: v.name, due_date: v.due_date || undefined });
+    setV({ name: '', due_date: '' });
+    invalidate();
+  }
+
+  async function reach(milestoneId: string) {
+    await api.reachProjectMilestone(milestoneId);
+    invalidate();
+  }
+
+  return (
+    <div className="rounded border border-border bg-surface p-4">
+      <h2 className="mb-2 text-sm font-semibold">Jalons</h2>
+      {milestones.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucun jalon.</p>
+      ) : (
+        <ul className="divide-y divide-border text-sm">
+          {milestones.map((m) => (
+            <li key={String(m.id)} className="flex items-center justify-between py-2">
+              <span className={m.is_overdue ? 'text-danger' : ''}>{String(m.name)}</span>
+              <span className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  {m.due_date ? new Date(String(m.due_date)).toLocaleDateString('fr-FR') : '—'} · {MILESTONE_STATUS_LABELS[String(m.status)] ?? String(m.status)}
+                </span>
+                {m.status === 'pending' && (
+                  <button type="button" onClick={() => reach(String(m.id))} className="rounded border border-border px-2 py-0.5 text-xs hover:bg-muted">Atteint</button>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <form onSubmit={submit} className="mt-3 flex flex-wrap items-end gap-2 border-t border-border pt-3 text-sm">
+        <label className="flex flex-col gap-1"><span>Nom</span><input value={v.name} onChange={(e) => setV((p) => ({ ...p, name: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5" /></label>
+        <label className="flex flex-col gap-1"><span>Échéance</span><input type="date" value={v.due_date} onChange={(e) => setV((p) => ({ ...p, due_date: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5" /></label>
+        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Ajouter un jalon</button>
+      </form>
+    </div>
+  );
+}
+
+function DeliverablesPanel({ projectId }: { projectId: string }) {
+  const queryClient = useQueryClient();
+  const { data } = useQuery({ queryKey: ['project-deliverables', projectId], queryFn: () => api.getProjectDeliverables(projectId) });
+  const deliverables = (data?.data ?? []) as Entity[];
+  const [v, setV] = useState({ name: '', due_date: '' });
+
+  function invalidate() {
+    queryClient.invalidateQueries({ queryKey: ['project-deliverables', projectId] });
+    queryClient.invalidateQueries({ queryKey: ['project-alerts', projectId] });
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    await api.createProjectDeliverable(projectId, { name: v.name, due_date: v.due_date || undefined });
+    setV({ name: '', due_date: '' });
+    invalidate();
+  }
+
+  async function act(fn: (id: string) => Promise<unknown>, deliverableId: string) {
+    await fn(deliverableId);
+    invalidate();
+  }
+
+  return (
+    <div className="rounded border border-border bg-surface p-4">
+      <h2 className="mb-2 text-sm font-semibold">Livrables</h2>
+      {deliverables.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucun livrable.</p>
+      ) : (
+        <ul className="divide-y divide-border text-sm">
+          {deliverables.map((d) => (
+            <li key={String(d.id)} className="flex items-center justify-between py-2">
+              <span className={d.is_overdue ? 'text-danger' : ''}>{String(d.name)}</span>
+              <span className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">{DELIVERABLE_STATUS_LABELS[String(d.status)] ?? String(d.status)}</span>
+                {d.status === 'draft' && (
+                  <button type="button" onClick={() => act(api.submitProjectDeliverable, String(d.id))} className="rounded border border-border px-2 py-0.5 text-xs hover:bg-muted">Soumettre</button>
+                )}
+                {d.status === 'submitted' && (
+                  <>
+                    <button type="button" onClick={() => act(api.approveProjectDeliverable, String(d.id))} className="rounded border border-border px-2 py-0.5 text-xs hover:bg-muted">Approuver</button>
+                    <button type="button" onClick={() => act(api.rejectProjectDeliverable, String(d.id))} className="rounded border border-border px-2 py-0.5 text-xs text-danger hover:bg-muted">Rejeter</button>
+                  </>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <form onSubmit={submit} className="mt-3 flex flex-wrap items-end gap-2 border-t border-border pt-3 text-sm">
+        <label className="flex flex-col gap-1"><span>Nom</span><input value={v.name} onChange={(e) => setV((p) => ({ ...p, name: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5" /></label>
+        <label className="flex flex-col gap-1"><span>Échéance</span><input type="date" value={v.due_date} onChange={(e) => setV((p) => ({ ...p, due_date: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5" /></label>
+        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Ajouter un livrable</button>
+      </form>
+    </div>
+  );
+}
+
+function ResourcesPanel({ projectId }: { projectId: string }) {
+  const queryClient = useQueryClient();
+  const { data } = useQuery({ queryKey: ['project-resources', projectId], queryFn: () => api.getProjectResources(projectId) });
+  const resources = (data?.data ?? []) as Entity[];
+  const [v, setV] = useState({ type: 'human', name: '', planned_amount: '', actual_amount: '' });
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    await api.createProjectResource(projectId, {
+      type: v.type,
+      name: v.name,
+      planned_amount: v.planned_amount || undefined,
+      actual_amount: v.actual_amount || undefined,
+    });
+    setV({ type: 'human', name: '', planned_amount: '', actual_amount: '' });
+    queryClient.invalidateQueries({ queryKey: ['project-resources', projectId] });
+    queryClient.invalidateQueries({ queryKey: ['projects', projectId] });
+    queryClient.invalidateQueries({ queryKey: ['project-alerts', projectId] });
+  }
+
+  return (
+    <div className="rounded border border-border bg-surface p-4">
+      <h2 className="mb-2 text-sm font-semibold">Ressources</h2>
+      {resources.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucune ressource.</p>
+      ) : (
+        <ul className="divide-y divide-border text-sm">
+          {resources.map((r) => (
+            <li key={String(r.id)} className="flex items-center justify-between py-2">
+              <span>{String(r.name)} <span className="text-xs text-muted-foreground">({RESOURCE_TYPE_LABELS[String(r.type)] ?? String(r.type)})</span></span>
+              <span className={`text-xs ${r.is_over_budget ? 'text-danger' : 'text-muted-foreground'}`}>
+                {r.actual_amount !== null && r.actual_amount !== undefined ? String(r.actual_amount) : '—'} / {r.planned_amount !== null && r.planned_amount !== undefined ? String(r.planned_amount) : '—'}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <form onSubmit={submit} className="mt-3 flex flex-wrap items-end gap-2 border-t border-border pt-3 text-sm">
+        <label className="flex flex-col gap-1">
+          <span>Type</span>
+          <select value={v.type} onChange={(e) => setV((p) => ({ ...p, type: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5">
+            {Object.entries(RESOURCE_TYPE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1"><span>Nom</span><input value={v.name} onChange={(e) => setV((p) => ({ ...p, name: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5" /></label>
+        <label className="flex flex-col gap-1"><span>Planifié</span><input type="number" value={v.planned_amount} onChange={(e) => setV((p) => ({ ...p, planned_amount: e.target.value }))} className="w-24 rounded border border-border bg-background px-2 py-1.5" /></label>
+        <label className="flex flex-col gap-1"><span>Réel</span><input type="number" value={v.actual_amount} onChange={(e) => setV((p) => ({ ...p, actual_amount: e.target.value }))} className="w-24 rounded border border-border bg-background px-2 py-1.5" /></label>
+        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Ajouter une ressource</button>
+      </form>
+    </div>
+  );
+}
+
+function StatusReportsPanel({ projectId }: { projectId: string }) {
+  const queryClient = useQueryClient();
+  const { data } = useQuery({ queryKey: ['project-status-reports', projectId], queryFn: () => api.getProjectStatusReports(projectId) });
+  const reports = (data?.data ?? []) as Entity[];
+  const [v, setV] = useState({ percent_complete: '', summary: '' });
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    await api.createProjectStatusReport(projectId, { percent_complete: v.percent_complete, summary: v.summary });
+    setV({ percent_complete: '', summary: '' });
+    queryClient.invalidateQueries({ queryKey: ['project-status-reports', projectId] });
+  }
+
+  return (
+    <div className="rounded border border-border bg-surface p-4">
+      <h2 className="mb-2 text-sm font-semibold">Rapports d&apos;étape</h2>
+      {reports.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucun rapport.</p>
+      ) : (
+        <ul className="divide-y divide-border text-sm">
+          {reports.map((r) => (
+            <li key={String(r.id)} className="flex flex-col gap-1 py-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">{r.reported_at ? new Date(String(r.reported_at)).toLocaleDateString('fr-FR') : '—'}</span>
+                <span className="font-medium">{String(r.percent_complete)}%</span>
+              </div>
+              <p>{String(r.summary)}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+      <form onSubmit={submit} className="mt-3 flex flex-wrap items-end gap-2 border-t border-border pt-3 text-sm">
+        <label className="flex flex-col gap-1"><span>Avancement (%)</span><input type="number" min={0} max={100} value={v.percent_complete} onChange={(e) => setV((p) => ({ ...p, percent_complete: e.target.value }))} required className="w-24 rounded border border-border bg-background px-2 py-1.5" /></label>
+        <label className="flex flex-1 flex-col gap-1"><span>Résumé</span><input value={v.summary} onChange={(e) => setV((p) => ({ ...p, summary: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5" /></label>
+        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Ajouter un rapport</button>
+      </form>
+    </div>
+  );
+}
+
+function ProjectDetail({ id }: { id: string }) {
+  const { data } = useResource(api.projectsApi, 'projects', id);
+  const { data: tasksData } = useQuery({ queryKey: ['project-tasks', id], queryFn: () => api.getProjectTasks(id) });
+  const { data: objectivesData } = useResourceList(api.objectivesApi, 'objectives', { 'filter[project_id]': id } as never);
+  const project = data?.data;
+  const tasks = tasksData?.data ?? [];
+  const objectives = (objectivesData?.data ?? []) as Entity[];
+
+  return (
+    <div className="flex h-full flex-col gap-4">
+      <PageHeader
+        title={project ? String(project.name) : 'Projet'}
+        description={project ? String(project.description ?? '') : undefined}
+        actions={<Link href={`/projects/${id}/edit`} className="rounded border border-border px-3 py-1.5 text-sm">Modifier</Link>}
+      />
+      {project && (
+        <InfoPanel title="Informations" items={[
+          ['Code', String(project.code)],
+          ['Statut', String(project.status)],
+          ['Rattaché à', attachableLabel(project)],
+          ['Objectifs', String(objectives.length)],
+          ['Tâches', String(tasks.length)],
+          ['Budget planifié', project.budget_planned !== null && project.budget_planned !== undefined ? String(project.budget_planned) : '—'],
+          ['Budget consommé', project.budget_actual !== undefined ? String(project.budget_actual) : '—'],
+        ]} />
+      )}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="rounded border border-border bg-surface p-4">
+          <h2 className="mb-2 text-sm font-semibold">Objectifs (OKR)</h2>
+          {objectives.length === 0 ? <p className="text-sm text-muted-foreground">Aucun objectif.</p> : (
+            <ul className="divide-y divide-border text-sm">
+              {objectives.map((o) => (
+                <li key={String(o.id)} className="py-2">
+                  <Link href={`/objectives/${o.id}`} className="hover:underline">{String(o.title)}</Link>
+                  <span className="ml-2 text-xs text-muted-foreground">{String(o.status)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="rounded border border-border bg-surface p-4">
+          <h2 className="mb-2 text-sm font-semibold">Tâches</h2>
+          {tasks.length === 0 ? <p className="text-sm text-muted-foreground">Aucune tâche.</p> : (
+            <ul className="divide-y divide-border text-sm">
+              {tasks.map((t) => (
+                <li key={String(t.id)} className="flex items-center justify-between py-2">
+                  <span>{String(t.title)}</span>
+                  <span className="text-xs text-muted-foreground">{String(t.status)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+      <AlertsPanel projectId={id} />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <MilestonesPanel projectId={id} />
+        <DeliverablesPanel projectId={id} />
+        <ResourcesPanel projectId={id} />
+        <StatusReportsPanel projectId={id} />
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Objectifs (OKR) + Résultats clés
+// ---------------------------------------------------------------------------
+
+const OBJECTIVE_COLS: TableColumn<Entity>[] = [
+  { key: 'title', label: 'Titre', render: (r) => <Link href={`/objectives/${r.id}`} className="hover:underline">{String(r.title ?? '')}</Link> },
+  { key: 'status', label: 'Statut' },
+  { key: 'progress', label: 'Progression', render: (r) => `${Math.round(Number(r.progress ?? 0) * 100)}%` },
+  { key: 'attachable', label: 'Rattaché à', render: attachableLabel },
+];
+
+function ObjectiveForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
+  const router = useRouter();
+  const { data } = useResource(api.objectivesApi, 'objectives', id);
+  const create = useCreate(api.objectivesApi, 'objectives');
+  const update = useUpdate(api.objectivesApi, 'objectives');
+  const [v, setV] = useState<Record<string, string>>({});
+  if (mode === 'edit' && data?.data && Object.keys(v).length === 0) {
+    const d = data.data;
+    setV({
+      title: String(d.title ?? ''), description: String(d.description ?? ''), status: String(d.status ?? ''),
+      attachable_type: String(d.attachable_type ?? ''), attachable_id: String(d.attachable_id ?? ''),
+    });
+  }
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (mode === 'edit' && id) await update.mutateAsync({ id, payload: v });
+    else await create.mutateAsync(v);
+    router.push('/objectives');
+  }
+  return (
+    <form onSubmit={submit} className="flex w-full flex-col gap-4">
+      <PageHeader
+        title={mode === 'edit' ? 'Modifier — objectif' : 'Nouvel objectif (OKR)'}
+        actions={<button type="button" onClick={() => router.push('/objectives')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>}
+      />
+      <div className="grid max-w-3xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2">
+        <Field label="Titre" value={v.title} onChange={(x) => setV((p) => ({ ...p, title: x }))} required />
+        <Field label="Description" value={v.description} onChange={(x) => setV((p) => ({ ...p, description: x }))} />
+        <Field label="Statut" value={v.status} onChange={(x) => setV((p) => ({ ...p, status: x }))}
+          options={['on_track', 'at_risk', 'off_track', 'done'].map((s) => ({ value: s, label: s }))} />
+        <Field label="Rattaché à" value={v.attachable_type} onChange={(x) => setV((p) => ({ ...p, attachable_type: x }))} required={mode === 'create'} options={ATTACHABLE_OPTIONS} />
+        <Field label="Identifiant de la cible" value={v.attachable_id} onChange={(x) => setV((p) => ({ ...p, attachable_id: x }))} required={mode === 'create'} type="number" />
+      </div>
+      <p className="text-xs text-muted-foreground">Les résultats clés s'ajoutent depuis la fiche de l'objectif, une fois créé.</p>
+      <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">Enregistrer</button></footer>
+    </form>
+  );
+}
+
+function KeyResultRow({ objectiveId, kr }: { objectiveId: string; kr: Entity }) {
+  const queryClient = useQueryClient();
+  const update = useUpdate(api.keyResultsApi, 'key-results');
+  const [value, setValue] = useState(String(kr.current_value ?? ''));
+  const progress = Math.round(Number(kr.progress ?? 0) * 100);
+
+  async function save() {
+    await update.mutateAsync({ id: String(kr.id), payload: { current_value: value } });
+    queryClient.invalidateQueries({ queryKey: ['objectives', objectiveId] });
+  }
+
+  return (
+    <li className="flex flex-col gap-2 py-3">
+      <div className="flex items-center justify-between text-sm">
+        <span>{String(kr.title)}</span>
+        <span className="text-xs text-muted-foreground">{progress}%</span>
+      </div>
+      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+        <div className="h-full bg-primary" style={{ width: `${Math.min(100, Math.max(0, progress))}%` }} />
+      </div>
+      <div className="flex items-center gap-2 text-xs">
+        <span className="text-muted-foreground">
+          {String(kr.start_value)} → {String(kr.target_value)} {String(kr.unit ?? '')}
+        </span>
+        <input value={value} onChange={(e) => setValue(e.target.value)} className="w-24 rounded border border-border bg-background px-2 py-1" />
+        <button type="button" onClick={save} className="rounded border border-border px-2 py-1 hover:bg-muted">Mettre à jour</button>
+      </div>
+    </li>
+  );
+}
+
+function AddKeyResultForm({ objectiveId }: { objectiveId: string }) {
+  const queryClient = useQueryClient();
+  const [v, setV] = useState({ title: '', target_value: '', unit: '' });
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    await api.createKeyResult(objectiveId, { title: v.title, target_value: v.target_value, unit: v.unit || undefined });
+    setV({ title: '', target_value: '', unit: '' });
+    queryClient.invalidateQueries({ queryKey: ['objectives', objectiveId] });
+  }
+  return (
+    <form onSubmit={submit} className="mt-3 flex flex-wrap items-end gap-2 border-t border-border pt-3 text-sm">
+      <label className="flex flex-col gap-1"><span>Titre</span><input value={v.title} onChange={(e) => setV((p) => ({ ...p, title: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5" /></label>
+      <label className="flex flex-col gap-1"><span>Cible</span><input type="number" value={v.target_value} onChange={(e) => setV((p) => ({ ...p, target_value: e.target.value }))} required className="w-28 rounded border border-border bg-background px-2 py-1.5" /></label>
+      <label className="flex flex-col gap-1"><span>Unité</span><input value={v.unit} onChange={(e) => setV((p) => ({ ...p, unit: e.target.value }))} className="w-24 rounded border border-border bg-background px-2 py-1.5" /></label>
+      <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Ajouter un résultat clé</button>
+    </form>
+  );
+}
+
+function ObjectiveDetail({ id }: { id: string }) {
+  // `show()` du client générique ne prend pas de query params ; requête directe
+  // pour inclure `key_results` (non chargés par défaut, voir ObjectiveResource).
+  const { data: single } = useQuery({
+    queryKey: ['objectives', id],
+    queryFn: () => apiFetch<{ data: Entity }>(`/api/v1/objectives/${id}?include=keyResults`),
+  });
+  const objective = single?.data;
+  const keyResults = (objective?.key_results as Entity[] | undefined) ?? [];
+
+  return (
+    <div className="flex h-full flex-col gap-4">
+      <PageHeader
+        title={objective ? String(objective.title) : 'Objectif'}
+        description={objective ? String(objective.description ?? '') : undefined}
+        actions={<Link href={`/objectives/${id}/edit`} className="rounded border border-border px-3 py-1.5 text-sm">Modifier</Link>}
+      />
+      {objective && (
+        <InfoPanel title="Informations" items={[
+          ['Statut', String(objective.status)],
+          ['Progression', `${Math.round(Number(objective.progress ?? 0) * 100)}%`],
+          ['Rattaché à', attachableLabel(objective)],
+        ]} />
+      )}
+      <div className="rounded border border-border bg-surface p-4">
+        <h2 className="mb-2 text-sm font-semibold">Résultats clés</h2>
+        {keyResults.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Aucun résultat clé pour le moment.</p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {keyResults.map((kr) => <KeyResultRow key={String(kr.id)} objectiveId={id} kr={kr} />)}
+          </ul>
+        )}
+        <AddKeyResultForm objectiveId={id} />
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// KPI
+// ---------------------------------------------------------------------------
+
+const KPI_COLS: TableColumn<Entity>[] = [
+  { key: 'code', label: 'Code', render: (r) => <span className="font-mono text-xs">{String(r.code ?? '')}</span> },
+  { key: 'name', label: 'Nom', render: (r) => <Link href={`/kpis/${r.id}`} className="hover:underline">{String(r.name ?? '')}</Link> },
+  { key: 'unit', label: 'Unité' },
+  { key: 'direction', label: 'Direction' },
+  { key: 'attachable', label: 'Rattaché à', render: attachableLabel },
+];
+
+function KpiForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
+  const router = useRouter();
+  const { data } = useResource(api.kpisApi, 'kpis', id);
+  const create = useCreate(api.kpisApi, 'kpis');
+  const update = useUpdate(api.kpisApi, 'kpis');
+  const [v, setV] = useState<Record<string, string>>({});
+  if (mode === 'edit' && data?.data && Object.keys(v).length === 0) {
+    const d = data.data;
+    setV({
+      code: String(d.code ?? ''), name: String(d.name ?? ''), unit: String(d.unit ?? ''),
+      direction: String(d.direction ?? ''), frequency: String(d.frequency ?? ''),
+      attachable_type: String(d.attachable_type ?? ''), attachable_id: String(d.attachable_id ?? ''),
+    });
+  }
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (mode === 'edit' && id) await update.mutateAsync({ id, payload: v });
+    else await create.mutateAsync(v);
+    router.push('/kpis');
+  }
+  return (
+    <form onSubmit={submit} className="flex w-full flex-col gap-4">
+      <PageHeader
+        title={mode === 'edit' ? 'Modifier — KPI' : 'Nouveau KPI'}
+        actions={<button type="button" onClick={() => router.push('/kpis')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>}
+      />
+      <div className="grid max-w-3xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2">
+        <Field label="Code" value={v.code} onChange={(x) => setV((p) => ({ ...p, code: x }))} required={mode === 'create'} />
+        <Field label="Nom" value={v.name} onChange={(x) => setV((p) => ({ ...p, name: x }))} required />
+        <Field label="Unité" value={v.unit} onChange={(x) => setV((p) => ({ ...p, unit: x }))} />
+        <Field label="Direction" value={v.direction} onChange={(x) => setV((p) => ({ ...p, direction: x }))}
+          options={[{ value: 'higher_is_better', label: 'Plus haut = mieux' }, { value: 'lower_is_better', label: 'Plus bas = mieux' }]} />
+        <Field label="Fréquence" value={v.frequency} onChange={(x) => setV((p) => ({ ...p, frequency: x }))}
+          options={['daily', 'weekly', 'monthly', 'quarterly', 'yearly'].map((f) => ({ value: f, label: f }))} />
+        <Field label="Rattaché à" value={v.attachable_type} onChange={(x) => setV((p) => ({ ...p, attachable_type: x }))} required={mode === 'create'} options={ATTACHABLE_OPTIONS} />
+        <Field label="Identifiant de la cible" value={v.attachable_id} onChange={(x) => setV((p) => ({ ...p, attachable_id: x }))} required={mode === 'create'} type="number" />
+      </div>
+      <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">Enregistrer</button></footer>
+    </form>
+  );
+}
+
+function AddMeasurementForm({ kpiId, onAdded }: { kpiId: string; onAdded: () => void }) {
+  const [value, setValue] = useState('');
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    await api.recordKpiMeasurement(kpiId, { value: Number(value) });
+    setValue('');
+    onAdded();
+  }
+  return (
+    <form onSubmit={submit} className="flex items-end gap-2 border-t border-border pt-3 text-sm">
+      <label className="flex flex-col gap-1"><span>Nouvelle mesure</span><input type="number" step="any" value={value} onChange={(e) => setValue(e.target.value)} required className="w-32 rounded border border-border bg-background px-2 py-1.5" /></label>
+      <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Enregistrer</button>
+    </form>
+  );
+}
+
+function KpiDetail({ id }: { id: string }) {
+  const { data } = useResource(api.kpisApi, 'kpis', id);
+  const queryClient = useQueryClient();
+  const { data: measurements } = useQuery({
+    queryKey: ['kpi-measurements', id],
+    queryFn: () => api.getKpiMeasurements(id),
+  });
+  const kpi = data?.data;
+  const rows = (measurements?.data ?? []) as Entity[];
+  const latest = rows[0];
+  const previous = rows[1];
+  const trend = latest && previous ? Number(latest.value) - Number(previous.value) : null;
+
+  return (
+    <div className="flex h-full flex-col gap-4">
+      <PageHeader
+        title={kpi ? String(kpi.name) : 'KPI'}
+        description={kpi ? String(kpi.description ?? '') : undefined}
+        actions={<Link href={`/kpis/${id}/edit`} className="rounded border border-border px-3 py-1.5 text-sm">Modifier</Link>}
+      />
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <StatCard label="Dernière mesure" value={latest ? `${latest.value} ${kpi?.unit ?? ''}` : '—'} />
+        <StatCard label="Tendance" value={trend === null ? '—' : trend > 0 ? '↑' : trend < 0 ? '↓' : '→'} accent={trend !== null && trend !== 0 ? (kpi?.direction === 'lower_is_better' ? (trend < 0 ? 'ok' : 'danger') : (trend > 0 ? 'ok' : 'danger')) : undefined} />
+        <StatCard label="Cible" value={kpi?.target_value !== undefined && kpi?.target_value !== null ? `${kpi.target_value} ${kpi.unit ?? ''}` : '—'} />
+        <StatCard label="Rattaché à" value={kpi ? attachableLabel(kpi) : '—'} />
+      </div>
+      <div className="rounded border border-border bg-surface p-4">
+        <h2 className="mb-2 text-sm font-semibold">Historique des mesures</h2>
+        {rows.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Aucune mesure enregistrée.</p>
+        ) : (
+          <ul className="divide-y divide-border text-sm">
+            {rows.map((m) => (
+              <li key={String(m.id)} className="flex items-center justify-between py-2">
+                <span>{m.measured_at ? new Date(String(m.measured_at)).toLocaleDateString('fr-FR') : '—'}</span>
+                <span className="font-medium">{String(m.value)} {String(kpi?.unit ?? '')}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <AddMeasurementForm kpiId={id} onAdded={() => queryClient.invalidateQueries({ queryKey: ['kpi-measurements', id] })} />
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+
+export const routes: FeatureRoute[] = [
+  { path: '/projects', List: makeList(api.projectsApi, 'projects', PROJECT_COLS, { title: 'Projets', create: '/projects/create', del: true }), Detail: ProjectDetail, Form: ProjectForm },
+  { path: '/objectives', List: makeList(api.objectivesApi, 'objectives', OBJECTIVE_COLS, { title: 'Objectifs (OKR)', create: '/objectives/create', del: true }), Detail: ObjectiveDetail, Form: ObjectiveForm },
+  { path: '/kpis', List: makeList(api.kpisApi, 'kpis', KPI_COLS, { title: 'KPI', create: '/kpis/create', del: true }), Detail: KpiDetail, Form: KpiForm },
+];

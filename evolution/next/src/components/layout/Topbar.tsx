@@ -3,6 +3,8 @@
 import { Icon } from '@/components/icons';
 import { OrganisationSwitcher } from '@/components/layout/OrganisationSwitcher';
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
+import { PublicLink } from '@/components/layout/PublicLink';
+import { AiAssistantToggle } from '@/features/ai-assistant/components/AiAssistantToggle';
 import type { Organisation } from '@/types';
 
 /**
@@ -25,6 +27,8 @@ export function Topbar({ organisations = [] }: { organisations?: Organisation[] 
       <div className="ml-auto flex items-center gap-3">
         <OrganisationSwitcher organisations={organisations} />
         <LanguageSwitcher />
+        <PublicLink />
+        <AiAssistantToggle />
       </div>
     </header>
   );

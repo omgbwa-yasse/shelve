@@ -70,6 +70,7 @@ import {
   PlusSquare,
   RefreshCw,
   Reply,
+  Rocket,
   RotateCcw,
   Save,
   ScanLine,
@@ -83,6 +84,7 @@ import {
   Sparkles,
   Star,
   Tags,
+  Target,
   Trash2,
   TrendingUp,
   Upload,
@@ -120,6 +122,8 @@ export const icons = {
   public: Globe,
   aiSearch: Bot,
   settings: Settings,
+  projects: Rocket,
+  target: Target,
 
   // Génériques (sous-menus)
   dashboard: LayoutGrid,

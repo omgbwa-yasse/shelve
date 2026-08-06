@@ -1,6 +1,30 @@
 import type { NavDomain } from '@/types';
 
 /**
+ * Résout le domaine actif à partir du pathname courant.
+ *
+ * D'abord par `domain.href` (comportement historique : couvre tous les
+ * domaines dont les items vivent sous le même préfixe, ex. `/mails/*`).
+ * Repli sur les `href` des items sinon — nécessaire pour "Projets", dont les
+ * sections Objectifs/KPI vivent à `/objectives` et `/kpis`, hors du préfixe
+ * `/projects` (sans quoi ouvrir KPI/Objectifs ne matche aucun domaine et le
+ * sous-menu se vide/change).
+ */
+export function findActiveDomain(pathname: string | null | undefined): NavDomain | undefined {
+  if (!pathname) return undefined;
+
+  const matchesPrefix = (href: string) =>
+    pathname === href || pathname.startsWith(`${href}/`) || pathname.startsWith(`${href}?`);
+
+  const byDomainHref = navigation.find((domain) => matchesPrefix(domain.href));
+  if (byDomainHref) return byDomainHref;
+
+  return navigation.find((domain) =>
+    domain.items.some((item) => matchesPrefix(item.href.split('?')[0] ?? item.href)),
+  );
+}
+
+/**
  * Source unique de la navigation à deux niveaux — reproduit fidèlement le
  * menu réel de l'application Blade :
  *   - rail (top-level)  : resources/views/layouts/app.blade.php (nav.main-navigation)
@@ -69,6 +93,28 @@ export const navigation: NavDomain[] = [
       { key: 'workflow-tasks-pending', group: 'Tâches', label: 'En attente', href: '/workflow/tasks?status=pending', icon: 'hourglass' },
       { key: 'workflow-tasks-progress', group: 'Tâches', label: 'En cours', href: '/workflow/tasks?status=in_progress', icon: 'refresh' },
       { key: 'workflow-tasks-mine', group: 'Tâches', label: 'Mes tâches', href: '/workflow/tasks?assigned_to=me', icon: 'personCheck' },
+    ],
+  },
+
+  // ------------------------------------------------------------------
+  // Projets — module Projet/Tâche/OKR/KPI (D17), voir
+  // evolution/PROJECT-OKR-KPI-PLAN.md. N'a pas d'équivalent Blade : nouveau
+  // domaine ajouté directement côté API v1 + Next.
+  // ------------------------------------------------------------------
+  {
+    key: 'projects',
+    label: 'Projets',
+    href: '/projects',
+    icon: 'projects',
+    items: [
+      { key: 'projects-all', group: 'Projets', label: 'Tous les projets', href: '/projects', icon: 'projects' },
+      { key: 'projects-create', group: 'Projets', label: 'Nouveau projet', href: '/projects/create', icon: 'plusSquare' },
+
+      { key: 'objectives-all', group: 'Objectifs (OKR)', label: 'Tous les objectifs', href: '/objectives', icon: 'target' },
+      { key: 'objectives-create', group: 'Objectifs (OKR)', label: 'Nouvel objectif', href: '/objectives/create', icon: 'plusSquare' },
+
+      { key: 'kpis-all', group: 'KPI', label: 'Tous les KPI', href: '/kpis', icon: 'trendingUp' },
+      { key: 'kpis-create', group: 'KPI', label: 'Nouveau KPI', href: '/kpis/create', icon: 'plusSquare' },
     ],
   },
 
@@ -166,16 +212,17 @@ export const navigation: NavDomain[] = [
       { key: 'transferrings-create', group: 'Création', label: 'Bordereau', href: '/transferrings/create', icon: 'building2' },
       { key: 'transferrings-containers', group: 'Création', label: 'Boîte chrono', href: '/transferrings/containers', icon: 'archive' },
 
-      { key: 'records-to-store', group: 'Cycle de vie', label: 'À transférer', href: '/records/to-store', icon: 'folderCheck' },
-      { key: 'records-to-retain', group: 'Cycle de vie', label: 'Dossiers actifs', href: '/records/to-retain', icon: 'folderCheck' },
-      { key: 'records-to-transfer', group: 'Cycle de vie', label: 'À verser', href: '/records/to-transfer', icon: 'arrowRightSquare' },
-      { key: 'records-to-eliminate', group: 'Cycle de vie', label: 'À éliminer', href: '/records/to-eliminate', icon: 'trash' },
-      { key: 'records-to-keep', group: 'Cycle de vie', label: 'À conserver', href: '/records/to-keep', icon: 'archive' },
-      { key: 'records-to-sort', group: 'Cycle de vie', label: 'À trier', href: '/records/to-sort', icon: 'sortAlpha' },
-
+      // Cycle de vie fusionné dans Déclassement (même rôle : suivi du sort des
+      // dossiers) — plus de section "Cycle de vie" séparée dans le menu.
       { key: 'declassement-lists', group: 'Déclassement', label: 'Listes de déclassement', href: '/transferrings/declassement-lists', icon: 'listOrdered' },
       { key: 'declassement-lists-create', group: 'Déclassement', label: 'Nouvelle liste', href: '/transferrings/declassement-lists/create', icon: 'plusCircle' },
       { key: 'record-reactivations', group: 'Déclassement', label: 'Réactivations', href: '/transferrings/reactivations', icon: 'rotateCcw' },
+      { key: 'records-to-store', group: 'Déclassement', label: 'À transférer', href: '/records/to-store', icon: 'folderCheck' },
+      { key: 'records-to-retain', group: 'Déclassement', label: 'Dossiers actifs', href: '/records/to-retain', icon: 'folderCheck' },
+      { key: 'records-to-transfer', group: 'Déclassement', label: 'À verser', href: '/records/to-transfer', icon: 'arrowRightSquare' },
+      { key: 'records-to-eliminate', group: 'Déclassement', label: 'À éliminer', href: '/records/to-eliminate', icon: 'trash' },
+      { key: 'records-to-keep', group: 'Déclassement', label: 'À conserver', href: '/records/to-keep', icon: 'archive' },
+      { key: 'records-to-sort', group: 'Déclassement', label: 'À trier', href: '/records/to-sort', icon: 'sortAlpha' },
 
       { key: 'transferrings-import', group: 'Import / Export (EAD, Excel, SEDA)', label: 'Import', href: '/transferrings/import', icon: 'download' },
       { key: 'transferrings-export', group: 'Import / Export (EAD, Excel, SEDA)', label: 'Export', href: '/transferrings/export', icon: 'upload' },
@@ -197,6 +244,21 @@ export const navigation: NavDomain[] = [
       { key: 'deposits-rooms-create', group: 'Création', label: 'Salle', href: '/deposits/rooms/create', icon: 'home' },
       { key: 'deposits-shelves-create', group: 'Création', label: 'Étagère', href: '/deposits/shelves/create', icon: 'library' },
       { key: 'deposits-containers-create', group: 'Création', label: 'Contenant', href: '/deposits/containers/create', icon: 'archive' },
+
+      // Chariots : section du sous-menu Dépôts (ancien domaine racine « Chariots »,
+      // href hors préfixe /deposits — voir findActiveDomain, repli par item.href).
+      { key: 'dollies-all', group: 'Chariots', label: 'Tous les chariots', href: '/dollies', icon: 'dollies' },
+      { key: 'dollies-mail', group: 'Chariots', label: 'Courrier', href: '/dollies/sort?categ=mail', icon: 'mails' },
+      { key: 'dollies-record', group: 'Chariots', label: 'Archives', href: '/dollies/sort?categ=record', icon: 'archive' },
+      { key: 'dollies-communication', group: 'Chariots', label: 'Communication', href: '/dollies/sort?categ=communication', icon: 'communications' },
+      { key: 'dollies-room', group: 'Chariots', label: 'Salle', href: '/dollies/sort?categ=room', icon: 'home' },
+      { key: 'dollies-shelf', group: 'Chariots', label: 'Étagère', href: '/dollies/sort?categ=shelf', icon: 'library' },
+      { key: 'dollies-container', group: 'Chariots', label: "Boîtes d'archives", href: '/dollies/sort?categ=container', icon: 'package' },
+      { key: 'dollies-slip-record', group: 'Chariots', label: "Transfert d'archives", href: '/dollies/sort?categ=slip_record', icon: 'fileUp' },
+      { key: 'dollies-slip', group: 'Chariots', label: 'Transfert', href: '/dollies/sort?categ=slip', icon: 'transferrings' },
+      { key: 'dollies-digital-folder', group: 'Chariots', label: 'Dossiers numériques', href: '/dollies/sort?categ=digital_folder', icon: 'folderPlus' },
+      { key: 'dollies-digital-document', group: 'Chariots', label: 'Documents numériques', href: '/dollies/sort?categ=digital_document', icon: 'fileText' },
+      { key: 'dollies-create', group: 'Chariots', label: 'Nouveau chariot', href: '/dollies/create', icon: 'dollies' },
     ],
   },
 
@@ -240,31 +302,6 @@ export const navigation: NavDomain[] = [
       { key: 'tools-sorts', group: 'Référentiels', label: 'Sorts finaux', href: '/tools/sorts', icon: 'sortAlpha' },
 
       { key: 'tools-barcode', group: 'Boîte à outils', label: 'Code-barres', href: '/tools/barcode/create', icon: 'scan' },
-    ],
-  },
-
-  // ------------------------------------------------------------------
-  // 10. Dollies / Chariots — submenu/dollies.blade.php
-  // ------------------------------------------------------------------
-  {
-    key: 'dollies',
-    label: 'Chariots',
-    href: '/dollies',
-    icon: 'dollies',
-    items: [
-      { key: 'dollies-all', group: 'Recherche', label: 'Tous les chariots', href: '/dollies', icon: 'dollies' },
-      { key: 'dollies-mail', group: 'Recherche', label: 'Courrier', href: '/dollies/sort?categ=mail', icon: 'mails' },
-      { key: 'dollies-record', group: 'Recherche', label: 'Archives', href: '/dollies/sort?categ=record', icon: 'archive' },
-      { key: 'dollies-communication', group: 'Recherche', label: 'Communication', href: '/dollies/sort?categ=communication', icon: 'communications' },
-      { key: 'dollies-room', group: 'Recherche', label: 'Salle', href: '/dollies/sort?categ=room', icon: 'home' },
-      { key: 'dollies-shelf', group: 'Recherche', label: 'Étagère', href: '/dollies/sort?categ=shelf', icon: 'library' },
-      { key: 'dollies-container', group: 'Recherche', label: "Boîtes d'archives", href: '/dollies/sort?categ=container', icon: 'package' },
-      { key: 'dollies-slip-record', group: 'Recherche', label: "Transfert d'archives", href: '/dollies/sort?categ=slip_record', icon: 'fileUp' },
-      { key: 'dollies-slip', group: 'Recherche', label: 'Transfert', href: '/dollies/sort?categ=slip', icon: 'transferrings' },
-      { key: 'dollies-digital-folder', group: 'Recherche', label: 'Dossiers numériques', href: '/dollies/sort?categ=digital_folder', icon: 'folderPlus' },
-      { key: 'dollies-digital-document', group: 'Recherche', label: 'Documents numériques', href: '/dollies/sort?categ=digital_document', icon: 'fileText' },
-
-      { key: 'dollies-create', group: 'Création', label: 'Chariot', href: '/dollies/create', icon: 'dollies' },
     ],
   },
 

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import { Icon, type IconKey } from '@/components/icons';
-import { navigation } from '@/lib/navigation';
+import { findActiveDomain } from '@/lib/navigation';
 import type { NavItem } from '@/types';
 
 /**
@@ -16,7 +16,7 @@ import type { NavItem } from '@/types';
  */
 export function Submenu() {
   const pathname = usePathname();
-  const activeDomain = navigation.find((domain) => pathname?.startsWith(domain.href));
+  const activeDomain = findActiveDomain(pathname);
 
   const groups = groupByHeading(activeDomain?.items ?? []);
 

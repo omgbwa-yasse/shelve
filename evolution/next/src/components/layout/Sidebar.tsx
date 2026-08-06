@@ -4,7 +4,15 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import { Icon, type IconKey } from '@/components/icons';
-import { navigation } from '@/lib/navigation';
+import { navigation, findActiveDomain } from '@/lib/navigation';
+
+/**
+ * Domaines masqués du rail : accessibles ailleurs dans l'UI (voir Topbar pour
+ * "Public", déplacé à côté du sélecteur de langue), mais conservés dans
+ * `navigation` pour que `Submenu`/`findActiveDomain` continuent de résoudre
+ * leurs sous-menus normalement une fois sur ces routes.
+ */
+const RAIL_HIDDEN_DOMAINS = new Set(['public']);
 
 /**
  * Bande de navigation principale (rail), fixe à gauche : une icône + un
@@ -13,14 +21,15 @@ import { navigation } from '@/lib/navigation';
  */
 export function Sidebar() {
   const pathname = usePathname();
+  const activeDomain = findActiveDomain(pathname);
 
   return (
     <nav
       aria-label="Domaines"
       className="flex w-rail shrink-0 flex-col items-stretch gap-1 overflow-y-auto bg-rail py-3"
     >
-      {navigation.map((domain) => {
-        const active = pathname?.startsWith(domain.href);
+      {navigation.filter((domain) => !RAIL_HIDDEN_DOMAINS.has(domain.key)).map((domain) => {
+        const active = domain.key === activeDomain?.key;
 
         return (
           <Link
