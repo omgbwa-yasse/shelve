@@ -165,14 +165,6 @@ export const navigation: NavDomain[] = [
     items: [
       { key: 'records-mine', group: 'Recherche — Archives', label: 'Mes documents', href: '/records', icon: 'listCheck' },
 
-      { key: 'records-authors', group: 'Recherche — Critères', label: 'Auteurs', href: '/records/authors', icon: 'person' },
-      { key: 'records-select-date', group: 'Recherche — Critères', label: 'Dates', href: '/records/select/date', icon: 'calendar' },
-      { key: 'records-select-keyword', group: 'Recherche — Critères', label: 'Mots-clés', href: '/records/select/keyword', icon: 'key' },
-      { key: 'records-select-activity', group: 'Recherche — Critères', label: 'Activités', href: '/records/select/activity', icon: 'briefcase' },
-      { key: 'records-select-building', group: 'Recherche — Critères', label: 'Locaux', href: '/records/select/building', icon: 'archive' },
-      { key: 'records-select-last', group: 'Recherche — Critères', label: 'Récents', href: '/records/select/last', icon: 'history' },
-      { key: 'records-advanced', group: 'Recherche — Critères', label: 'Avancée', href: '/records/advanced', icon: 'search' },
-
       { key: 'records-dossier', group: 'Enregistrement', label: 'Dossier', href: '/records/create?kind=folder', icon: 'folderOpen' },
       { key: 'records-document', group: 'Enregistrement', label: 'Document', href: '/records/create?kind=document', icon: 'fileText' },
 

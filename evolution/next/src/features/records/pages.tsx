@@ -19,7 +19,7 @@ import { RecordsTree, DragDrop } from './components/records-views';
 import { recordLevelsApi, recordConfidentialitiesApi, MetadataFieldsSection } from './components/record-form-fields';
 import { containersApi } from '@/features/deposits/services/deposit.service';
 import { usersApi } from '@/features/settings/services/setting.service';
-import { activitiesApi, organisationsApi } from '@/features/tools/services/tool.service';
+import { activitiesApi, keywordsApi, organisationsApi } from '@/features/tools/services/tool.service';
 import type { FeatureRoute } from '@/lib/routing';
 
 /* Usine locale : liste générique (propre à la feature Records) */
@@ -120,10 +120,10 @@ const REF_COLS: TableColumn<Entity>[] = [
  * ------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------
  * « Mes documents » — page unique à onglets (Organisations, Plan de classement,
- * Dossiers récents, Documents récents, Corbeille) avec affichage en
- * Arborescence (défaut), Grille ou Liste.
+ * Dossiers/Documents récents, Récents, Activités, Auteurs, Dates, Mots-clés,
+ * Corbeille) avec affichage en Arborescence (défaut), Grille ou Liste.
  * ------------------------------------------------------------------------- */
-type TabKey = 'organisations' | 'plan' | 'folders' | 'documents' | 'trash';
+type TabKey = 'organisations' | 'plan' | 'folders' | 'documents' | 'recent' | 'activities' | 'authors' | 'dates' | 'keywords' | 'trash';
 type ViewMode = 'tree' | 'grid' | 'list';
 
 const MD_TABS: { key: TabKey; label: string }[] = [
@@ -131,6 +131,11 @@ const MD_TABS: { key: TabKey; label: string }[] = [
   { key: 'plan', label: 'Plan de classement' },
   { key: 'folders', label: 'Dossiers récents' },
   { key: 'documents', label: 'Documents récents' },
+  { key: 'recent', label: 'Récents' },
+  { key: 'activities', label: 'Activités' },
+  { key: 'authors', label: 'Auteurs' },
+  { key: 'dates', label: 'Dates' },
+  { key: 'keywords', label: 'Mots-clés' },
   { key: 'trash', label: 'Corbeille' },
 ];
 
@@ -233,13 +238,28 @@ function buildGroupTree(groups: Entity[], records: Entity[], field: 'organisatio
   return (byParent.get(null) ?? []).map(node);
 }
 
+/** Table des auteurs (onglet Auteurs de « Mes documents »). */
+function AuthorTable({ authors }: { authors: Entity[] }) {
+  const cols: TableColumn<Entity>[] = [
+    { key: 'name', label: 'Nom', render: (r) => <Link href={`/records/authors/${r.id}`} className="hover:underline">{String(r.name ?? '')}</Link> },
+    { key: 'type_id', label: 'Type' },
+    { key: 'lifespan', label: 'Durée de vie' },
+    { key: 'parent', label: 'Parent', render: (r) => String((r.parent as { name?: string } | undefined)?.name ?? '—') },
+  ];
+  return <DataTable columns={cols} rows={authors} loading={false} error={false} />;
+}
+
 function MesDocuments() {
   const [tab, setTab] = useState<TabKey>('organisations');
   const [view, setView] = useState<ViewMode>('tree');
+  const [selAct, setSelAct] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [kw, setKw] = useState('');
 
   const recordsQ = useQuery({
-    queryKey: ['md-records'],
-    queryFn: () => api.getRecords({ 'page.size': 300, include: 'type,level,status' }),
+    queryKey: ['md-records', tab === 'keywords' ? kw : ''],
+    queryFn: () => api.getRecords({ 'page.size': 300, include: 'type,level,status', ...(tab === 'keywords' && kw ? { 'filter[keyword][like]': kw } : {}) }),
   });
   const trashQ = useQuery({
     queryKey: ['md-trash'],
@@ -253,41 +273,97 @@ function MesDocuments() {
     queryKey: ['md-activities'],
     queryFn: async () => (await activitiesApi.list({ 'page.size': 300 })) as { data: Entity[] },
   });
+  const authorsQ = useQuery({
+    queryKey: ['md-authors'],
+    queryFn: async () => (await api.authorsApi.list({ 'page.size': 300 })) as { data: Entity[] },
+  });
+  const keywordsQ = useQuery({
+    queryKey: ['md-keywords'],
+    queryFn: async () => (await keywordsApi.list({ 'page.size': 300 })) as { data: Entity[] },
+  });
 
   const allRecords = (recordsQ.data?.data ?? []) as Entity[];
   const trash = (trashQ.data?.data ?? []) as Entity[];
   const orgs = (orgsQ.data?.data ?? []) as Entity[];
   const acts = (actsQ.data?.data ?? []) as Entity[];
+  const authors = (authorsQ.data?.data ?? []) as Entity[];
+  const keywords = (keywordsQ.data?.data ?? []) as Entity[];
 
   const folders = allRecords.filter((r) => Boolean(r.is_container)).sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')));
   const documents = allRecords.filter((r) => !r.is_container).sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')));
+  const recent = [...allRecords].sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')));
+  const actFiltered = selAct ? allRecords.filter((r) => r.activity_id != null && String(r.activity_id) === selAct) : allRecords;
+  const dateFiltered = allRecords.filter((r) => {
+    if (!dateFrom && !dateTo) return true;
+    const d = String(r.start_date ?? '');
+    if (!d) return false;
+    if (dateFrom && d < dateFrom) return false;
+    if (dateTo && d > dateTo) return false;
+    return true;
+  });
+
+  function toolbar(): React.ReactNode {
+    if (tab === 'activities') {
+      return (
+        <select value={selAct} onChange={(e) => setSelAct(e.target.value)} className="w-64 rounded border border-border bg-surface px-2 py-1.5 text-sm">
+          <option value="">Toutes les activités</option>
+          {acts.map((a) => <option key={String(a.id)} value={String(a.id)}>{String(a.code ? `${a.code} — ` : '')}{String(a.name ?? a.id)}</option>)}
+        </select>
+      );
+    }
+    if (tab === 'dates') {
+      return (
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-muted-foreground">Du</label>
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="rounded border border-border bg-surface px-2 py-1.5 text-sm" />
+          <label className="text-sm text-muted-foreground">Au</label>
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="rounded border border-border bg-surface px-2 py-1.5 text-sm" />
+        </div>
+      );
+    }
+    if (tab === 'keywords') {
+      return (
+        <select value={kw} onChange={(e) => setKw(e.target.value)} className="w-64 rounded border border-border bg-surface px-2 py-1.5 text-sm">
+          <option value="">Tous les mots-clés</option>
+          {keywords.map((k) => <option key={String(k.id)} value={String(k.name ?? k.code ?? '')}>{String(k.code ? `${k.code} — ` : '')}{String(k.name ?? k.id)}</option>)}
+        </select>
+      );
+    }
+    return null;
+  }
 
   function content(): React.ReactNode {
     switch (tab) {
-      case 'organisations': {
-        if (view === 'tree') return <TreeView nodes={buildGroupTree(orgs, allRecords, 'organisation_id', 'o')} />;
-        return <GridView records={allRecords} />;
-      }
-      case 'plan': {
-        if (view === 'tree') return <TreeView nodes={buildGroupTree(acts, allRecords, 'activity_id', 'a')} />;
-        return <GridView records={allRecords} />;
-      }
-      case 'folders': {
-        if (view === 'tree') return <TreeView nodes={buildRecordTree(folders)} />;
-        return <GridView records={folders} />;
-      }
-      case 'documents': {
-        if (view === 'tree') return <TreeView nodes={buildRecordTree(documents)} />;
-        return <GridView records={documents} />;
-      }
-      case 'trash': {
-        if (view === 'tree') return <TreeView nodes={buildRecordTree(trash)} />;
-        return <GridView records={trash} />;
-      }
+      case 'organisations':
+        return view === 'tree' ? <TreeView nodes={buildGroupTree(orgs, allRecords, 'organisation_id', 'o')} /> : <GridView records={allRecords} />;
+      case 'plan':
+        return view === 'tree' ? <TreeView nodes={buildGroupTree(acts, allRecords, 'activity_id', 'a')} /> : <GridView records={allRecords} />;
+      case 'folders':
+        return view === 'tree' ? <TreeView nodes={buildRecordTree(folders)} /> : <GridView records={folders} />;
+      case 'documents':
+        return view === 'tree' ? <TreeView nodes={buildRecordTree(documents)} /> : <GridView records={documents} />;
+      case 'recent':
+        return view === 'tree' ? <TreeView nodes={buildRecordTree(recent)} /> : <GridView records={recent} />;
+      case 'activities':
+        return view === 'tree' ? <TreeView nodes={buildGroupTree(acts, actFiltered, 'activity_id', 'a')} /> : <GridView records={actFiltered} />;
+      case 'dates':
+        return view === 'tree' ? <TreeView nodes={buildRecordTree(dateFiltered)} /> : <GridView records={dateFiltered} />;
+      case 'keywords':
+        return view === 'tree' ? <TreeView nodes={buildRecordTree(allRecords)} /> : <GridView records={allRecords} />;
+      case 'trash':
+        return view === 'tree' ? <TreeView nodes={buildRecordTree(trash)} /> : <GridView records={trash} />;
     }
   }
 
-  const loading = recordsQ.isLoading || trashQ.isLoading || orgsQ.isLoading || actsQ.isLoading;
+  const loading = recordsQ.isLoading || trashQ.isLoading || orgsQ.isLoading || actsQ.isLoading || authorsQ.isLoading || keywordsQ.isLoading;
+
+  const listRows = tab === 'folders' ? folders
+    : tab === 'documents' ? documents
+    : tab === 'trash' ? trash
+    : tab === 'recent' ? recent
+    : tab === 'activities' ? actFiltered
+    : tab === 'dates' ? dateFiltered
+    : allRecords;
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -318,12 +394,15 @@ function MesDocuments() {
           </button>
         ))}
       </div>
-      {loading ? (
+      {tab === 'authors' ? (
+        <AuthorTable authors={authors} />
+      ) : loading ? (
         <p className="text-sm text-muted-foreground">Chargement…</p>
-      ) : view === 'list' ? (
-        <DataTable columns={RECORD_COLS} rows={tab === 'folders' ? folders : tab === 'documents' ? documents : tab === 'trash' ? trash : allRecords} loading={false} error={false} />
       ) : (
-        content()
+        <div className="flex min-h-0 flex-1 flex-col gap-3">
+          {toolbar()}
+          {view === 'list' ? <DataTable columns={RECORD_COLS} rows={listRows} loading={false} error={false} /> : content()}
+        </div>
       )}
     </div>
   );

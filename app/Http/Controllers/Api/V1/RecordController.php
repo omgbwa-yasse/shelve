@@ -55,6 +55,7 @@ class RecordController extends Controller
         // Filtres dérivés (hors whitelist FILTERABLE) :
         // - filter[is_container][eq]=1|0 → dossiers (conteneurs) / documents
         // - filter[physical][eq]=1       → archives physiques (rattachées à un contenant)
+        // - filter[keyword][like]=X      → notices liées à un mot-clé (nom ou code)
         $filters = $request->input('filter', []);
         if (is_array($filters) && isset($filters['is_container'])) {
             $query->whereHas('type', fn ($q) => $q->where('is_container', filter_var($filters['is_container'], FILTER_VALIDATE_BOOLEAN)));
@@ -64,6 +65,16 @@ class RecordController extends Controller
         if (is_array($filters) && isset($filters['physical'])) {
             $query->whereHas('containers');
             unset($filters['physical']);
+            $request->merge(['filter' => $filters]);
+        }
+        if (is_array($filters) && isset($filters['keyword'])) {
+            $kw = is_array($filters['keyword'])
+                ? (string) ($filters['keyword']['like'] ?? $filters['keyword']['eq'] ?? '')
+                : (string) $filters['keyword'];
+            if ($kw !== '') {
+                $query->whereHas('keywords', fn ($q) => $q->where('name', 'like', "%{$kw}%")->orWhere('code', 'like', "%{$kw}%"));
+            }
+            unset($filters['keyword']);
             $request->merge(['filter' => $filters]);
         }
 
