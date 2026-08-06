@@ -213,16 +213,13 @@ export const navigation: NavDomain[] = [
       { key: 'transferrings-containers', group: 'Création', label: 'Boîte chrono', href: '/transferrings/containers', icon: 'archive' },
 
       // Cycle de vie fusionné dans Déclassement (même rôle : suivi du sort des
-      // dossiers) — plus de section "Cycle de vie" séparée dans le menu.
+      // dossiers) — plus de section "Cycle de vie" séparée dans le menu. Les
+      // entrées `records/to-*` (À transférer, À éliminer, …) sont retirées :
+      // elles ne faisaient que relancer la recherche des notices (filtre du
+      // cycle de vie) sans écran propre.
       { key: 'declassement-lists', group: 'Déclassement', label: 'Listes de déclassement', href: '/transferrings/declassement-lists', icon: 'listOrdered' },
       { key: 'declassement-lists-create', group: 'Déclassement', label: 'Nouvelle liste', href: '/transferrings/declassement-lists/create', icon: 'plusCircle' },
       { key: 'record-reactivations', group: 'Déclassement', label: 'Réactivations', href: '/transferrings/reactivations', icon: 'rotateCcw' },
-      { key: 'records-to-store', group: 'Déclassement', label: 'À transférer', href: '/records/to-store', icon: 'folderCheck' },
-      { key: 'records-to-retain', group: 'Déclassement', label: 'Dossiers actifs', href: '/records/to-retain', icon: 'folderCheck' },
-      { key: 'records-to-transfer', group: 'Déclassement', label: 'À verser', href: '/records/to-transfer', icon: 'arrowRightSquare' },
-      { key: 'records-to-eliminate', group: 'Déclassement', label: 'À éliminer', href: '/records/to-eliminate', icon: 'trash' },
-      { key: 'records-to-keep', group: 'Déclassement', label: 'À conserver', href: '/records/to-keep', icon: 'archive' },
-      { key: 'records-to-sort', group: 'Déclassement', label: 'À trier', href: '/records/to-sort', icon: 'sortAlpha' },
 
       { key: 'transferrings-import', group: 'Import / Export (EAD, Excel, SEDA)', label: 'Import', href: '/transferrings/import', icon: 'download' },
       { key: 'transferrings-export', group: 'Import / Export (EAD, Excel, SEDA)', label: 'Export', href: '/transferrings/export', icon: 'upload' },
