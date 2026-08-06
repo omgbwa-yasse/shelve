@@ -19,7 +19,7 @@ import { RecordsTree, DragDrop } from './components/records-views';
 import { recordLevelsApi, recordConfidentialitiesApi, MetadataFieldsSection } from './components/record-form-fields';
 import { containersApi } from '@/features/deposits/services/deposit.service';
 import { usersApi } from '@/features/settings/services/setting.service';
-import { activitiesApi } from '@/features/tools/services/tool.service';
+import { activitiesApi, organisationsApi } from '@/features/tools/services/tool.service';
 import type { FeatureRoute } from '@/lib/routing';
 
 /* Usine locale : liste générique (propre à la feature Records) */
@@ -118,14 +118,44 @@ const REF_COLS: TableColumn<Entity>[] = [
  * `recordsApi.list` générique, pour que Typologie/Niveau/Statut affichent un
  * libellé au lieu d'un identifiant brut (voir RecordResource::whenLoaded).
  * ------------------------------------------------------------------------- */
-function RecordList() {
+/* ---------------------------------------------------------------------------
+ * Liste des notices filtrable — réutilisée par « Mes documents », Localisations,
+ * Organisations, Plan de classement, Dossiers/Documents récents. Applique un
+ * `preset` (filtres API), un tri et/ou un sélecteur (organisation, activité).
+ * ------------------------------------------------------------------------- */
+function RecordsFilteredList({ title, preset = {}, sort, selector }: {
+  title: string;
+  preset?: Record<string, string>;
+  sort?: string;
+  selector?: 'organisation' | 'activity';
+}) {
   const router = useRouter();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [pickerKind, setPickerKind] = useState<'folder' | 'document' | null>(null);
+  const [selOrg, setSelOrg] = useState('');
+  const [selAct, setSelAct] = useState('');
+
+  const orgs = useQuery({
+    queryKey: ['filter-organisations'],
+    queryFn: async () => (await organisationsApi.list({ 'page.size': 200 })) as { data: Entity[] },
+    enabled: selector === 'organisation',
+  });
+  const acts = useQuery({
+    queryKey: ['filter-activities'],
+    queryFn: async () => (await activitiesApi.list({ 'page.size': 200 })) as { data: Entity[] },
+    enabled: selector === 'activity',
+  });
+
+  const params: Record<string, unknown> = { page, 'page.size': 20, ...preset };
+  if (sort) params.sort = sort;
+  if (search) params['filter[name][like]'] = search;
+  if (selOrg) params['filter[organisation_id][eq]'] = selOrg;
+  if (selAct) params['filter[activity_id][eq]'] = selAct;
+
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['records', page, search],
-    queryFn: () => api.getRecords({ page, 'page.size': 20, ...(search ? { 'filter[name][like]': search } : {}) }),
+    queryKey: ['records', page, search, JSON.stringify(preset), sort, selOrg, selAct],
+    queryFn: () => api.getRecords(params),
   });
   const destroy = useDestroy(api.recordsApi, 'records');
   const rows = (data?.data ?? []) as Entity[];
@@ -134,8 +164,20 @@ function RecordList() {
   return (
     <div className="flex h-full flex-col gap-4">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">Notices</h1>
-        <div className="flex gap-2">
+        <h1 className="text-xl font-semibold">{title}</h1>
+        <div className="flex flex-wrap items-center gap-2">
+          {selector === 'organisation' && (
+            <select value={selOrg} onChange={(e) => { setSelOrg(e.target.value); setPage(1); }} className="w-52 rounded border border-border bg-surface px-2 py-1.5 text-sm">
+              <option value="">Toutes les organisations</option>
+              {(orgs.data?.data ?? []).map((o) => <option key={o.id} value={String(o.id)}>{String(o.name ?? o.code ?? o.id)}</option>)}
+            </select>
+          )}
+          {selector === 'activity' && (
+            <select value={selAct} onChange={(e) => { setSelAct(e.target.value); setPage(1); }} className="w-52 rounded border border-border bg-surface px-2 py-1.5 text-sm">
+              <option value="">Tout le plan de classement</option>
+              {(acts.data?.data ?? []).map((a) => <option key={a.id} value={String(a.id)}>{String(a.code ? `${a.code} — ` : '')}{String(a.name ?? a.id)}</option>)}
+            </select>
+          )}
           <input type="search" placeholder="Rechercher…" onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="w-56 rounded border border-border bg-surface px-3 py-1.5 text-sm" />
           <button type="button" onClick={() => setPickerKind('folder')} className="rounded border border-primary px-3 py-1.5 text-sm text-primary hover:bg-muted">📁 Nouveau dossier</button>
           <button type="button" onClick={() => setPickerKind('document')} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">📄 Nouveau document</button>
@@ -161,9 +203,38 @@ function RecordList() {
         )}
       />
       <Pagination page={page} totalPages={m?.last_page ?? 1} total={m?.total} onChange={setPage} />
-      {router && null}
     </div>
   );
+}
+
+/** Mes documents — liste complète des notices. */
+function RecordList() {
+  return <RecordsFilteredList title="Mes documents" />;
+}
+
+/** Localisations — archives physiques (notices rattachées à un contenant). */
+function RecordsLocations() {
+  return <RecordsFilteredList title="Localisations — archives physiques" preset={{ physical: '1' }} />;
+}
+
+/** Organisations — notices filtrées par unité. */
+function RecordsByOrganisation() {
+  return <RecordsFilteredList title="Notices par organisation" selector="organisation" />;
+}
+
+/** Plan de classement — notices filtrées par activité (classe). */
+function RecordsByActivity() {
+  return <RecordsFilteredList title="Notices par plan de classement" selector="activity" />;
+}
+
+/** Dossiers récents — contenants créés en dernier. */
+function RecentFolders() {
+  return <RecordsFilteredList title="Dossiers récents" preset={{ is_container: '1' }} sort="-created_at" />;
+}
+
+/** Documents récents — documents créés en dernier. */
+function RecentDocuments() {
+  return <RecordsFilteredList title="Documents récents" preset={{ is_container: '0' }} sort="-created_at" />;
 }
 
 /* ---------------------------------------------------------------------------
@@ -1140,6 +1211,11 @@ export const routes: FeatureRoute[] = [
 
   { path: '/records/tree', List: RecordsTree },
   { path: '/records/drag-drop', List: DragDrop },
+  { path: '/records/filter/locations', List: RecordsLocations },
+  { path: '/records/filter/organisations', List: RecordsByOrganisation },
+  { path: '/records/filter/activities', List: RecordsByActivity },
+  { path: '/records/filter/recent-folders', List: RecentFolders },
+  { path: '/records/filter/recent-documents', List: RecentDocuments },
   { path: '/records/import', List: RecordsImport },
   { path: '/records/export', List: RecordsExport },
 ];

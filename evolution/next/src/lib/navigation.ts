@@ -163,8 +163,12 @@ export const navigation: NavDomain[] = [
     href: '/records',
     icon: 'records',
     items: [
-      { key: 'records-mine', group: 'Recherche — Archives', label: 'Mes archives', href: '/records', icon: 'listCheck' },
-      { key: 'records-physical', group: 'Recherche — Archives', label: 'Notices physiques', href: '/records/physical', icon: 'archive' },
+      { key: 'records-mine', group: 'Recherche — Archives', label: 'Mes documents', href: '/records', icon: 'listCheck' },
+      { key: 'records-locations', group: 'Recherche — Archives', label: 'Localisations (archives physiques)', href: '/records/filter/locations', icon: 'archive' },
+      { key: 'records-filter-orgs', group: 'Recherche — Archives', label: 'Organisations', href: '/records/filter/organisations', icon: 'deposits' },
+      { key: 'records-filter-activities', group: 'Recherche — Archives', label: 'Plan de classement', href: '/records/filter/activities', icon: 'briefcase' },
+      { key: 'records-recent-folders', group: 'Recherche — Archives', label: 'Dossiers récents', href: '/records/filter/recent-folders', icon: 'folderOpen' },
+      { key: 'records-recent-documents', group: 'Recherche — Archives', label: 'Documents récents', href: '/records/filter/recent-documents', icon: 'fileText' },
       { key: 'records-trash', group: 'Recherche — Archives', label: 'Corbeille', href: '/records/trash', icon: 'trash' },
 
       { key: 'records-authors', group: 'Recherche — Critères', label: 'Auteurs', href: '/records/authors', icon: 'person' },

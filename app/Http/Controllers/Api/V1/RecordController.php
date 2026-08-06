@@ -52,6 +52,21 @@ class RecordController extends Controller
             ->with('type', 'level', 'status')
             ->currentVersion();
 
+        // Filtres dérivés (hors whitelist FILTERABLE) :
+        // - filter[is_container][eq]=1|0 → dossiers (conteneurs) / documents
+        // - filter[physical][eq]=1       → archives physiques (rattachées à un contenant)
+        $filters = $request->input('filter', []);
+        if (is_array($filters) && isset($filters['is_container'])) {
+            $query->whereHas('type', fn ($q) => $q->where('is_container', filter_var($filters['is_container'], FILTER_VALIDATE_BOOLEAN)));
+            unset($filters['is_container']);
+            $request->merge(['filter' => $filters]);
+        }
+        if (is_array($filters) && isset($filters['physical'])) {
+            $query->whereHas('containers');
+            unset($filters['physical']);
+            $request->merge(['filter' => $filters]);
+        }
+
         $this->applyFilters($query, $request, self::FILTERABLE);
         $this->applySorting($query, $request, self::SORTABLE, 'updated_at');
         $this->applyIncludes($query, $request, self::INCLUDABLE);
