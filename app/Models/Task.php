@@ -27,6 +27,10 @@ class Task extends Model
         'taskable_type',
         'taskable_id',
         'due_date',
+        'start_date',
+        'percent_complete',
+        'estimated_hours',
+        'actual_hours',
         'created_by',
         'updated_by',
         'completed_by',
@@ -37,6 +41,10 @@ class Task extends Model
         'form_data' => 'array',
         'sequence_order' => 'integer',
         'due_date' => 'datetime',
+        'start_date' => 'date',
+        'percent_complete' => 'integer',
+        'estimated_hours' => 'decimal:2',
+        'actual_hours' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'completed_at' => 'datetime',
@@ -85,6 +93,18 @@ class Task extends Model
     public function taskable(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    /** Tâches dont CETTE tâche est le prédécesseur (elle doit finir/démarrer avant elles). */
+    public function successorDependencies(): HasMany
+    {
+        return $this->hasMany(TaskDependency::class, 'predecessor_id');
+    }
+
+    /** Tâches dont CETTE tâche est le successeur (elle attend qu'elles finissent/démarrent). */
+    public function predecessorDependencies(): HasMany
+    {
+        return $this->hasMany(TaskDependency::class, 'successor_id');
     }
 
     public function history(): HasMany

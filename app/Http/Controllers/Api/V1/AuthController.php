@@ -141,13 +141,6 @@ class AuthController extends Controller
      */
     private function effectivePermissions(User $user): array
     {
-        $direct = $user->permissions()->pluck('name');
-
-        $viaRoles = $user->roles()
-            ->with('permissions:id,name')
-            ->get()
-            ->flatMap(fn ($role) => $role->permissions->pluck('name'));
-
-        return $direct->merge($viaRoles)->unique()->sort()->values()->all();
+        return $user->effectivePermissionNames();
     }
 }

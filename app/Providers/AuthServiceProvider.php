@@ -67,6 +67,10 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\WorkflowInstance::class => \App\Policies\WorkflowInstancePolicy::class,
         \App\Models\DeclassementList::class => \App\Policies\DeclassementListPolicy::class,
         \App\Models\RecordReactivation::class => \App\Policies\RecordReactivationPolicy::class,
+        \App\Models\Project::class => \App\Policies\ProjectPolicy::class,
+        \App\Models\Objective::class => \App\Policies\ObjectivePolicy::class,
+        \App\Models\Kpi::class => \App\Policies\KpiPolicy::class,
+        \App\Models\AiRoutine::class => \App\Policies\AiRoutinePolicy::class,
     // \App\Models\PublicPortal model not found; mapping removed
     // \App\Models\Ai model and AiPolicy not found; mapping removed
     // \App\Models\Barcode model not found; mapping removed

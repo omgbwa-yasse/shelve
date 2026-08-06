@@ -144,6 +144,8 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'rate.limit:ap
     require __DIR__ . '/api/D13.php';
     require __DIR__ . '/api/D14.php';
     require __DIR__ . '/api/D16.php';
+    require __DIR__ . '/api/D17.php';
+    require __DIR__ . '/api/D18.php';
 });
 
 // Public API routes with rate limiting

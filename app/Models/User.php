@@ -163,6 +163,22 @@ class User extends Authenticatable
         return $this->hasMany(Favorite::class, 'user_id');
     }
 
+    /** Projets/OKR/KPI rattachés directement à cette personne — voir App\Traits\HasAttachable. */
+    public function projects()
+    {
+        return $this->morphMany(Project::class, 'attachable');
+    }
+
+    public function objectives()
+    {
+        return $this->morphMany(Objective::class, 'attachable');
+    }
+
+    public function kpis()
+    {
+        return $this->morphMany(Kpi::class, 'attachable');
+    }
+
     /**
      * Vérifier si l'utilisateur a un rôle spécifique
      */
@@ -238,5 +254,23 @@ class User extends Authenticatable
 
         // Utiliser le système natif pour vérifier la permission
         return $this->hasPermissionTo($permissionName);
+    }
+
+    /**
+     * Permissions effectives : permissions directes (`user_permissions`) réunies aux
+     * permissions héritées des rôles (`user_roles` → `role_permissions`). Utilisé pour
+     * piloter l'affichage côté client (`AuthController::effectivePermissions()`) et pour
+     * borner les capacités présentées à l'assistant IA (voir `AiCapabilityService`).
+     */
+    public function effectivePermissionNames(): array
+    {
+        $direct = $this->permissions()->pluck('name');
+
+        $viaRoles = $this->roles()
+            ->with('permissions:id,name')
+            ->get()
+            ->flatMap(fn ($role) => $role->permissions->pluck('name'));
+
+        return $direct->merge($viaRoles)->unique()->sort()->values()->all();
     }
 }

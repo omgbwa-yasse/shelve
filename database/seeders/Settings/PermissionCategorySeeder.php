@@ -25,6 +25,8 @@ class PermissionCategorySeeder extends Seeder
         $this->createBackupsPermissions();
         $this->createWorkflowPermissions();
         $this->createWorkPlacePermissions();
+        $this->createProjectsPermissions();
+        $this->createAiRoutinePermissions();
         $this->createAdditionalPermissions();
         $this->createLibraryPermissions();
         $this->createMuseumPermissions();
@@ -96,6 +98,11 @@ class PermissionCategorySeeder extends Seeder
                 'name' => 'module_workplace_access',
                 'category' => 'system',
                 'description' => 'AccÃ¨s au module WorkPlace (Espaces de travail)'
+            ],
+            [
+                'name' => 'module_projects_access',
+                'category' => 'system',
+                'description' => 'AccÃ¨s au module Projets (Projets, OKR, KPI)'
             ],
         ];
 
@@ -773,6 +780,204 @@ class PermissionCategorySeeder extends Seeder
                 'name' => 'systemNotification_delete',
                 'category' => 'workflow',
                 'description' => 'Supprimer une notification systÃ¨me'
+            ],
+        ];
+
+        $this->insertPermissions($permissions);
+    }
+
+    private function createProjectsPermissions()
+    {
+        $permissions = [
+            [
+                'name' => 'project_viewAny',
+                'category' => 'projects',
+                'description' => 'Voir tous les projets'
+            ],
+            [
+                'name' => 'project_view',
+                'category' => 'projects',
+                'description' => 'Voir un projet'
+            ],
+            [
+                'name' => 'project_create',
+                'category' => 'projects',
+                'description' => 'Créer des projets'
+            ],
+            [
+                'name' => 'project_update',
+                'category' => 'projects',
+                'description' => 'Modifier des projets'
+            ],
+            [
+                'name' => 'project_delete',
+                'category' => 'projects',
+                'description' => 'Supprimer des projets'
+            ],
+
+            [
+                'name' => 'objective_viewAny',
+                'category' => 'projects',
+                'description' => 'Voir tous les objectifs (OKR)'
+            ],
+            [
+                'name' => 'objective_view',
+                'category' => 'projects',
+                'description' => 'Voir un objectif (OKR)'
+            ],
+            [
+                'name' => 'objective_create',
+                'category' => 'projects',
+                'description' => 'Créer des objectifs (OKR)'
+            ],
+            [
+                'name' => 'objective_update',
+                'category' => 'projects',
+                'description' => 'Modifier des objectifs (OKR)'
+            ],
+            [
+                'name' => 'objective_delete',
+                'category' => 'projects',
+                'description' => 'Supprimer des objectifs (OKR)'
+            ],
+            [
+                'name' => 'key_result_update',
+                'category' => 'projects',
+                'description' => 'Mettre à jour la progression d\'un résultat clé'
+            ],
+
+            [
+                'name' => 'kpi_viewAny',
+                'category' => 'projects',
+                'description' => 'Voir tous les KPI'
+            ],
+            [
+                'name' => 'kpi_view',
+                'category' => 'projects',
+                'description' => 'Voir un KPI'
+            ],
+            [
+                'name' => 'kpi_create',
+                'category' => 'projects',
+                'description' => 'Créer des KPI'
+            ],
+            [
+                'name' => 'kpi_update',
+                'category' => 'projects',
+                'description' => 'Modifier des KPI'
+            ],
+            [
+                'name' => 'kpi_delete',
+                'category' => 'projects',
+                'description' => 'Supprimer des KPI'
+            ],
+            [
+                'name' => 'kpi_measurement_create',
+                'category' => 'projects',
+                'description' => 'Enregistrer une mesure de KPI'
+            ],
+
+            [
+                'name' => 'project_milestone_create',
+                'category' => 'projects',
+                'description' => 'Créer des jalons de projet'
+            ],
+            [
+                'name' => 'project_milestone_update',
+                'category' => 'projects',
+                'description' => 'Modifier des jalons de projet'
+            ],
+            [
+                'name' => 'project_milestone_delete',
+                'category' => 'projects',
+                'description' => 'Supprimer des jalons de projet'
+            ],
+
+            [
+                'name' => 'project_deliverable_create',
+                'category' => 'projects',
+                'description' => 'Créer des livrables de projet'
+            ],
+            [
+                'name' => 'project_deliverable_update',
+                'category' => 'projects',
+                'description' => 'Modifier des livrables de projet'
+            ],
+            [
+                'name' => 'project_deliverable_delete',
+                'category' => 'projects',
+                'description' => 'Supprimer des livrables de projet'
+            ],
+
+            [
+                'name' => 'project_resource_create',
+                'category' => 'projects',
+                'description' => 'Créer des ressources de projet'
+            ],
+            [
+                'name' => 'project_resource_update',
+                'category' => 'projects',
+                'description' => 'Modifier des ressources de projet'
+            ],
+            [
+                'name' => 'project_resource_delete',
+                'category' => 'projects',
+                'description' => 'Supprimer des ressources de projet'
+            ],
+
+            [
+                'name' => 'project_status_report_create',
+                'category' => 'projects',
+                'description' => 'Créer des rapports d\'étape de projet'
+            ],
+            [
+                'name' => 'project_status_report_delete',
+                'category' => 'projects',
+                'description' => 'Supprimer des rapports d\'étape de projet'
+            ],
+
+            [
+                'name' => 'task_dependency_create',
+                'category' => 'projects',
+                'description' => 'Créer des dépendances entre tâches'
+            ],
+            [
+                'name' => 'task_dependency_delete',
+                'category' => 'projects',
+                'description' => 'Supprimer des dépendances entre tâches'
+            ],
+        ];
+
+        $this->insertPermissions($permissions);
+    }
+
+    private function createAiRoutinePermissions()
+    {
+        $permissions = [
+            [
+                'name' => 'ai_routine_viewAny',
+                'category' => 'ai',
+                'description' => 'Voir toutes les routines IA'
+            ],
+            [
+                'name' => 'ai_routine_view',
+                'category' => 'ai',
+                'description' => 'Voir une routine IA'
+            ],
+            [
+                'name' => 'ai_routine_create',
+                'category' => 'ai',
+                'description' => 'Créer des routines IA'
+            ],
+            [
+                'name' => 'ai_routine_update',
+                'category' => 'ai',
+                'description' => 'Modifier des routines IA'
+            ],
+            [
+                'name' => 'ai_routine_delete',
+                'category' => 'ai',
+                'description' => 'Supprimer des routines IA'
             ],
         ];
 

@@ -43,6 +43,22 @@ class Organisation extends Model
     {
         return $this->belongsToMany(User::class, 'user_organisation_role', 'organisation_id', 'user_id');
     }
+
+    /** Projets/OKR/KPI rattachés à cette unité administrative — voir App\Traits\HasAttachable. */
+    public function projects()
+    {
+        return $this->morphMany(Project::class, 'attachable');
+    }
+
+    public function objectives()
+    {
+        return $this->morphMany(Objective::class, 'attachable');
+    }
+
+    public function kpis()
+    {
+        return $this->morphMany(Kpi::class, 'attachable');
+    }
 }
 
 

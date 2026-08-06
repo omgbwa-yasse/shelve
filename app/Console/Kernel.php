@@ -82,6 +82,11 @@ class Kernel extends ConsoleKernel
     $schedule->command('llm:prune --days=90')
         ->weeklyOn(1, '01:00') // Lundi 01:00
         ->withoutOverlapping();
+
+    // === ASSISTANT IA — ROUTINES PROGRAMMÉES ===
+    $schedule->command('ai:routines:run-due')
+        ->everyMinute()
+        ->withoutOverlapping();
     }
 
     /**

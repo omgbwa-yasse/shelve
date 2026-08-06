@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\BelongsToOrganisation;
 
@@ -113,6 +114,22 @@ class Workplace extends Model
     public function bookmarks(): HasMany
     {
         return $this->hasMany(WorkplaceBookmark::class);
+    }
+
+    /** Projets/OKR/KPI rattachés à ce workplace — voir App\Traits\HasAttachable. */
+    public function projects(): MorphMany
+    {
+        return $this->morphMany(Project::class, 'attachable');
+    }
+
+    public function objectives(): MorphMany
+    {
+        return $this->morphMany(Objective::class, 'attachable');
+    }
+
+    public function kpis(): MorphMany
+    {
+        return $this->morphMany(Kpi::class, 'attachable');
     }
 
     /**
