@@ -108,7 +108,7 @@ export function ChatTab() {
             }}
             placeholder="Écrire un message…"
             rows={2}
-            className="w-[70%] resize-none rounded border border-border bg-background px-2 py-1.5 text-sm outline-none focus:border-primary"
+            className="w-full resize-none rounded border border-border bg-background px-2 py-1.5 text-sm outline-none focus:border-primary"
           />
         </form>
 
@@ -120,7 +120,7 @@ export function ChatTab() {
               <select
                 value={mode}
                 onChange={(e) => setMode(e.target.value as AssistantMode)}
-                className="min-w-0 flex-1 rounded border border-border bg-background px-2 py-1.5 text-xs"
+                className="w-[70%] rounded border border-border bg-background px-2 py-1.5 text-xs"
               >
                 {MODES.map((m) => (
                   <option key={m} value={m}>
