@@ -119,122 +119,214 @@ const REF_COLS: TableColumn<Entity>[] = [
  * libellé au lieu d'un identifiant brut (voir RecordResource::whenLoaded).
  * ------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------
- * Liste des notices filtrable — réutilisée par « Mes documents », Localisations,
- * Organisations, Plan de classement, Dossiers/Documents récents. Applique un
- * `preset` (filtres API), un tri et/ou un sélecteur (organisation, activité).
+ * « Mes documents » — page unique à onglets (Organisations, Plan de classement,
+ * Dossiers récents, Documents récents, Corbeille) avec affichage en
+ * Arborescence (défaut), Grille ou Liste.
  * ------------------------------------------------------------------------- */
-function RecordsFilteredList({ title, preset = {}, sort, selector }: {
-  title: string;
-  preset?: Record<string, string>;
-  sort?: string;
-  selector?: 'organisation' | 'activity';
-}) {
-  const router = useRouter();
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [pickerKind, setPickerKind] = useState<'folder' | 'document' | null>(null);
-  const [selOrg, setSelOrg] = useState('');
-  const [selAct, setSelAct] = useState('');
+type TabKey = 'organisations' | 'plan' | 'folders' | 'documents' | 'trash';
+type ViewMode = 'tree' | 'grid' | 'list';
 
-  const orgs = useQuery({
-    queryKey: ['filter-organisations'],
-    queryFn: async () => (await organisationsApi.list({ 'page.size': 200 })) as { data: Entity[] },
-    enabled: selector === 'organisation',
-  });
-  const acts = useQuery({
-    queryKey: ['filter-activities'],
-    queryFn: async () => (await activitiesApi.list({ 'page.size': 200 })) as { data: Entity[] },
-    enabled: selector === 'activity',
-  });
+const MD_TABS: { key: TabKey; label: string }[] = [
+  { key: 'organisations', label: 'Organisations' },
+  { key: 'plan', label: 'Plan de classement' },
+  { key: 'folders', label: 'Dossiers récents' },
+  { key: 'documents', label: 'Documents récents' },
+  { key: 'trash', label: 'Corbeille' },
+];
 
-  const params: Record<string, unknown> = { page, 'page.size': 20, ...preset };
-  if (sort) params.sort = sort;
-  if (search) params['filter[name][like]'] = search;
-  if (selOrg) params['filter[organisation_id][eq]'] = selOrg;
-  if (selAct) params['filter[activity_id][eq]'] = selAct;
+type TNode = { key: string; label: React.ReactNode; recordId?: number; children: TNode[] };
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['records', page, search, JSON.stringify(preset), sort, selOrg, selAct],
-    queryFn: () => api.getRecords(params),
-  });
-  const destroy = useDestroy(api.recordsApi, 'records');
-  const rows = (data?.data ?? []) as Entity[];
-  const m = data?.meta;
-
-  return (
-    <div className="flex h-full flex-col gap-4">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">{title}</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          {selector === 'organisation' && (
-            <select value={selOrg} onChange={(e) => { setSelOrg(e.target.value); setPage(1); }} className="w-52 rounded border border-border bg-surface px-2 py-1.5 text-sm">
-              <option value="">Toutes les organisations</option>
-              {(orgs.data?.data ?? []).map((o) => <option key={o.id} value={String(o.id)}>{String(o.name ?? o.code ?? o.id)}</option>)}
-            </select>
-          )}
-          {selector === 'activity' && (
-            <select value={selAct} onChange={(e) => { setSelAct(e.target.value); setPage(1); }} className="w-52 rounded border border-border bg-surface px-2 py-1.5 text-sm">
-              <option value="">Tout le plan de classement</option>
-              {(acts.data?.data ?? []).map((a) => <option key={a.id} value={String(a.id)}>{String(a.code ? `${a.code} — ` : '')}{String(a.name ?? a.id)}</option>)}
-            </select>
-          )}
-          <input type="search" placeholder="Rechercher…" onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="w-56 rounded border border-border bg-surface px-3 py-1.5 text-sm" />
-          <button type="button" onClick={() => setPickerKind('folder')} className="rounded border border-primary px-3 py-1.5 text-sm text-primary hover:bg-muted">📁 Nouveau dossier</button>
-          <button type="button" onClick={() => setPickerKind('document')} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">📄 Nouveau document</button>
-        </div>
-      </header>
-      {pickerKind && (
-        <TypePickerModal
-          kind={pickerKind}
-          onClose={() => setPickerKind(null)}
-          onSelect={(typeId) => router.push(`/records/create?kind=${pickerKind}&type_id=${typeId}`)}
-        />
-      )}
-      <DataTable
-        columns={RECORD_COLS}
-        rows={rows}
-        loading={isLoading}
-        error={isError}
-        actions={(row) => (
-          <div className="flex justify-end gap-1">
-            <Link href={`/records/${row.id}`} className="rounded border border-border px-2 py-1 text-xs hover:bg-muted">Voir</Link>
-            <button type="button" onClick={() => { if (window.confirm('Envoyer à la corbeille ?')) destroy.mutate(row.id); }} className="rounded border border-border px-2 py-1 text-xs text-danger">Supprimer</button>
+/** Arborescence générique (nœuds dépliables), feuilles = liens vers la fiche. */
+function TreeView({ nodes }: { nodes: TNode[] }) {
+  const [closed, setClosed] = useState<Set<string>>(new Set());
+  function toggle(key: string) {
+    setClosed((p) => {
+      const n = new Set(p);
+      if (n.has(key)) n.delete(key); else n.add(key);
+      return n;
+    });
+  }
+  function render(ns: TNode[], depth: number): React.ReactNode {
+    return ns.map((n) => {
+      const isClosed = closed.has(n.key);
+      const hasKids = n.children.length > 0;
+      return (
+        <div key={n.key}>
+          <div className="flex items-center gap-1 rounded px-1 py-0.5 hover:bg-muted" style={{ paddingLeft: depth * 20 }}>
+            {hasKids ? (
+              <button type="button" onClick={() => toggle(n.key)} className="w-4 text-center text-xs text-muted-foreground">{isClosed ? '▶' : '▼'}</button>
+            ) : <span className="w-4" />}
+            <span className="w-4 text-xs">{hasKids ? '🗀' : '🗎'}</span>
+            {n.recordId ? <Link href={`/records/${n.recordId}`} className="hover:underline">{n.label}</Link> : <span>{n.label}</span>}
           </div>
-        )}
-      />
-      <Pagination page={page} totalPages={m?.last_page ?? 1} total={m?.total} onChange={setPage} />
+          {hasKids && !isClosed && render(n.children, depth + 1)}
+        </div>
+      );
+    });
+  }
+  return (
+    <div className="min-h-0 flex-1 overflow-auto rounded border border-border bg-surface p-3 text-sm">
+      {render(nodes, 0)}
+      {nodes.length === 0 && <p className="text-muted-foreground">Aucun résultat.</p>}
     </div>
   );
 }
 
-/** Mes documents — liste complète des notices. */
-function RecordList() {
-  return <RecordsFilteredList title="Mes documents" />;
+/** Grille de cartes (code, nom, typologie, statut, date). */
+function GridView({ records }: { records: Entity[] }) {
+  return (
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {records.map((r) => (
+        <Link key={String(r.id)} href={`/records/${r.id}`} className="rounded border border-border bg-surface p-3 hover:border-primary">
+          <p className="font-mono text-xs text-muted-foreground">{String(r.code ?? '')}</p>
+          <p className="mt-1 line-clamp-2 font-medium">{String(r.name ?? '')}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{labelOf(r.type, 'name')} · {labelOf(r.status, 'name')}</p>
+          <p className="text-xs text-muted-foreground">{r.created_at ? new Date(String(r.created_at)).toLocaleDateString('fr-FR') : '—'}</p>
+        </Link>
+      ))}
+      {records.length === 0 && <p className="text-muted-foreground">Aucun résultat.</p>}
+    </div>
+  );
 }
 
-/** Localisations — archives physiques (notices rattachées à un contenant). */
-function RecordsLocations() {
-  return <RecordsFilteredList title="Localisations — archives physiques" preset={{ physical: '1' }} />;
+/** Arbre de notices parent/enfant (dossiers, documents, corbeille). */
+function buildRecordTree(records: Entity[]): TNode[] {
+  const byParent = new Map<string | null, Entity[]>();
+  for (const r of records) {
+    const k = r.parent_id == null ? null : String(r.parent_id);
+    if (!byParent.has(k)) byParent.set(k, []);
+    byParent.get(k)!.push(r);
+  }
+  const node = (r: Entity): TNode => ({
+    key: `r-${r.id}`,
+    label: <><span className="font-mono text-xs text-muted-foreground">{String(r.code ?? '')}</span> {String(r.name ?? '')}</>,
+    recordId: Number(r.id),
+    children: (byParent.get(String(r.id)) ?? []).map(node),
+  });
+  return (byParent.get(null) ?? []).map(node);
 }
 
-/** Organisations — notices filtrées par unité. */
-function RecordsByOrganisation() {
-  return <RecordsFilteredList title="Notices par organisation" selector="organisation" />;
+/** Arbre de groupes (organisations / activités) avec les notices en feuilles. */
+function buildGroupTree(groups: Entity[], records: Entity[], field: 'organisation_id' | 'activity_id', prefix: string): TNode[] {
+  const byParent = new Map<string | null, Entity[]>();
+  for (const g of groups) {
+    const k = g.parent_id == null ? null : String(g.parent_id);
+    if (!byParent.has(k)) byParent.set(k, []);
+    byParent.get(k)!.push(g);
+  }
+  const node = (g: Entity): TNode => {
+    const kids = (byParent.get(String(g.id)) ?? []).map(node);
+    const recs = records
+      .filter((r) => r[field] != null && String(r[field]) === String(g.id))
+      .map((r): TNode => ({
+        key: `${prefix}-${g.id}-r-${r.id}`,
+        label: <><span className="font-mono text-xs text-muted-foreground">{String(r.code ?? '')}</span> {String(r.name ?? '')}</>,
+        recordId: Number(r.id),
+        children: [],
+      }));
+    return {
+      key: `${prefix}-${g.id}`,
+      label: <><span className="text-muted-foreground">{prefix === 'o' ? '🏢' : '🗀'}</span> {String(g.name ?? g.code ?? g.id)} <span className="text-xs text-muted-foreground">({recs.length})</span></>,
+      children: [...kids, ...recs],
+    };
+  };
+  return (byParent.get(null) ?? []).map(node);
 }
 
-/** Plan de classement — notices filtrées par activité (classe). */
-function RecordsByActivity() {
-  return <RecordsFilteredList title="Notices par plan de classement" selector="activity" />;
-}
+function MesDocuments() {
+  const [tab, setTab] = useState<TabKey>('organisations');
+  const [view, setView] = useState<ViewMode>('tree');
 
-/** Dossiers récents — contenants créés en dernier. */
-function RecentFolders() {
-  return <RecordsFilteredList title="Dossiers récents" preset={{ is_container: '1' }} sort="-created_at" />;
-}
+  const recordsQ = useQuery({
+    queryKey: ['md-records'],
+    queryFn: () => api.getRecords({ 'page.size': 300, include: 'type,level,status' }),
+  });
+  const trashQ = useQuery({
+    queryKey: ['md-trash'],
+    queryFn: () => api.getRecordsTrash({ 'page.size': 300 }),
+  });
+  const orgsQ = useQuery({
+    queryKey: ['md-organisations'],
+    queryFn: async () => (await organisationsApi.list({ 'page.size': 300 })) as { data: Entity[] },
+  });
+  const actsQ = useQuery({
+    queryKey: ['md-activities'],
+    queryFn: async () => (await activitiesApi.list({ 'page.size': 300 })) as { data: Entity[] },
+  });
 
-/** Documents récents — documents créés en dernier. */
-function RecentDocuments() {
-  return <RecordsFilteredList title="Documents récents" preset={{ is_container: '0' }} sort="-created_at" />;
+  const allRecords = (recordsQ.data?.data ?? []) as Entity[];
+  const trash = (trashQ.data?.data ?? []) as Entity[];
+  const orgs = (orgsQ.data?.data ?? []) as Entity[];
+  const acts = (actsQ.data?.data ?? []) as Entity[];
+
+  const folders = allRecords.filter((r) => Boolean(r.is_container)).sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')));
+  const documents = allRecords.filter((r) => !r.is_container).sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')));
+
+  function content(): React.ReactNode {
+    switch (tab) {
+      case 'organisations': {
+        if (view === 'tree') return <TreeView nodes={buildGroupTree(orgs, allRecords, 'organisation_id', 'o')} />;
+        return <GridView records={allRecords} />;
+      }
+      case 'plan': {
+        if (view === 'tree') return <TreeView nodes={buildGroupTree(acts, allRecords, 'activity_id', 'a')} />;
+        return <GridView records={allRecords} />;
+      }
+      case 'folders': {
+        if (view === 'tree') return <TreeView nodes={buildRecordTree(folders)} />;
+        return <GridView records={folders} />;
+      }
+      case 'documents': {
+        if (view === 'tree') return <TreeView nodes={buildRecordTree(documents)} />;
+        return <GridView records={documents} />;
+      }
+      case 'trash': {
+        if (view === 'tree') return <TreeView nodes={buildRecordTree(trash)} />;
+        return <GridView records={trash} />;
+      }
+    }
+  }
+
+  const loading = recordsQ.isLoading || trashQ.isLoading || orgsQ.isLoading || actsQ.isLoading;
+
+  return (
+    <div className="flex h-full flex-col gap-4">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-semibold">Mes documents</h1>
+        <div className="flex items-center gap-1 rounded border border-border bg-surface p-1 text-sm">
+          {(['tree', 'grid', 'list'] as ViewMode[]).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setView(m)}
+              className={clsx('rounded px-3 py-1', view === m ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted')}
+            >
+              {m === 'tree' ? '🗀 Arborescence' : m === 'grid' ? '▦ Grille' : '☰ Liste'}
+            </button>
+          ))}
+        </div>
+      </header>
+      <div className="flex flex-wrap gap-1">
+        {MD_TABS.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => setTab(t.key)}
+            className={clsx('rounded border px-3 py-1.5 text-sm', tab === t.key ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-surface text-muted-foreground hover:bg-muted')}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Chargement…</p>
+      ) : view === 'list' ? (
+        <DataTable columns={RECORD_COLS} rows={tab === 'folders' ? folders : tab === 'documents' ? documents : tab === 'trash' ? trash : allRecords} loading={false} error={false} />
+      ) : (
+        content()
+      )}
+    </div>
+  );
 }
 
 /* ---------------------------------------------------------------------------
@@ -1197,7 +1289,7 @@ export function RecordsImport() {
 }
 
 export const routes: FeatureRoute[] = [
-  { path: '/records', List: RecordList, Detail: RecordDetail, Form: RecordForm },
+  { path: '/records', List: MesDocuments, Detail: RecordDetail, Form: RecordForm },
   { path: '/records/trash', List: RecordTrash },
   { path: '/records/authors', List: makeList(api.authorsApi, 'authors', [{ key: 'name', label: 'Nom' }, { key: 'type_id', label: 'Type' }, { key: 'lifespan', label: 'Durée de vie' }, { key: 'parent', label: 'Parent', render: (r) => String((r.parent as { name?: string } | undefined)?.name ?? '—') }], { title: 'Auteurs', create: '/records/authors/create', detail: '/records/authors' }), Detail: AuthorDetail, Form: AuthorForm },
   { path: '/records/author-contacts', List: makeList(api.authorContactsApi, 'author-contacts', [{ key: 'name', label: 'Nom' }, { key: 'email', label: 'Email' }], { title: 'Contacts d’auteurs', create: '/records/author-contacts/create', detail: '/records/author-contacts' }), Form: makeForm(api.authorContactsApi, 'author-contacts', { title: 'Contact d’auteur', back: '/records/author-contacts', fields: [{ name: 'name', label: 'Nom', required: true }, { name: 'email', label: 'Email' }] }) },
@@ -1211,11 +1303,6 @@ export const routes: FeatureRoute[] = [
 
   { path: '/records/tree', List: RecordsTree },
   { path: '/records/drag-drop', List: DragDrop },
-  { path: '/records/filter/locations', List: RecordsLocations },
-  { path: '/records/filter/organisations', List: RecordsByOrganisation },
-  { path: '/records/filter/activities', List: RecordsByActivity },
-  { path: '/records/filter/recent-folders', List: RecentFolders },
-  { path: '/records/filter/recent-documents', List: RecentDocuments },
   { path: '/records/import', List: RecordsImport },
   { path: '/records/export', List: RecordsExport },
 ];
