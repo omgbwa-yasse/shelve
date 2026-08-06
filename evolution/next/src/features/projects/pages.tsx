@@ -112,7 +112,7 @@ function ProjectForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
         title={mode === 'edit' ? 'Modifier — projet' : 'Nouveau projet'}
         actions={<button type="button" onClick={() => router.push('/projects')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>}
       />
-      <div className="grid max-w-3xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2">
+      <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-3">
         <Field label="Code" value={v.code} onChange={(x) => setV((p) => ({ ...p, code: x }))} required={mode === 'create'} />
         <Field label="Nom" value={v.name} onChange={(x) => setV((p) => ({ ...p, name: x }))} required />
         <Field label="Description" value={v.description} onChange={(x) => setV((p) => ({ ...p, description: x }))} />
@@ -462,7 +462,7 @@ function ObjectiveForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
         title={mode === 'edit' ? 'Modifier — objectif' : 'Nouvel objectif (OKR)'}
         actions={<button type="button" onClick={() => router.push('/objectives')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>}
       />
-      <div className="grid max-w-3xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2">
+      <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-3">
         <Field label="Titre" value={v.title} onChange={(x) => setV((p) => ({ ...p, title: x }))} required />
         <Field label="Description" value={v.description} onChange={(x) => setV((p) => ({ ...p, description: x }))} />
         <Field label="Statut" value={v.status} onChange={(x) => setV((p) => ({ ...p, status: x }))}
@@ -603,7 +603,7 @@ function KpiForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
         title={mode === 'edit' ? 'Modifier — KPI' : 'Nouveau KPI'}
         actions={<button type="button" onClick={() => router.push('/kpis')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>}
       />
-      <div className="grid max-w-3xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2">
+      <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-3">
         <Field label="Code" value={v.code} onChange={(x) => setV((p) => ({ ...p, code: x }))} required={mode === 'create'} />
         <Field label="Nom" value={v.name} onChange={(x) => setV((p) => ({ ...p, name: x }))} required />
         <Field label="Unité" value={v.unit} onChange={(x) => setV((p) => ({ ...p, unit: x }))} />
