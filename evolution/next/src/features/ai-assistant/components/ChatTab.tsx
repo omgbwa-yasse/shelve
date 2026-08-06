@@ -129,7 +129,6 @@ export function ChatTab() {
                 ))}
               </select>
             </label>
-            <p className="mt-1 truncate text-[11px] text-muted-foreground">{api.ASSISTANT_MODE_DESCRIPTIONS[mode]}</p>
           </div>
           <button
             type="button"
