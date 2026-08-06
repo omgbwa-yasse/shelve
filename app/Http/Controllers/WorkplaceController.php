@@ -105,14 +105,12 @@ class WorkplaceController extends Controller
     {
         $this->authorize('view', $workplace);
 
+        // 'folders'/'documents' (partage de fichiers) retirés le 2026-08-06 avec
+        // WorkplaceFolder/WorkplaceDocument — voir App\Models\Workplace.
         $workplace->load([
             'category',
             'owner',
             'members.user',
-            'folders.folder',
-            'folders.sharedBy',
-            'documents.document',
-            'documents.sharedBy',
             'activities' => fn($q) => $q->with('user')->latest()->limit(10),
         ]);
 

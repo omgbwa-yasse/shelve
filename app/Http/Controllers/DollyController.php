@@ -7,8 +7,6 @@ use App\Models\DollyCommunication;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Mail;
 use App\Models\RecordPhysical;
-use App\Models\RecordDigitalFolder;
-use App\Models\RecordDigitalDocument;
 use App\Models\Room;
 use App\Models\Shelf;
 use App\Models\SlipRecord;
@@ -66,16 +64,11 @@ class DollyController extends Controller
         $shelves = Shelf::all();
         $slip_records = SlipRecord::all();
 
-        // Nouvelles entités numériques
-        $digitalFolders = RecordDigitalFolder::where('organisation_id', Auth::user()->current_organisation_id)->get();
-        $digitalDocuments = RecordDigitalDocument::where('organisation_id', Auth::user()->current_organisation_id)->get();
-
         $dolly->load('creator','ownerOrganisation');
 
         return view('dollies.show', compact(
             'dolly', 'records', 'mails', 'communications', 'rooms',
-            'containers', 'shelves', 'slip_records',
-            'digitalFolders', 'digitalDocuments'
+            'containers', 'shelves', 'slip_records'
         ));
     }
 
@@ -127,8 +120,6 @@ class DollyController extends Controller
             || $dolly->buildings()->exists()
             || $dolly->rooms()->exists()
             || $dolly->shelve()->exists()
-            || $dolly->digitalFolders()->exists()
-            || $dolly->digitalDocuments()->exists()
         ) {
            return redirect()->route('dolly.index')->with('error', 'Cannot delete Dolly because it has related records in other tables.');
         }
@@ -327,50 +318,6 @@ class DollyController extends Controller
 
         return redirect()->route('dolly.show', $dolly)
             ->with('success', 'Description de versement retirée du chariot');
-    }
-
-    // ==================== DIGITAL FOLDERS ====================
-
-    public function addDigitalFolder(Request $request, Dolly $dolly)
-    {
-        $request->validate([
-            'folder_id' => 'required|exists:record_digital_folders,id'
-        ]);
-
-        $dolly->digitalFolders()->syncWithoutDetaching($request->folder_id);
-
-        return redirect()->route('dolly.show', $dolly)
-            ->with('success', 'Dossier numérique ajouté au chariot');
-    }
-
-    public function removeDigitalFolder(Dolly $dolly, RecordDigitalFolder $folder)
-    {
-        $dolly->digitalFolders()->detach($folder->id);
-
-        return redirect()->route('dolly.show', $dolly)
-            ->with('success', 'Dossier numérique retiré du chariot');
-    }
-
-    // ==================== DIGITAL DOCUMENTS ====================
-
-    public function addDigitalDocument(Request $request, Dolly $dolly)
-    {
-        $request->validate([
-            'document_id' => 'required|exists:record_digital_documents,id'
-        ]);
-
-        $dolly->digitalDocuments()->syncWithoutDetaching($request->document_id);
-
-        return redirect()->route('dolly.show', $dolly)
-            ->with('success', 'Document numérique ajouté au chariot');
-    }
-
-    public function removeDigitalDocument(Dolly $dolly, RecordDigitalDocument $document)
-    {
-        $dolly->digitalDocuments()->detach($document->id);
-
-        return redirect()->route('dolly.show', $dolly)
-            ->with('success', 'Document numérique retiré du chariot');
     }
 
 }

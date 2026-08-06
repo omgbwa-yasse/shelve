@@ -15,6 +15,12 @@ export type AlphabetFilter = {
   activeLetter?: string | null;
   /** Appelé avec la lettre cliquée, ou `null` si on reclique la lettre active ("Tous"). */
   onSelectLetter: (letter: string | null) => void;
+  /**
+   * Restreint les lettres affichées à celles ayant au moins un résultat dans le
+   * jeu courant (recherche/filtre appliqués) — omis = les 26 lettres affichées
+   * en permanence (comportement historique de `SelectionModal`).
+   */
+  availableLetters?: Set<string>;
 };
 
 export type SelectionModalProps<T> = {
@@ -209,8 +215,15 @@ export function SelectionModal<T>({
   );
 }
 
-/** Bandeau des 26 lettres + "Tous", pour filtrer un jeu de données trié par libellé. */
-function AlphabetBar({ activeLetter, onSelectLetter }: AlphabetFilter) {
+/**
+ * Bandeau des 26 lettres + "Tous", pour filtrer un jeu de données trié par
+ * libellé. Exporté pour être réutilisé par d'autres modales construites sur
+ * `Modal` qui ont besoin du même filtre sans le volume de `SelectionModal`
+ * (ex. sélecteur de typologie).
+ */
+export function AlphabetBar({ activeLetter, onSelectLetter, availableLetters }: AlphabetFilter) {
+  const letters = availableLetters ? LETTERS.filter((letter) => availableLetters.has(letter)) : LETTERS;
+
   return (
     <div className="flex shrink-0 flex-wrap gap-1 rounded border border-border bg-surface p-2">
       <button
@@ -223,7 +236,7 @@ function AlphabetBar({ activeLetter, onSelectLetter }: AlphabetFilter) {
       >
         Tous
       </button>
-      {LETTERS.map((letter) => (
+      {letters.map((letter) => (
         <button
           key={letter}
           type="button"

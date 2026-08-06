@@ -8,8 +8,6 @@ use Illuminate\Http\Request;
 use App\Models\Mail;
 use App\Models\Record;
 use App\Models\RecordPhysical;
-use App\Models\RecordDigitalFolder;
-use App\Models\RecordDigitalDocument;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\Author;
@@ -245,34 +243,9 @@ class SearchController extends Controller
             return $r;
         });
 
-        // Digital Folders (top 4)
-        $folders = RecordDigitalFolder::query();
-        foreach ($queries as $query) {
-            $folders->where('name', 'LIKE', "%$query%")
-                ->orWhere('code', 'LIKE', "%$query%")
-                ->orWhere('description', 'LIKE', "%$query%");
-        }
-        $folders = $folders->latest()->take(4)->get()->map(function($f) {
-            $f->record_type = 'folder';
-            $f->type_label = 'Dossier Numérique';
-            return $f;
-        });
-
-        // Digital Documents (top 4)
-        $documents = RecordDigitalDocument::query();
-        foreach ($queries as $query) {
-            $documents->where('name', 'LIKE', "%$query%")
-                ->orWhere('code', 'LIKE', "%$query%")
-                ->orWhere('description', 'LIKE', "%$query%");
-        }
-        $documents = $documents->latest()->take(4)->get()->map(function($d) {
-            $d->record_type = 'document';
-            $d->type_label = 'Document Numérique';
-            return $d;
-        });
-
-        // Combiner tous les records
-        $allRecords = $records->concat($folders)->concat($documents);
+        // Combiner tous les records (RecordDigitalFolder/RecordDigitalDocument
+        // supprimés le 2026-08-06 — voir App\Models\Record, modèle unifié).
+        $allRecords = $records;
 
         $mails = Mail::query();
         foreach ($queries as $query) {

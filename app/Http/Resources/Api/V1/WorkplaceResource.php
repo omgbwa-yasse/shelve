@@ -30,8 +30,6 @@ class WorkplaceResource extends JsonResource
             'max_members' => $this->max_members,
             'max_storage_mb' => $this->max_storage_mb,
             'members_count' => $this->members_count,
-            'folders_count' => $this->folders_count,
-            'documents_count' => $this->documents_count,
             'storage_used_bytes' => $this->storage_used_bytes,
             'storage_used_mb' => $this->storage_used_mb,
             'storage_percentage' => $this->storage_percentage,

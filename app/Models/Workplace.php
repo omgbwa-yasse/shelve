@@ -91,16 +91,6 @@ class Workplace extends Model
         return $this->hasMany(WorkplaceMember::class);
     }
 
-    public function folders(): HasMany
-    {
-        return $this->hasMany(WorkplaceFolder::class);
-    }
-
-    public function documents(): HasMany
-    {
-        return $this->hasMany(WorkplaceDocument::class);
-    }
-
     public function activities(): HasMany
     {
         return $this->hasMany(WorkplaceActivity::class);

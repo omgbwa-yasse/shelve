@@ -88,9 +88,9 @@ export function WorkplaceDetail({ id }: { id: string }) {
         <Link href={`/workplaces/${id}/edit`} className="rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted">Modifier</Link>
       </header>
       <nav className="flex gap-1 border-b border-border text-sm">
-        {(['infos', 'members', 'documents', 'folders', 'bookmarks'] as const).map((t) => (
+        {(['infos', 'members', 'bookmarks'] as const).map((t) => (
           <button key={t} type="button" onClick={() => setTab(t)} className={`rounded-t border-b-2 px-3 py-1.5 ${tab === t ? 'border-primary' : 'border-transparent text-muted-foreground hover:bg-muted'}`}>
-            {t === 'infos' ? 'Informations' : t === 'members' ? 'Membres' : t === 'documents' ? 'Documents' : t === 'folders' ? 'Dossiers' : 'Favoris'}
+            {t === 'infos' ? 'Informations' : t === 'members' ? 'Membres' : 'Favoris'}
           </button>
         ))}
       </nav>
@@ -105,8 +105,6 @@ export function WorkplaceDetail({ id }: { id: string }) {
         </div>
       )}
       {tab === 'members' && <SubList title="Membres" apiPath={`/api/v1/workplaces/${id}/members`} cols={[{ key: 'user_id', label: 'Utilisateur' }, { key: 'role', label: 'Rôle' }]} />}
-      {tab === 'documents' && <SubList title="Documents partagés" apiPath={`/api/v1/workplaces/${id}/content/documents`} cols={[{ key: 'name', label: 'Nom' }]} />}
-      {tab === 'folders' && <SubList title="Dossiers partagés" apiPath={`/api/v1/workplaces/${id}/content/folders`} cols={[{ key: 'name', label: 'Nom' }]} />}
       {tab === 'bookmarks' && <SubList title="Favoris" apiPath={`/api/v1/workplaces/${id}/bookmarks`} cols={[{ key: 'bookmarkable_type', label: 'Type' }, { key: 'bookmarkable_id', label: 'Identifiant' }]} />}
     </div>
   );

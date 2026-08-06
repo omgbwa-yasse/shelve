@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\RecordPhysical;
-use App\Models\RecordDigitalFolder;
-use App\Models\RecordDigitalDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -14,48 +12,35 @@ use Illuminate\Support\Str;
 class RecordSearchController extends Controller
 {
     /**
-     * Recherche unifiée dans tous les types de records
-     * Cherche dans RecordPhysical, RecordDigitalFolder et RecordDigitalDocument
-     * Filtre par les activités de l'organisation courante et leurs descendants
+     * Recherche dans RecordPhysical, filtrée par les activités de l'organisation
+     * courante et leurs descendants.
+     *
+     * Portait aussi RecordDigitalFolder/RecordDigitalDocument avant leur suppression
+     * (2026-08-06) — voir `App\Models\Record` (modèle unifié qui les remplace).
      */
     public function search(Request $request)
     {
         $query = $request->input('q');
 
         if (!$query || strlen($query) < 3) {
-            return response()->json([
-                'physical' => [],
-                'folders' => [],
-                'documents' => [],
-                'total' => 0
-            ]);
+            return response()->json(['physical' => [], 'total' => 0]);
         }
 
         // Récupérer l'organisation courante de l'utilisateur
         $currentOrgId = Auth::user()->current_organisation_id;
 
         if (!$currentOrgId) {
-            return response()->json([
-                'physical' => [],
-                'folders' => [],
-                'documents' => [],
-                'total' => 0
-            ]);
+            return response()->json(['physical' => [], 'total' => 0]);
         }
 
         // Récupérer toutes les activités (directes + descendantes)
         $allActivityIds = $this->getAllActivityIds($currentOrgId);
 
-        // Recherche dans les 3 types
         $physicalRecords = $this->searchPhysical($query, $allActivityIds);
-        $folders = $this->searchFolders($query, $currentOrgId);
-        $documents = $this->searchDocuments($query, $currentOrgId);
 
         return response()->json([
             'physical' => $physicalRecords,
-            'folders' => $folders,
-            'documents' => $documents,
-            'total' => count($physicalRecords) + count($folders) + count($documents)
+            'total' => count($physicalRecords),
         ]);
     }
 
@@ -91,74 +76,6 @@ class RecordSearchController extends Controller
                         : '',
                     'record_type' => 'physical',
                     'type_label' => 'Dossier Physique'
-                ];
-            })
-            ->toArray();
-    }
-
-    /**
-     * Recherche dans RecordDigitalFolder
-     */
-    private function searchFolders($query, $organisationId)
-    {
-        return RecordDigitalFolder::query()
-            ->where('organisation_id', $organisationId)
-            ->where(function($q) use ($query) {
-                $q->where('code', 'like', "%{$query}%")
-                    ->orWhere('name', 'like', "%{$query}%")
-                    ->orWhere('description', 'like', "%{$query}%");
-            })
-            ->select('id', 'code', 'name', 'description', 'status', 'created_at')
-            ->with('creator:id,name')
-            ->orderBy('code')
-            ->limit(50)
-            ->get()
-            ->map(function($folder) {
-                return [
-                    'id' => $folder->id,
-                    'code' => $folder->code,
-                    'name' => $folder->name,
-                    'content' => $folder->description ? Str::limit($folder->description, 100) : '',
-                    'status' => $folder->status,
-                    'creator' => $folder->creator ? $folder->creator->name : '',
-                    'created_at' => $folder->created_at?->format('Y-m-d'),
-                    'record_type' => 'folder',
-                    'type_label' => 'Dossier Numérique'
-                ];
-            })
-            ->toArray();
-    }
-
-    /**
-     * Recherche dans RecordDigitalDocument
-     */
-    private function searchDocuments($query, $organisationId)
-    {
-        return RecordDigitalDocument::query()
-            ->where('organisation_id', $organisationId)
-            ->where(function($q) use ($query) {
-                $q->where('code', 'like', "%{$query}%")
-                    ->orWhere('name', 'like', "%{$query}%")
-                    ->orWhere('description', 'like', "%{$query}%");
-            })
-            ->select('id', 'code', 'name', 'description', 'version_number', 'status', 'created_at')
-            ->with(['creator:id,name', 'folder:id,name'])
-            ->orderBy('code')
-            ->limit(50)
-            ->get()
-            ->map(function($document) {
-                return [
-                    'id' => $document->id,
-                    'code' => $document->code,
-                    'name' => $document->name,
-                    'content' => $document->description ? Str::limit($document->description, 100) : '',
-                    'version' => $document->version_number,
-                    'status' => $document->status,
-                    'folder' => $document->folder ? $document->folder->name : '',
-                    'creator' => $document->creator ? $document->creator->name : '',
-                    'created_at' => $document->created_at?->format('Y-m-d'),
-                    'record_type' => 'document',
-                    'type_label' => 'Document Numérique'
                 ];
             })
             ->toArray();

@@ -130,16 +130,6 @@
         </div>
         <div class="submenu-content" id="recordsSection">
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('settings.folder-types.index') }}">
-                    <i class="bi bi-folder-2"></i> Gestion des types de dossiers
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('settings.document-types.index') }}">
-                    <i class="bi bi-file-earmark"></i> Gestion des types de documents
-                </a>
-            </div>
-            <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('settings.record-types.index') }}">
                     <i class="bi bi-tags"></i> Typologies de notices
                 </a>

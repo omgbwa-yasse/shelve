@@ -176,8 +176,8 @@ export const navigation: NavDomain[] = [
       { key: 'records-advanced', group: 'Recherche — Critères', label: 'Avancée', href: '/records/advanced', icon: 'search' },
 
       { key: 'records-create', group: 'Enregistrement', label: 'Nouveau', href: '/records/create', icon: 'plusSquare' },
-      { key: 'records-authors-create', group: 'Enregistrement', label: 'Auteur', href: '/records/authors/create', icon: 'personPlus' },
-      { key: 'records-drag-drop', group: 'Enregistrement', label: 'Drag & Drop', href: '/records/drag-drop', icon: 'cloudUpload' },
+      { key: 'records-dossier', group: 'Enregistrement', label: 'Dossier', href: '/records/create?kind=folder', icon: 'folderOpen' },
+      { key: 'records-document', group: 'Enregistrement', label: 'Document', href: '/records/create?kind=document', icon: 'fileText' },
 
       { key: 'records-tree', group: 'Import / Export (EAD, Excel, SEDA)', label: 'Arbre des notices', href: '/records/tree', icon: 'network' },
     ],
@@ -253,8 +253,6 @@ export const navigation: NavDomain[] = [
       { key: 'dollies-container', group: 'Chariots', label: "Boîtes d'archives", href: '/dollies/sort?categ=container', icon: 'package' },
       { key: 'dollies-slip-record', group: 'Chariots', label: "Transfert d'archives", href: '/dollies/sort?categ=slip_record', icon: 'fileUp' },
       { key: 'dollies-slip', group: 'Chariots', label: 'Transfert', href: '/dollies/sort?categ=slip', icon: 'transferrings' },
-      { key: 'dollies-digital-folder', group: 'Chariots', label: 'Dossiers numériques', href: '/dollies/sort?categ=digital_folder', icon: 'folderPlus' },
-      { key: 'dollies-digital-document', group: 'Chariots', label: 'Documents numériques', href: '/dollies/sort?categ=digital_document', icon: 'fileText' },
       { key: 'dollies-create', group: 'Chariots', label: 'Nouveau chariot', href: '/dollies/create', icon: 'dollies' },
     ],
   },

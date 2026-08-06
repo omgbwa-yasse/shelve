@@ -39,10 +39,6 @@
                                     <i class="bi bi-arrow-left-right text-primary"></i> Versement
                                 @elseif($category == 'slip_record')
                                     <i class="bi bi-file-earmark-arrow-up text-primary"></i> Description de versement
-                                @elseif($category == 'digital_folder')
-                                    <i class="bi bi-folder-plus text-primary"></i> Dossiers Numériques
-                                @elseif($category == 'digital_document')
-                                    <i class="bi bi-file-earmark-text text-success"></i> Documents Numériques
                                 @else
                                     <i class="bi bi-cart3 text-primary"></i> {{ ucfirst(str_replace('_', ' ', $category)) }}
                                 @endif

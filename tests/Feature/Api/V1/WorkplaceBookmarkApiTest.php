@@ -66,7 +66,7 @@ class WorkplaceBookmarkApiTest extends TestCase
         return WorkplaceBookmark::create([
             'workplace_id' => $workplace->id,
             'user_id' => $userId ?? $this->user->id,
-            'bookmarkable_type' => 'App\\Models\\RecordDigitalDocument',
+            'bookmarkable_type' => 'App\\Models\\Record',
             'bookmarkable_id' => 1,
             'note' => 'Favori',
         ]);
@@ -106,7 +106,7 @@ class WorkplaceBookmarkApiTest extends TestCase
 
         $this->actingAs($this->user, 'sanctum')
             ->postJson("/api/v1/workplaces/{$workplace->id}/bookmarks", [
-                'bookmarkable_type' => 'App\\Models\\RecordDigitalDocument',
+                'bookmarkable_type' => 'App\\Models\\Record',
                 'bookmarkable_id' => 42,
                 'note' => 'Favori',
             ])
@@ -115,7 +115,7 @@ class WorkplaceBookmarkApiTest extends TestCase
 
         $this->actingAs($this->user, 'sanctum')
             ->postJson("/api/v1/workplaces/{$workplace->id}/bookmarks", [
-                'bookmarkable_type' => 'App\\Models\\RecordDigitalDocument',
+                'bookmarkable_type' => 'App\\Models\\Record',
                 'bookmarkable_id' => 42,
             ])
             ->assertOk()
@@ -171,7 +171,7 @@ class WorkplaceBookmarkApiTest extends TestCase
 
         $this->actingAs($this->user, 'sanctum')
             ->postJson("/api/v1/workplaces/{$workplace->id}/bookmarks", [
-                'bookmarkable_type' => 'App\\Models\\RecordDigitalDocument',
+                'bookmarkable_type' => 'App\\Models\\Record',
                 'bookmarkable_id' => 1,
             ])
             ->assertStatus(404);

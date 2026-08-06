@@ -3,11 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\Record;
-use App\Models\RecordDigitalDocument;
-use App\Models\RecordDigitalFolder;
 use App\Models\RecordLevel;
 use App\Models\RecordPhysical;
-use App\Models\RecordRelation;
 use App\Models\RecordStatus;
 use App\Models\RecordType;
 use Illuminate\Console\Command;
@@ -18,13 +15,18 @@ use Illuminate\Support\Facades\Schema;
  * Phase 2/3 — Bascule vers le modèle unifié `records` + `record_mediums`.
  *
  * Idempotente : rejouable sans doublon (détection via legacy_source/legacy_id).
- * Transactionnelle par lot. Nettoyage de l'ancien schéma en Phase 7 uniquement.
+ * Transactionnelle par lot.
+ *
+ * `RecordDigitalFolder`/`RecordDigitalDocument` ont été supprimés le 2026-08-06
+ * (leurs 91 lignes historiques avaient déjà été migrées vers `records` avant
+ * suppression, voir `legacy_source` = 'digital_folder'/'digital_document') :
+ * cette commande ne migre donc plus que `record_physicals`, toujours actif.
  */
 class MigrateToUnifiedRecords extends Command
 {
     protected $signature = 'records:migrate-to-unified {--dry-run : Affiche ce qui serait migré sans rien écrire}';
 
-    protected $description = 'Migre record_physicals / record_digital_folders / record_digital_documents vers le modèle unifié records + record_mediums';
+    protected $description = 'Migre record_physicals vers le modèle unifié records + record_mediums';
 
     private array $map = [];
 
@@ -40,11 +42,7 @@ class MigrateToUnifiedRecords extends Command
 
         DB::transaction(function () {
             $this->migratePhysicals();
-            $this->migrateDigitalFolders();
-            $this->migrateDigitalDocuments();
             $this->replayParents();
-            $this->createVersionRelations();
-            $this->migrateBridges();
             $this->migrateMediums();
         });
 
@@ -103,11 +101,6 @@ class MigrateToUnifiedRecords extends Command
         return RecordStatus::query()->value('id');
     }
 
-    private function levelIdByName(string $name): ?int
-    {
-        return RecordLevel::whereRaw('LOWER(name) = ?', [strtolower($name)])->value('id');
-    }
-
     private function resolveOrganisationId(?int $id): int
     {
         if ($id) {
@@ -137,7 +130,8 @@ class MigrateToUnifiedRecords extends Command
     }
 
     private function typeIdForLevel(int $levelId): ?int
-    {        $level = RecordLevel::find($levelId);
+    {
+        $level = RecordLevel::find($levelId);
 
         if (!$level) {
             return null;
@@ -152,14 +146,9 @@ class MigrateToUnifiedRecords extends Command
         };
     }
 
-    private function recordTypeIdFromLegacy(string $legacyType): ?int
-    {
-        return RecordType::where('legacy_type', $legacyType)->value('id');
-    }
-
     private function migratePhysicals(): void
     {
-        $this->info('1/7 record_physicals → records');
+        $this->info('1/3 record_physicals → records');
 
         RecordPhysical::query()->chunkById(500, function ($records) {
             foreach ($records as $source) {
@@ -180,7 +169,7 @@ class MigrateToUnifiedRecords extends Command
                     $record->save();
                 }
 
-                $this->syncPivots($source, 'physical');
+                $this->syncPivots($source);
             }
         });
     }
@@ -230,108 +219,17 @@ class MigrateToUnifiedRecords extends Command
         return $data;
     }
 
-    private function migrateDigitalFolders(): void
-    {
-        $this->info('2/7 record_digital_folders → records');
-
-        RecordDigitalFolder::withTrashed()->chunkById(500, function ($folders) {
-            foreach ($folders as $source) {
-                if ($this->alreadyMigrated('digital_folder', $source->id)) {
-                    continue;
-                }
-
-                $data = [
-                    'code' => $this->resolveCode($source->code, 'digital_folder', $source->id),
-                    'name' => $source->name,
-                    'description' => $source->description,
-                    'type_id' => $this->recordTypeIdFromLegacy('digital_folder_type:' . $source->type_id),
-                    'level_id' => $this->levelIdByName('dossier') ?? RecordLevel::query()->min('id'),
-                    'parent_id' => null,
-                    'metadata' => $source->metadata,
-                    'access_level' => $source->access_level ?? 'internal',
-                    'status_id' => $this->resolveStatusId($source->status) ?? $this->fallbackStatusId(),
-                    'requires_approval' => $source->requires_approval,
-                    'approved_by' => $source->approved_by,
-                    'approved_at' => $source->approved_at,
-                    'creator_id' => $source->creator_id,
-                    'organisation_id' => $this->resolveOrganisationId($source->organisation_id),
-                    'assigned_to' => $source->assigned_to,
-                    'start_date' => $source->start_date,
-                    'end_date' => $source->end_date,
-                    'version_number' => 1,
-                    'is_current_version' => true,
-                    'legacy_source' => 'digital_folder',
-                    'legacy_id' => $source->id,
-                ];
-
-                $record = $this->option('dry-run') ? null : Record::create($data);
-
-                if (!$this->option('dry-run')) {
-                    $this->map['digital_folder:' . $source->id] = $record->id;
-                }
-
-                $this->syncPivots($source, 'digital_folder');
-            }
-        });
-    }
-
-    private function migrateDigitalDocuments(): void
-    {
-        $this->info('3/7 record_digital_documents → records (une notice par version)');
-
-        RecordDigitalDocument::withTrashed()->chunkById(500, function ($documents) {
-            foreach ($documents as $source) {
-                if ($this->alreadyMigrated('digital_document', $source->id)) {
-                    continue;
-                }
-
-                $data = [
-                    'code' => $this->resolveCode($source->code, 'digital_document', $source->id),
-                    'name' => $source->name,
-                    'description' => $source->description,
-                    'type_id' => $this->recordTypeIdFromLegacy('digital_document_type:' . $source->type_id),
-                    'level_id' => $this->levelIdByName('pièce') ?? $this->levelIdByName('piece') ?? RecordLevel::query()->min('id'),
-                    'parent_id' => null,
-                    'metadata' => $source->metadata,
-                    'access_level' => $source->access_level ?? 'internal',
-                    'status_id' => $this->resolveStatusId($source->status) ?? $this->fallbackStatusId(),
-                    'requires_approval' => $source->requires_approval,
-                    'approved_by' => $source->approved_by,
-                    'approved_at' => $source->approved_at,
-                    'creator_id' => $source->creator_id,
-                    'organisation_id' => $this->resolveOrganisationId($source->organisation_id),
-                    'assigned_to' => $source->assigned_to,
-                    'start_date' => $source->document_date,
-                    'date_exact' => $source->document_date,
-                    'version_number' => $source->version_number ?? 1,
-                    'is_current_version' => $source->is_current_version ?? true,
-                    'legacy_source' => 'digital_document',
-                    'legacy_id' => $source->id,
-                ];
-
-                $record = $this->option('dry-run') ? null : Record::create($data);
-
-                if (!$this->option('dry-run')) {
-                    $this->map['digital_document:' . $source->id] = $record->id;
-                }
-
-                $this->syncPivots($source, 'digital_document');
-            }
-        });
-    }
-
     /**
      * Rejoue parent_id via la table de correspondance.
      */
     private function replayParents(): void
     {
-        $this->info('4/7 parent_id (rejoué via record_migration_map)');
+        $this->info('2/3 parent_id (rejoué via record_migration_map)');
 
         if ($this->option('dry-run')) {
             return;
         }
 
-        // Physiques : parent physique
         foreach ($this->map as $key => $recordId) {
             [$source, $id] = explode(':', $key, 2);
             $id = (int) $id;
@@ -350,105 +248,10 @@ class MigrateToUnifiedRecords extends Command
                 DB::table('records')->where('id', $recordId)->update(['parent_id' => $parentRecordId]);
             }
         }
-
-        // Dossiers numériques : parent dossier numérique
-        foreach ($this->map as $key => $recordId) {
-            [$source, $id] = explode(':', $key, 2);
-            $id = (int) $id;
-
-            if ($source !== 'digital_folder') {
-                continue;
-            }
-
-            $folder = RecordDigitalFolder::withTrashed()->find($id);
-            if (!$folder || !$folder->parent_id) {
-                continue;
-            }
-
-            $parentRecordId = $this->recordId('digital_folder', $folder->parent_id);
-            if ($parentRecordId) {
-                DB::table('records')->where('id', $recordId)->update(['parent_id' => $parentRecordId]);
-            }
-        }
-
-        // Documents numériques : parent = dossier numérique du document (idem pour toutes les versions)
-        $rows = DB::table('record_digital_documents')->whereNotNull('folder_id')->get(['id', 'folder_id']);
-
-        foreach ($rows as $row) {
-            $recordId = $this->recordId('digital_document', $row->id);
-            if (!$recordId) {
-                continue;
-            }
-
-            $parentRecordId = $this->recordId('digital_folder', $row->folder_id);
-            if ($parentRecordId) {
-                DB::table('records')->where('id', $recordId)->update(['parent_id' => $parentRecordId]);
-            }
-        }
     }
 
     /**
-     * Chaîne les versions (record_relations type=version_of), v(n) → v(n-1).
-     */
-    private function createVersionRelations(): void
-    {
-        $this->info('5/7 record_relations (version_of)');
-
-        if ($this->option('dry-run')) {
-            return;
-        }
-
-        // Regroupe les documents par racine de version (parent_version_id nul = racine)
-        $roots = DB::table('record_digital_documents')->whereNull('parent_version_id')->get(['id']);
-
-        foreach ($roots as $root) {
-            $family = DB::table('record_digital_documents')
-                ->where(function ($q) use ($root) {
-                    $q->where('id', $root->id)->orWhere('parent_version_id', $root->id);
-                })
-                ->orderBy('version_number')
-                ->get();
-
-            $previousRecordId = null;
-
-            foreach ($family as $version) {
-                $recordId = $this->recordId('digital_document', $version->id);
-                if (!$recordId) {
-                    continue;
-                }
-
-                if ($previousRecordId !== null) {
-                    RecordRelation::firstOrCreate([
-                        'source_id' => $recordId,
-                        'target_id' => $previousRecordId,
-                        'type' => RecordRelation::TYPE_VERSION_OF,
-                    ]);
-                }
-
-                $previousRecordId = $recordId;
-            }
-        }
-    }
-
-    /**
-     * Ponts physique↔numérique existants (transferred_to_record_id côté numérique +
-     * linked_digital_metadata côté physique) : fusionnés en Phase 3 par l'ajout du second
-     * support. Ici on ne fait que tracer.
-     */
-    private function migrateBridges(): void
-    {
-        $this->info('6/7 ponts physique↔numérique (tracé — fusion supports en Phase 3)');
-
-        $digitalWithTransfer = DB::table('record_digital_documents')->whereNotNull('transferred_to_record_id')->count()
-            + DB::table('record_digital_folders')->whereNotNull('transferred_to_record_id')->count();
-        $physicalWithLinked = RecordPhysical::query()->whereNotNull('linked_digital_metadata')->count();
-
-        $this->info("  ponts numériques → physique : {$digitalWithTransfer}");
-        $this->info("  physiques avec linked_digital_metadata : {$physicalWithLinked}");
-    }
-
-    /**
-     * Phase 3 — record_mediums (support physique OU numérique) si la table existe.
+     * Phase 3 — record_mediums (support physique) si la table existe.
      */
     private function migrateMediums(): void
     {
@@ -458,17 +261,14 @@ class MigrateToUnifiedRecords extends Command
             return;
         }
 
-        $this->info('7/7 record_mediums');
+        $this->info('3/3 record_mediums');
 
         if ($this->option('dry-run')) {
             return;
         }
 
-        // Garantit les supports canoniques (papier / numérique) puis récupère leurs ids.
         $paperSupportId = $this->ensureSupport('Papier');
-        $digitalSupportId = $this->ensureSupport('Numérique');
 
-        // 7.1 Physiques → support papier
         RecordPhysical::query()->chunkById(500, function ($records) use ($paperSupportId) {
             foreach ($records as $source) {
                 $recordId = $this->recordId('physical', $source->id);
@@ -479,41 +279,6 @@ class MigrateToUnifiedRecords extends Command
                 $this->upsertMedium($recordId, $paperSupportId, $source->id);
             }
         });
-
-        // 7.2 Documents numériques → support numérique (état fichier depuis record_digital_documents)
-        $rows = DB::table('record_digital_documents')->get([
-            'id', 'attachment_id', 'checked_out_by', 'checked_out_at',
-            'signature_status', 'signed_by', 'signed_at', 'signature_data',
-        ]);
-
-        foreach ($rows as $row) {
-            $recordId = $this->recordId('digital_document', $row->id);
-            if (!$recordId) {
-                continue;
-            }
-
-            // Notice numérique absorbée par une fusion physique↔numérique → soft-supprimée,
-            // son medium vit désormais sur la notice physique (is_principal=false).
-            if (!DB::table('records')->where('id', $recordId)->whereNull('deleted_at')->exists()) {
-                continue;
-            }
-
-            $status = ($row->signature_status && $row->signature_status !== 'unsigned') ? 'final' : 'draft';
-
-            $this->upsertMedium($recordId, $digitalSupportId, $row->id, [
-                'attachment_id' => $row->attachment_id,
-                'status' => $status,
-                'checked_out_by' => $row->checked_out_by,
-                'checked_out_at' => $row->checked_out_at,
-                'signature_status' => $row->signature_status ?? 'unsigned',
-                'signed_by' => $row->signed_by,
-                'signed_at' => $row->signed_at,
-                'signature_data' => $row->signature_data,
-            ]);
-        }
-
-        // 7.3 Fusions physique↔numérique (document numérisé) : une notice, deux supports.
-        $this->mergeTransferredPairs($digitalSupportId);
     }
 
     /**
@@ -561,83 +326,33 @@ class MigrateToUnifiedRecords extends Command
         ], $extra));
     }
 
-    private function mergeTransferredPairs(int $digitalSupportId): void
-    {
-        // Le pont : record_digital_documents.transferred_to_record_id → record_physicals.
-        // On rattache le support numérique à la notice physique (une notice, deux supports).
-        $rows = DB::table('record_digital_documents')
-            ->whereNotNull('transferred_to_record_id')
-            ->get(['id', 'transferred_to_record_id']);
-
-        foreach ($rows as $row) {
-            $digitalRecordId = $this->recordId('digital_document', $row->id);
-            $physicalRecordId = $this->recordId('physical', $row->transferred_to_record_id);
-
-            if (!$physicalRecordId || !$digitalRecordId) {
-                continue;
-            }
-
-            // Le medium numérique de la notice numérique est déplacé sur la notice physique.
-            DB::table('record_mediums')
-                ->where('record_id', $digitalRecordId)
-                ->where('support_id', $digitalSupportId)
-                ->update(['record_id' => $physicalRecordId, 'is_principal' => false]);
-
-            // La notice numérique est absorbée (soft-delete) : il ne reste qu'une notice,
-            // portant les deux supports. La relation version_of garde la trace historique.
-            DB::table('records')
-                ->where('id', $digitalRecordId)
-                ->whereNull('deleted_at')
-                ->update(['deleted_at' => now()]);
-
-            RecordRelation::firstOrCreate([
-                'source_id' => $digitalRecordId,
-                'target_id' => $physicalRecordId,
-                'type' => RecordRelation::TYPE_VERSION_OF,
-            ]);
-        }
-    }
-
     /**
-     * Repointe les pivots physiques/numériques vers les nouvelles notices (Phase 4, partie "données").
-     * Les pivots unifiés (record_keyword, record_thesaurus_concept, record_author) doivent exister.
+     * Repointe les pivots physiques vers les nouvelles notices (Phase 4, partie
+     * "données"). Les pivots unifiés (record_keyword, record_thesaurus_concept)
+     * doivent exister.
      */
-    private function syncPivots($source, string $sourceType): void
+    private function syncPivots(RecordPhysical $source): void
     {
         if ($this->option('dry-run')) {
             return;
         }
 
-        $recordId = $this->recordId($sourceType, $source->id);
+        $recordId = $this->recordId('physical', $source->id);
         if (!$recordId) {
             return;
         }
 
-        $this->syncKeywordPivots($source, $sourceType, $recordId);
-        $this->syncThesaurusPivots($source, $sourceType, $recordId);
+        $this->syncKeywordPivots($source, $recordId);
+        $this->syncThesaurusPivots($source, $recordId);
     }
 
-    private function syncKeywordPivots($source, string $sourceType, int $recordId): void
+    private function syncKeywordPivots(RecordPhysical $source, int $recordId): void
     {
-        $table = match ($sourceType) {
-            'physical' => 'record_physical_keyword',
-            'digital_folder' => 'record_digital_folder_keyword',
-            'digital_document' => 'record_digital_document_keyword',
-            default => null,
-        };
-
-        $column = match ($sourceType) {
-            'physical' => 'record_id',
-            'digital_folder' => 'folder_id',
-            'digital_document' => 'document_id',
-            default => null,
-        };
-
-        if (!$table || !Schema::hasTable('record_keyword') || !Schema::hasTable($table)) {
+        if (!Schema::hasTable('record_keyword') || !Schema::hasTable('record_physical_keyword')) {
             return;
         }
 
-        foreach (DB::table($table)->where($column, $source->id)->get() as $pivot) {
+        foreach (DB::table('record_physical_keyword')->where('record_id', $source->id)->get() as $pivot) {
             DB::table('record_keyword')->insertOrIgnore([
                 'record_id' => $recordId,
                 'keyword_id' => $pivot->keyword_id,
@@ -645,27 +360,13 @@ class MigrateToUnifiedRecords extends Command
         }
     }
 
-    private function syncThesaurusPivots($source, string $sourceType, int $recordId): void
+    private function syncThesaurusPivots(RecordPhysical $source, int $recordId): void
     {
-        $table = match ($sourceType) {
-            'physical' => 'record_physical_thesaurus_concept',
-            'digital_folder' => 'record_digital_folder_thesaurus_concept',
-            'digital_document' => 'record_digital_document_thesaurus_concept',
-            default => null,
-        };
-
-        $column = match ($sourceType) {
-            'physical' => 'record_physical_id',
-            'digital_folder' => 'folder_id',
-            'digital_document' => 'document_id',
-            default => null,
-        };
-
-        if (!$table || !Schema::hasTable('record_thesaurus_concept') || !Schema::hasTable($table)) {
+        if (!Schema::hasTable('record_thesaurus_concept') || !Schema::hasTable('record_physical_thesaurus_concept')) {
             return;
         }
 
-        foreach (DB::table($table)->where($column, $source->id)->get() as $pivot) {
+        foreach (DB::table('record_physical_thesaurus_concept')->where('record_physical_id', $source->id)->get() as $pivot) {
             DB::table('record_thesaurus_concept')->insertOrIgnore([
                 'record_id' => $recordId,
                 'concept_id' => $pivot->concept_id,
@@ -688,8 +389,6 @@ class MigrateToUnifiedRecords extends Command
             ['Source', 'Compteur', '→ records'],
             [
                 ['record_physicals', RecordPhysical::query()->count(), Record::where('legacy_source', 'physical')->count()],
-                ['record_digital_folders', RecordDigitalFolder::withTrashed()->count(), Record::where('legacy_source', 'digital_folder')->count()],
-                ['record_digital_documents', RecordDigitalDocument::withTrashed()->count(), Record::where('legacy_source', 'digital_document')->count()],
             ]
         );
 

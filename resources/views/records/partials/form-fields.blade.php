@@ -14,9 +14,16 @@
         <label class="form-label">Type</label>
         <select name="type_id" class="form-select" id="recordTypeSelect">
             <option value="">—</option>
-            @foreach($types as $type)
-                <option value="{{ $type->id }}" data-container="{{ $type->is_container ? '1' : '0' }}" @selected(old('type_id', $record?->type_id) == $type->id)>{{ $type->name }}</option>
-            @endforeach
+            <optgroup label="📁 Dossiers">
+                @foreach($types->where('is_container', true) as $type)
+                    <option value="{{ $type->id }}" data-container="1" @selected(old('type_id', $record?->type_id) == $type->id)>{{ $type->name }}</option>
+                @endforeach
+            </optgroup>
+            <optgroup label="📄 Documents">
+                @foreach($types->where('is_container', false) as $type)
+                    <option value="{{ $type->id }}" data-container="0" @selected(old('type_id', $record?->type_id) == $type->id)>{{ $type->name }}</option>
+                @endforeach
+            </optgroup>
         </select>
     </div>
 
@@ -55,13 +62,14 @@
     </div>
 
     <div class="col-md-4">
-        <label class="form-label">Notice parente (dossier)</label>
-        <select name="parent_id" class="form-select">
-            <option value="">— Racine —</option>
+        <label class="form-label" id="parentIdLabel">Dossier parent <span class="text-danger d-none" id="parentIdRequiredMark">*</span></label>
+        <select name="parent_id" id="parentIdSelect" class="form-select">
+            <option value="">— Racine (aucun dossier) —</option>
             @foreach($parents as $parent)
                 <option value="{{ $parent->id }}" @selected(old('parent_id', $record?->parent_id) == $parent->id)>{{ $parent->code }} — {{ $parent->name }}</option>
             @endforeach
         </select>
+        <div class="form-text">Un document doit obligatoirement être classé dans un dossier.</div>
     </div>
     <div class="col-md-4">
         <label class="form-label">Assigné à</label>

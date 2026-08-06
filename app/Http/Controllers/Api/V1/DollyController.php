@@ -12,8 +12,6 @@ use App\Models\Container;
 use App\Models\Dolly;
 use App\Models\Mail;
 use App\Models\Record;
-use App\Models\RecordDigitalDocument;
-use App\Models\RecordDigitalFolder;
 use App\Models\Room;
 use App\Models\Shelf;
 use App\Models\Slip;
@@ -131,8 +129,6 @@ class DollyController extends Controller
             || $dolly->buildings()->exists()
             || $dolly->rooms()->exists()
             || $dolly->shelve()->exists()
-            || $dolly->digitalFolders()->exists()
-            || $dolly->digitalDocuments()->exists()
         ) {
             return response()->json(
                 ['type' => 'about:blank', 'title' => 'Validation', 'status' => 422, 'detail' => 'Impossible de supprimer un chariot qui contient encore des éléments.'],
@@ -270,28 +266,6 @@ class DollyController extends Controller
         return $this->updatedDolly($dolly);
     }
 
-    public function addDigitalFolder(Request $request, Dolly $dolly): JsonResponse
-    {
-        $this->authorize('update', $dolly);
-        $dolly = $this->inOrg($dolly);
-
-        $request->validate(['folder_id' => 'required|exists:record_digital_folders,id']);
-        $dolly->digitalFolders()->syncWithoutDetaching($request->input('folder_id'));
-
-        return $this->updatedDolly($dolly);
-    }
-
-    public function addDigitalDocument(Request $request, Dolly $dolly): JsonResponse
-    {
-        $this->authorize('update', $dolly);
-        $dolly = $this->inOrg($dolly);
-
-        $request->validate(['document_id' => 'required|exists:record_digital_documents,id']);
-        $dolly->digitalDocuments()->syncWithoutDetaching($request->input('document_id'));
-
-        return $this->updatedDolly($dolly);
-    }
-
     public function addSlip(Request $request, Dolly $dolly): JsonResponse
     {
         $this->authorize('update', $dolly);
@@ -336,8 +310,6 @@ class DollyController extends Controller
         $dolly->rooms()->detach();
         $dolly->shelve()->detach();
         $dolly->containers()->detach();
-        $dolly->digitalFolders()->detach();
-        $dolly->digitalDocuments()->detach();
 
         return $this->updatedDolly($dolly);
     }
@@ -410,26 +382,6 @@ class DollyController extends Controller
         $dolly = $this->inOrg($dolly);
 
         $dolly->slipRecords()->detach($slipRecord->id);
-
-        return response()->noContent();
-    }
-
-    public function removeDigitalFolder(Dolly $dolly, RecordDigitalFolder $folder): Response
-    {
-        $this->authorize('update', $dolly);
-        $dolly = $this->inOrg($dolly);
-
-        $dolly->digitalFolders()->detach($folder->id);
-
-        return response()->noContent();
-    }
-
-    public function removeDigitalDocument(Dolly $dolly, RecordDigitalDocument $document): Response
-    {
-        $this->authorize('update', $dolly);
-        $dolly = $this->inOrg($dolly);
-
-        $dolly->digitalDocuments()->detach($document->id);
 
         return response()->noContent();
     }

@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Models\RecordDigitalDocument;
 use App\Models\Attachment;
 use App\Services\ThumbnailGenerationService;
 use Illuminate\Bus\Queueable;

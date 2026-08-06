@@ -702,26 +702,9 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('reference-lists/{referenceList}/values/export', [\App\Http\Controllers\Settings\ReferenceListController::class, 'exportValues'])->name('settings.reference-lists.values.export');
         Route::post('record-types/{recordType}/restore', [\App\Http\Controllers\Settings\RecordTypeController::class, 'restore'])->name('settings.record-types.restore');
 
-        // Routes pour les profils de métadonnées des types de documents
-        Route::get('document-types/{documentType}/metadata-profiles', [\App\Http\Controllers\Settings\DocumentTypeMetadataProfileController::class, 'index'])->name('settings.document-types.metadata-profiles.index');
-        Route::post('document-types/{documentType}/metadata-profiles', [\App\Http\Controllers\Settings\DocumentTypeMetadataProfileController::class, 'store'])->name('settings.document-types.metadata-profiles.store');
-        Route::put('document-types/{documentType}/metadata-profiles/{profile}', [\App\Http\Controllers\Settings\DocumentTypeMetadataProfileController::class, 'update'])->name('settings.document-types.metadata-profiles.update');
-        Route::delete('document-types/{documentType}/metadata-profiles/{profile}', [\App\Http\Controllers\Settings\DocumentTypeMetadataProfileController::class, 'destroy'])->name('settings.document-types.metadata-profiles.destroy');
-        Route::put('document-types/{documentType}/metadata-profiles/bulk', [\App\Http\Controllers\Settings\DocumentTypeMetadataProfileController::class, 'bulkUpdate'])->name('settings.document-types.metadata-profiles.bulk-update');
-
-        // Routes pour les profils de métadonnées des types de dossiers
-        Route::get('folder-types/{folderType}/metadata-profiles', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'index'])->name('settings.folder-types.metadata-profiles.index');
-        Route::post('folder-types/{folderType}/metadata-profiles', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'store'])->name('settings.folder-types.metadata-profiles.store');
-        Route::put('folder-types/{folderType}/metadata-profiles/{profile}', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'update'])->name('settings.folder-types.metadata-profiles.update');
-        Route::delete('folder-types/{folderType}/metadata-profiles/{profile}', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'destroy'])->name('settings.folder-types.metadata-profiles.destroy');
-        Route::put('folder-types/{folderType}/metadata-profiles/bulk', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'bulkUpdate'])->name('settings.folder-types.metadata-profiles.bulk-update');
-
-        // Routes CRUD pour les types de dossiers et documents numériques (Records)
-        Route::resource('folder-types', \App\Http\Controllers\Settings\RecordDigitalFolderTypeController::class)->names('settings.folder-types');
-        Route::post('folder-types/order/update', [\App\Http\Controllers\Settings\RecordDigitalFolderTypeController::class, 'updateOrder'])->name('settings.folder-types.update-order');
-
-        Route::resource('document-types', \App\Http\Controllers\Settings\RecordDigitalDocumentTypeController::class)->names('settings.document-types');
-        Route::post('document-types/order/update', [\App\Http\Controllers\Settings\RecordDigitalDocumentTypeController::class, 'updateOrder'])->name('settings.document-types.update-order');
+        // Types de dossiers/documents numériques (RecordDigitalFolderType/RecordDigitalDocumentType)
+        // et leurs profils de métadonnées supprimés le 2026-08-06 avec
+        // RecordDigitalFolder/RecordDigitalDocument — voir App\Models\Record.
 
         Route::get('activities/export/excel', [ActivityController::class, 'exportExcel'])->name('activities.export.excel');
         Route::get('activities/export/pdf', [ActivityController::class, 'exportPdf'])->name('activities.export.pdf');
@@ -790,14 +773,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::delete('{dolly}/remove-shelve/{shelve}', [DollyController::class, 'removeShelve'])->name('dolly.remove-shelve');
         Route::post('{dolly}/add-slip-record', [DollyController::class, 'addSlipRecord'])->name('dolly.add-slip-record');
         Route::delete('{dolly}/remove-slip-record/{slipRecord}', [DollyController::class, 'removeSlipRecord'])->name('dolly.remove-slip-record');
-
-        // Routes pour dossiers numériques
-        Route::post('{dolly}/add-digital-folder', [DollyController::class, 'addDigitalFolder'])->name('dolly.add-digital-folder');
-        Route::delete('{dolly}/remove-digital-folder/{folder}', [DollyController::class, 'removeDigitalFolder'])->name('dolly.remove-digital-folder');
-
-        // Routes pour documents numériques
-        Route::post('{dolly}/add-digital-document', [DollyController::class, 'addDigitalDocument'])->name('dolly.add-digital-document');
-        Route::delete('{dolly}/remove-digital-document/{document}', [DollyController::class, 'removeDigitalDocument'])->name('dolly.remove-digital-document');
     });
 
 
@@ -845,10 +820,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::put('record-types/{recordType}/metadata/{profile}', [\App\Http\Controllers\Settings\RecordTypeMetadataProfileController::class, 'update'])->name('tools.record-types.metadata.update');
         Route::delete('record-types/{recordType}/metadata/{profile}', [\App\Http\Controllers\Settings\RecordTypeMetadataProfileController::class, 'destroy'])->name('tools.record-types.metadata.destroy');
         Route::resource('metadata-definitions', \App\Http\Controllers\Settings\MetadataDefinitionController::class)->names('tools.metadata-definitions');
-        Route::resource('folder-types', \App\Http\Controllers\Settings\RecordDigitalFolderTypeController::class)->names('tools.folder-types');
-        Route::post('folder-types/order/update', [\App\Http\Controllers\Settings\RecordDigitalFolderTypeController::class, 'updateOrder'])->name('tools.folder-types.update-order');
-        Route::resource('document-types', \App\Http\Controllers\Settings\RecordDigitalDocumentTypeController::class)->names('tools.document-types');
-        Route::post('document-types/order/update', [\App\Http\Controllers\Settings\RecordDigitalDocumentTypeController::class, 'updateOrder'])->name('tools.document-types.update-order');
         Route::resource('record-supports', \App\Http\Controllers\RecordSupportController::class)->names('tools.record-supports');
         Route::resource('record-statuses', \App\Http\Controllers\RecordStatusController::class)->names('tools.record-statuses');
         Route::resource('sorts', \App\Http\Controllers\SortController::class)->names('tools.sorts');
@@ -1074,11 +1045,8 @@ Route::prefix('opac')->name('opac.')->middleware('opac.errors')->group(function 
     Route::get('/records/autocomplete', [\App\Http\Controllers\OPAC\RecordController::class, 'autocomplete'])->name('records.autocomplete');
     Route::get('/records/{id}', [\App\Http\Controllers\OPAC\RecordController::class, 'show'])->name('records.show');
 
-    // Digital Collections
-    Route::get('/digital/folders', [\App\Http\Controllers\OPAC\DigitalFolderController::class, 'index'])->name('digital.folders.index');
-    Route::get('/digital/folders/{id}', [\App\Http\Controllers\OPAC\DigitalFolderController::class, 'show'])->name('digital.folders.show');
-    Route::get('/digital/documents/{id}', [\App\Http\Controllers\OPAC\DigitalDocumentController::class, 'show'])->name('digital.documents.show');
-    Route::get('/digital/documents/{id}/download', [\App\Http\Controllers\OPAC\DigitalDocumentController::class, 'download'])->name('digital.documents.download');
+    // Digital Collections (OPAC\DigitalFolderController/DigitalDocumentController)
+    // supprimées le 2026-08-06 avec RecordDigitalFolder/RecordDigitalDocument.
 
     // Search routes - Primary search interface
     Route::get('/search', [\App\Http\Controllers\OPAC\SearchController::class, 'index'])->name('search');
@@ -1247,20 +1215,9 @@ Route::prefix('workplaces')->name('workplaces.')->middleware('auth')->group(func
         Route::delete('/{bookmark}', [\App\Http\Controllers\WorkplaceBookmarkController::class, 'destroy'])->name('destroy');
     });
 
-    // Content Management Routes
-    Route::prefix('{workplace}/content')->name('content.')->group(function () {
-        Route::get('/folders', [\App\Http\Controllers\WorkplaceContentController::class, 'folders'])->name('folders');
-        Route::get('/documents', [\App\Http\Controllers\WorkplaceContentController::class, 'documents'])->name('documents');
-        Route::get('/search-folders', [\App\Http\Controllers\WorkplaceContentController::class, 'searchFolders'])->name('searchFolders');
-        Route::get('/search-documents', [\App\Http\Controllers\WorkplaceContentController::class, 'searchDocuments'])->name('searchDocuments');
-        Route::post('/folders', [\App\Http\Controllers\WorkplaceContentController::class, 'shareFolder'])->name('shareFolder');
-        Route::post('/documents', [\App\Http\Controllers\WorkplaceContentController::class, 'shareDocument'])->name('shareDocument');
-        Route::delete('/folders/{folder}', [\App\Http\Controllers\WorkplaceContentController::class, 'unshareFolder'])->name('unshareFolder');
-        Route::delete('/documents/{document}', [\App\Http\Controllers\WorkplaceContentController::class, 'unshareDocument'])->name('unshareDocument');
-        Route::post('/folders/{folder}/pin', [\App\Http\Controllers\WorkplaceContentController::class, 'pinFolder'])->name('pinFolder');
-        Route::post('/documents/{document}/feature', [\App\Http\Controllers\WorkplaceContentController::class, 'featureDocument'])->name('featureDocument');
-        Route::get('/documents/{document}/view', [\App\Http\Controllers\WorkplaceContentController::class, 'viewDocument'])->name('viewDocument');
-    });
+    // Content Management Routes (WorkplaceContentController, partage de dossiers/
+    // documents numériques) supprimées le 2026-08-06 avec RecordDigitalFolder/
+    // RecordDigitalDocument, dont WorkplaceFolder/WorkplaceDocument dépendaient.
 
     // Message Management Routes
     Route::prefix('{workplace}/messages')->name('messages.')->group(function () {

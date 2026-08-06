@@ -8,8 +8,6 @@ use App\Http\Controllers\Api\V1\WorkplaceActivityController;
 use App\Http\Controllers\Api\V1\WorkplaceBookmarkController;
 use App\Http\Controllers\Api\V1\WorkplaceConversationController;
 use App\Http\Controllers\Api\V1\WorkplaceController;
-use App\Http\Controllers\Api\V1\WorkplaceDocumentController;
-use App\Http\Controllers\Api\V1\WorkplaceFolderController;
 use App\Http\Controllers\Api\V1\WorkplaceMemberController;
 use App\Http\Controllers\Api\V1\WorkplaceTemplateController;
 
@@ -20,15 +18,9 @@ Route::get('workplaces/{workplace}/settings', [WorkplaceController::class, 'sett
 
 Route::apiResource('workplaces', WorkplaceController::class)->except(['create', 'edit']);
 
-// Contenu partagé (WorkplaceContentController).
-Route::get('workplaces/{workplace}/content/documents', [WorkplaceDocumentController::class, 'documents'])->name('workplaces.content.documents');
-Route::post('workplaces/{workplace}/content/documents', [WorkplaceDocumentController::class, 'shareDocument'])->name('workplaces.content.share-document');
-Route::delete('workplaces/{workplace}/content/documents/{document}', [WorkplaceDocumentController::class, 'unshareDocument'])->name('workplaces.content.unshare-document');
-Route::post('workplaces/{workplace}/content/documents/{document}/feature', [WorkplaceDocumentController::class, 'featureDocument'])->name('workplaces.content.feature-document');
-Route::get('workplaces/{workplace}/content/folders', [WorkplaceFolderController::class, 'folders'])->name('workplaces.content.folders');
-Route::post('workplaces/{workplace}/content/folders', [WorkplaceFolderController::class, 'shareFolder'])->name('workplaces.content.share-folder');
-Route::delete('workplaces/{workplace}/content/folders/{folder}', [WorkplaceFolderController::class, 'unshareFolder'])->name('workplaces.content.unshare-folder');
-Route::post('workplaces/{workplace}/content/folders/{folder}/pin', [WorkplaceFolderController::class, 'pinFolder'])->name('workplaces.content.pin-folder');
+// Contenu partagé (WorkplaceContentController / WorkplaceFolder|DocumentController)
+// supprimé le 2026-08-06 avec RecordDigitalFolder/RecordDigitalDocument, dont
+// WorkplaceFolder/WorkplaceDocument dépendaient.
 
 // Activité (lecture seule).
 Route::get('workplaces/{workplace}/activities', [WorkplaceActivityController::class, 'index'])->name('workplaces.activities.index');
@@ -57,7 +49,4 @@ Route::apiResource('tasks', TaskController::class)->except(['create', 'edit']);
 // TODO D12 — actions non portées (étape 1.x) :
 //  - WorkplaceInvitationController::accept (GET /workplaces/invitations/{token}) :
 //    flux web (redirections login/register), à exposer côté API en phase 2.
-//  - WorkplaceContentController::viewDocument (redirection vers records.show).
-//  - WorkplaceContentController::searchFolders / searchDocuments (recherche AJAX
-//    transverse sur les modèles D02 RecordDigitalFolder/Document).
 //  - WorkplaceMessageController::renderChat (vues HTML), sans équivalent API.

@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Record;
 use App\Models\RecordPhysical;
-use App\Models\RecordDigitalFolder;
-use App\Models\RecordDigitalDocument;
 use App\Models\Activity;
 use App\Models\Author;
 use App\Models\Building;

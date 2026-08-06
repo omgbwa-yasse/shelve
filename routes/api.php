@@ -20,8 +20,6 @@ use App\Http\Controllers\Api\PublicChatMessageApiController;
 use App\Http\Controllers\Api\PublicEventRegistrationApiController;
 use App\Http\Controllers\PromptController;
 use App\Http\Controllers\Api\ContainerSearchController;
-use App\Http\Controllers\Api\RecordDigitalFolderApiController;
-use App\Http\Controllers\Api\RecordDigitalDocumentApiController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ActivityController;
 use App\Http\Controllers\Api\V1\CommunicabilityController;
@@ -228,36 +226,7 @@ Route::middleware(['web', 'auth', 'rate.limit:ai,30,60'])->group(function () {
     Route::get('containers/search', [ContainerSearchController::class, 'search'])->name('api.containers.search');
 });
 
-// Phase 9: Digital Records Management API (v1)
-Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'rate.limit:api_general,200,60'])->group(function () {
-
-    // Digital Folders API
-    Route::apiResource('digital-folders', RecordDigitalFolderApiController::class);
-    Route::get('digital-folders-tree', [RecordDigitalFolderApiController::class, 'tree'])->name('digital-folders.tree');
-    Route::get('digital-folders-roots', [RecordDigitalFolderApiController::class, 'roots'])->name('digital-folders.roots');
-    Route::post('digital-folders/{id}/move', [RecordDigitalFolderApiController::class, 'move'])->name('digital-folders.move');
-    Route::get('digital-folders/{id}/statistics', [RecordDigitalFolderApiController::class, 'statistics'])->name('digital-folders.statistics');
-    Route::get('digital-folders/{id}/ancestors', [RecordDigitalFolderApiController::class, 'ancestors'])->name('digital-folders.ancestors');
-
-    // Digital Documents API
-    Route::apiResource('digital-documents', RecordDigitalDocumentApiController::class);
-    Route::post('digital-documents/{id}/versions', [RecordDigitalDocumentApiController::class, 'createVersion'])->name('digital-documents.create-version');
-    Route::post('digital-documents/{id}/submit', [RecordDigitalDocumentApiController::class, 'submitForApproval'])->name('digital-documents.submit');
-    Route::post('digital-documents/{id}/approve', [RecordDigitalDocumentApiController::class, 'approve'])->name('digital-documents.approve');
-    Route::post('digital-documents/{id}/reject', [RecordDigitalDocumentApiController::class, 'reject'])->name('digital-documents.reject');
-    Route::get('digital-documents/{id}/download', [RecordDigitalDocumentApiController::class, 'download'])->name('digital-documents.download');
-    Route::get('digital-documents/{id}/versions', [RecordDigitalDocumentApiController::class, 'versions'])->name('digital-documents.versions');
-
-    // Digital to Physical Transfer API
-    Route::prefix('record-digital-transfer')->name('record-digital-transfer.')->group(function () {
-        Route::get('form', [\App\Http\Controllers\RecordDigitalTransferController::class, 'showTransferForm'])->name('form');
-        Route::post('/', [\App\Http\Controllers\RecordDigitalTransferController::class, 'store'])->name('store');
-        Route::delete('cancel', [\App\Http\Controllers\RecordDigitalTransferController::class, 'cancel'])->name('cancel');
-    });
-
-    // Metadata API
-    Route::get('metadata/folder-types/{typeId}', [App\Http\Controllers\Api\MetadataApiController::class, 'getFolderTypeMetadata'])->name('metadata.folder-types');
-    Route::get('metadata/document-types/{typeId}', [App\Http\Controllers\Api\MetadataApiController::class, 'getDocumentTypeMetadata'])->name('metadata.document-types');
-    Route::get('metadata/all', [App\Http\Controllers\Api\MetadataApiController::class, 'getAllMetadata'])->name('metadata.all');
-    Route::get('digital-documents-search', [RecordDigitalDocumentApiController::class, 'search'])->name('digital-documents.search');
-});
+// Phase 9 (Digital Records Management API v1 : digital-folders, digital-documents,
+// record-digital-transfer, metadata/folder-types|document-types) supprimée le
+// 2026-08-06 avec RecordDigitalFolder/RecordDigitalDocument — voir App\Models\Record,
+// le modèle unifié qui les remplace.

@@ -38,8 +38,6 @@ use Database\Seeders\AI\PromptSeeder;
 use Database\Seeders\Public\OpacConfigurationSeeder;
 use Database\Seeders\Public\OpacTemplateSeeder;
 use Database\Seeders\Tools\KeywordSeeder;
-use Database\Seeders\Records\ExampleData\RecordDigitalFolderSeeder;
-use Database\Seeders\Records\ExampleData\RecordDigitalDocumentSeederSimple;
 use Database\Seeders\Records\ExampleData\DocumentTypologyExampleSeeder;
 
 // Module Data Seeders (test data for all 11 modules)
@@ -128,8 +126,8 @@ class DatabaseSeeder extends Seeder
 
             // 11. DONNÉES D'EXEMPLE NUMÉRIQUES
             KeywordSeeder::class, // Mots-clés pour les dossiers/documents numériques
-            RecordDigitalFolderSeeder::class, // Exemples de dossiers numériques (Phase 3)
-            RecordDigitalDocumentSeederSimple::class, // Exemples de documents numériques (Phase 3)
+            // RecordDigitalFolderSeeder/RecordDigitalDocumentSeederSimple supprimés
+            // le 2026-08-06 avec RecordDigitalFolder/RecordDigitalDocument.
 
             // ============================================================
             // 12. DONNÉES DE TEST PAR MODULE (idempotentes — firstOrCreate)

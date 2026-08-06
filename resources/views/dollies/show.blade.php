@@ -40,18 +40,6 @@
                         <i class="fas fa-trash-alt"></i> Vider le chariot
                     </button>
 
-                    @if(in_array($dolly->category, ['digital_folder', 'digital_document']))
-                        <a href="{{ route('dollies.action') }}?categ={{ $dolly->category }}&action=export_seda&id={{ $dolly->id }}" class="btn btn-primary">
-                            <i class="bi bi-file-earmark-code"></i> Exporter SEDA
-                        </a>
-                    @endif
-
-                    @if(in_array($dolly->category, ['digital_folder', 'digital_document']))
-                        <a href="{{ route('dollies.action') }}?categ={{ $dolly->category }}&action=export_inventory&id={{ $dolly->id }}" class="btn btn-info">
-                            <i class="bi bi-file-earmark-pdf"></i> Extraire Inventaire PDF
-                        </a>
-                    @endif
-
                 </div>
             </div>
         </div>
@@ -142,73 +130,8 @@
                 </table>
             </div>
 
-        @elseif($dolly->category === 'digital_folder' && $dolly->digitalFolders->isNotEmpty())
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead class="table-white">
-                    <tr>
-                        <th>Code</th>
-                        <th>Nom</th>
-                        <th>Date de création</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($dolly->digitalFolders as $folder)
-                        <tr>
-                            <td>{{ $folder->code }}</td>
-                            <td>{{ $folder->name }}</td>
-                            <td>{{ $folder->created_at->format('d/m/Y') }}</td>
-                            <td>
-                                @php($unified = \App\Models\Record::where('legacy_source', 'digital_folder')->where('legacy_id', $folder->id)->first())
-                                @if($unified)
-                                    <a href="{{ route('records.show', $unified) }}" class="btn btn-sm btn-info">Voir</a>
-                                @endif
-                                <form action="{{ route('dolly.remove-digital-folder', [$dolly, $folder]) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer ce dossier du chariot ?')">Retirer</button>
-                                </form>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-        @elseif($dolly->category === 'digital_document' && $dolly->digitalDocuments->isNotEmpty())
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead class="table-white">
-                    <tr>
-                        <th>Code</th>
-                        <th>Nom</th>
-                        <th>Type</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($dolly->digitalDocuments as $document)
-                        <tr>
-                            <td>{{ $document->code }}</td>
-                            <td>{{ $document->name }}</td>
-                            <td>{{ $document->type ?? 'N/A' }}</td>
-                            <td>
-                                @php($unified = \App\Models\Record::where('legacy_source', 'digital_document')->where('legacy_id', $document->id)->first())
-                                @if($unified)
-                                    <a href="{{ route('records.show', $unified) }}" class="btn btn-sm btn-info">Voir</a>
-                                @endif
-                                <form action="{{ route('dolly.remove-digital-document', [$dolly, $document]) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer ce document du chariot ?')">Retirer</button>
-                                </form>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
+        {{-- Contenu "dossiers/documents numériques" retiré le 2026-08-06 avec
+             RecordDigitalFolder/RecordDigitalDocument — voir App\Models\Record. --}}
 
         @elseif($dolly->category === 'communication' && $dolly->communications->isNotEmpty())
             <div class="table-responsive">

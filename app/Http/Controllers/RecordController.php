@@ -788,6 +788,29 @@ class RecordController extends Controller
 
         $data = $request->validate($rules);
 
+        // Un document (type non-conteneur) doit obligatoirement être classé dans un
+        // dossier (type conteneur) ; un dossier peut rester à la racine.
+        $typeIdForParentCheck = $data['type_id'] ?? $record?->type_id;
+        if ($typeIdForParentCheck) {
+            $selectedType = RecordType::find($typeIdForParentCheck);
+
+            if ($selectedType && ! $selectedType->isContainer() && empty($data['parent_id'])) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'parent_id' => 'Un document doit être classé dans un dossier.',
+                ]);
+            }
+        }
+
+        if (! empty($data['parent_id'])) {
+            $parentRecord = Record::find($data['parent_id']);
+
+            if ($parentRecord && (! $parentRecord->type || ! $parentRecord->type->isContainer())) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'parent_id' => 'La notice parente doit être un dossier (type conteneur).',
+                ]);
+            }
+        }
+
         if (empty($data['level_id'])) {
             $data['level_id'] = RecordLevel::query()->value('id');
         }

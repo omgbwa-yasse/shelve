@@ -99,13 +99,28 @@
                 .catch(() => { container.innerHTML = ''; });
             }
 
+            function toggleParentRequirement() {
+                const opt = select.options[select.selectedIndex];
+                const isContainer = opt ? opt.getAttribute('data-container') === '1' : null;
+                const parentSelect = document.getElementById('parentIdSelect');
+                const parentMark = document.getElementById('parentIdRequiredMark');
+                if (!parentSelect || !parentMark) {
+                    return;
+                }
+                const isDocument = isContainer === false;
+                parentSelect.required = isDocument;
+                parentMark.classList.toggle('d-none', !isDocument);
+            }
+
             select.addEventListener('change', function () {
                 loadFields(this.value);
+                toggleParentRequirement();
             });
 
             if (select.value) {
                 loadFields(select.value);
             }
+            toggleParentRequirement();
         })();
     </script>
 @endpush

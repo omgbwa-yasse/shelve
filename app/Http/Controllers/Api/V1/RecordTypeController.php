@@ -107,4 +107,28 @@ class RecordTypeController extends Controller
 
         return response()->noContent();
     }
+
+    /**
+     * GET /api/v1/record-types/{recordType}/metadata-fields — schéma des métadonnées
+     * visibles pour ce type (sans valeur : sert à construire le formulaire de
+     * création d'une notice avant qu'elle n'existe). Voir `Record::getVisibleMetadataFields()`
+     * pour l'équivalent "avec valeurs" côté notice existante.
+     */
+    public function metadataFields(RecordType $recordType): JsonResponse
+    {
+        $this->authorize('view', $recordType);
+
+        $fields = $recordType->getVisibleMetadataDefinitions()->map(fn ($definition) => [
+            'code' => $definition->code,
+            'name' => $definition->name,
+            'data_type' => $definition->data_type,
+            'options' => $definition->options,
+            'value' => $definition->pivot->default_value,
+            'required' => (bool) $definition->pivot->mandatory,
+            'readonly' => (bool) $definition->pivot->readonly,
+            'group' => $definition->pivot->group,
+        ])->values();
+
+        return response()->json(['data' => $fields]);
+    }
 }

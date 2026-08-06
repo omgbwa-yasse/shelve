@@ -141,6 +141,182 @@ class RecordApiTest extends TestCase
         $this->assertSoftDeleted('records', ['id' => $record->id]);
     }
 
+    // --- Libellés des relations (2026-08-05) ---------------------------------
+
+    public function test_show_expose_les_libelles_des_relations_incluses(): void
+    {
+        $level = RecordLevel::first() ?? RecordLevel::create(['name' => 'Niveau test']);
+        $status = RecordStatus::first() ?? RecordStatus::create(['name' => 'Brouillon']);
+        $record = $this->makeRecord(null, ['level_id' => $level->id, 'status_id' => $status->id]);
+
+        $this->actingAs($this->user, 'sanctum')
+            ->getJson("/api/v1/records/{$record->id}")
+            ->assertOk()
+            ->assertJsonPath('data.level.name', $level->name)
+            ->assertJsonPath('data.status.name', $status->name);
+    }
+
+    public function test_index_expose_le_libelle_de_type(): void
+    {
+        $type = \App\Models\RecordType::first() ?? \App\Models\RecordType::create(['code' => 'T' . uniqid(), 'name' => 'Type test']);
+        $this->makeRecord(null, ['type_id' => $type->id]);
+
+        $this->actingAs($this->user, 'sanctum')
+            ->getJson('/api/v1/records')
+            ->assertOk()
+            ->assertJsonPath('data.0.type.name', $type->name);
+    }
+
+    public function test_metadata_fields_retourne_le_schema_visible_du_type_avec_valeur(): void
+    {
+        $type = \App\Models\RecordType::create(['code' => 'T' . uniqid(), 'name' => 'Type avec métadonnées']);
+        $definition = \App\Models\MetadataDefinition::create([
+            'code' => 'note_' . uniqid(),
+            'name' => 'Note',
+            'data_type' => 'text',
+            'created_by' => $this->user->id,
+        ]);
+        \App\Models\RecordTypeMetadataProfile::create([
+            'record_type_id' => $type->id,
+            'metadata_definition_id' => $definition->id,
+            'mandatory' => true,
+            'visible' => true,
+            'readonly' => false,
+            'sort_order' => 1,
+        ]);
+
+        $record = $this->makeRecord(null, ['type_id' => $type->id]);
+        $record->setMultipleMetadata([$definition->code => 'Valeur de test']);
+        $record->save();
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->getJson("/api/v1/records/{$record->id}/metadata-fields")
+            ->assertOk();
+
+        $this->assertEquals($definition->code, $response->json('data.0.code'));
+        $this->assertEquals('Valeur de test', $response->json('data.0.value'));
+        $this->assertTrue($response->json('data.0.required'));
+    }
+
+    public function test_record_type_metadata_fields_retourne_le_schema_sans_notice(): void
+    {
+        $this->grantD01Permissions($this->user, ['record_type'], ['view']);
+        $type = \App\Models\RecordType::create(['code' => 'T' . uniqid(), 'name' => 'Type sans notice']);
+        $definition = \App\Models\MetadataDefinition::create([
+            'code' => 'ref_' . uniqid(),
+            'name' => 'Référence',
+            'data_type' => 'text',
+            'created_by' => $this->user->id,
+        ]);
+        \App\Models\RecordTypeMetadataProfile::create([
+            'record_type_id' => $type->id,
+            'metadata_definition_id' => $definition->id,
+            'mandatory' => false,
+            'visible' => true,
+            'readonly' => false,
+            'sort_order' => 1,
+        ]);
+
+        $this->actingAs($this->user, 'sanctum')
+            ->getJson("/api/v1/record-types/{$type->id}/metadata-fields")
+            ->assertOk()
+            ->assertJsonPath('data.0.code', $definition->code)
+            ->assertJsonPath('data.0.required', false);
+    }
+
+    // --- Référentiels de sélection (2026-08-05) ------------------------------
+
+    public function test_record_levels_index_liste_les_niveaux(): void
+    {
+        RecordLevel::firstOrCreate(['name' => 'Fonds']);
+
+        $this->actingAs($this->user, 'sanctum')
+            ->getJson('/api/v1/record-levels')
+            ->assertOk()
+            ->assertJsonStructure(['data' => [['id', 'name']]]);
+    }
+
+    public function test_record_confidentialities_index_liste_les_niveaux(): void
+    {
+        \App\Models\RecordConfidentiality::firstOrCreate(['code' => 'PUB'], ['name' => 'Public']);
+
+        $this->actingAs($this->user, 'sanctum')
+            ->getJson('/api/v1/record-confidentialities')
+            ->assertOk()
+            ->assertJsonStructure(['data' => [['id', 'code', 'name']]]);
+    }
+
+    // --- Corbeille : trash / restore / force-delete (2026-08-05) ------------
+
+    public function test_trash_liste_uniquement_les_notices_supprimees_de_l_organisation(): void
+    {
+        $active = $this->makeRecord();
+        $deleted = $this->makeRecord();
+        $deleted->delete();
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->getJson('/api/v1/records-trash')
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+
+        $this->assertEquals($deleted->id, $response->json('data.0.id'));
+        $this->assertNotEquals($active->id, $response->json('data.0.id'));
+    }
+
+    public function test_restore_sort_la_notice_de_la_corbeille(): void
+    {
+        $record = $this->makeRecord();
+        $record->delete();
+
+        $this->actingAs($this->user, 'sanctum')
+            ->postJson("/api/v1/records/{$record->id}/restore")
+            ->assertOk()
+            ->assertJsonPath('data.id', $record->id);
+
+        $this->assertDatabaseHas('records', ['id' => $record->id, 'deleted_at' => null]);
+    }
+
+    public function test_force_delete_supprime_definitivement(): void
+    {
+        $this->grantD01Permissions($this->user, self::PERMISSIONS, ['force_delete']);
+        $record = $this->makeRecord();
+        $record->delete();
+
+        $this->actingAs($this->user, 'sanctum')
+            ->deleteJson("/api/v1/records/{$record->id}/force")
+            ->assertNoContent();
+
+        $this->assertDatabaseMissing('records', ['id' => $record->id]);
+    }
+
+    public function test_force_delete_sans_permission_dediee_est_refuse(): void
+    {
+        $record = $this->makeRecord();
+        $record->delete();
+
+        $this->actingAs($this->user, 'sanctum')
+            ->deleteJson("/api/v1/records/{$record->id}/force")
+            ->assertStatus(403);
+
+        $this->assertDatabaseHas('records', ['id' => $record->id]);
+    }
+
+    public function test_restore_et_force_delete_isoles_par_organisation(): void
+    {
+        $this->grantD01Permissions($this->user, self::PERMISSIONS, ['force_delete']);
+        $orgEtrangere = Organisation::factory()->create();
+        $record = $this->makeRecord($orgEtrangere);
+        $record->delete();
+
+        $this->actingAs($this->user, 'sanctum')
+            ->postJson("/api/v1/records/{$record->id}/restore")
+            ->assertStatus(404);
+
+        $this->actingAs($this->user, 'sanctum')
+            ->deleteJson("/api/v1/records/{$record->id}/force")
+            ->assertStatus(404);
+    }
+
     /**
      * ⚠️ Cœur du risque R03 : une notice d'une autre organisation doit renvoyer 404
      * (jamais 403) sur show, update et destroy.

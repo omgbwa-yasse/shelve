@@ -14,6 +14,11 @@ use Illuminate\Support\Carbon;
  * n'est pas exposé (suppression logique interne). Les anciens champs descriptifs
  * figés (content, biographical_history, extent, quantity, ...) sont désormais des
  * MetadataDefinition (système ou personnalisées) exposées uniquement via `metadata`.
+ *
+ * Les relations ci-dessous ne s'affichent QUE si chargées par le contrôleur
+ * (`?include=type,level,...`, voir `RecordController::INCLUDABLE`) — corrige un bug
+ * où `with()`/`applyIncludes()` chargeait la relation en mémoire sans jamais la
+ * sérialiser (2026-08-05) : la liste/fiche n'affichait que des `*_id` bruts.
  */
 class RecordResource extends JsonResource
 {
@@ -62,6 +67,18 @@ class RecordResource extends JsonResource
             'is_root' => $this->isRoot(),
             'created_at' => $this->created_at?->toIso8601ZuluString(),
             'updated_at' => $this->updated_at?->toIso8601ZuluString(),
+
+            'type' => $this->whenLoaded('type', fn () => ['id' => $this->type->id, 'code' => $this->type->code, 'name' => $this->type->name]),
+            'level' => $this->whenLoaded('level', fn () => ['id' => $this->level->id, 'name' => $this->level->name]),
+            'status' => $this->whenLoaded('status', fn () => ['id' => $this->status->id, 'name' => $this->status->name]),
+            'activity' => $this->whenLoaded('activity', fn () => ['id' => $this->activity->id, 'name' => $this->activity->name]),
+            'parent' => $this->whenLoaded('parent', fn () => $this->parent ? ['id' => $this->parent->id, 'code' => $this->parent->code, 'name' => $this->parent->name] : null),
+            'organisation' => $this->whenLoaded('organisation', fn () => ['id' => $this->organisation->id, 'name' => $this->organisation->name]),
+            'creator' => $this->whenLoaded('creator', fn () => $this->creator ? ['id' => $this->creator->id, 'name' => $this->creator->name] : null),
+            'assignedUser' => $this->whenLoaded('assignedUser', fn () => $this->assignedUser ? ['id' => $this->assignedUser->id, 'name' => $this->assignedUser->name] : null),
+            'approver' => $this->whenLoaded('approver', fn () => $this->approver ? ['id' => $this->approver->id, 'name' => $this->approver->name] : null),
+            'confidentiality' => $this->whenLoaded('confidentiality', fn () => $this->confidentiality ? ['id' => $this->confidentiality->id, 'name' => $this->confidentiality->name] : null),
+            'accessLimit' => $this->whenLoaded('accessLimit', fn () => $this->accessLimit ? ['id' => $this->accessLimit->id, 'name' => $this->accessLimit->name] : null),
         ];
     }
 }

@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Models\MetadataDefinition;
-use App\Models\RecordDigitalDocumentType;
-use App\Models\RecordDigitalFolderType;
 use App\Models\RecordType;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -112,106 +110,6 @@ class MetadataValidationService
     }
 
     /**
-     * Validate metadata for a document type.
-     *
-     * @return array Validated metadata
-     *
-     * @throws ValidationException
-     */
-    public function validateDocumentMetadata(RecordDigitalDocumentType $documentType, array $metadata): array
-    {
-        $profiles = $documentType->metadataProfiles()->with('metadataDefinition')->ordered()->get();
-
-        $rules = [];
-        $messages = [];
-        $attributes = [];
-
-        foreach ($profiles as $profile) {
-            $definition = $profile->metadataDefinition;
-            $fieldName = $definition->code;
-
-            // Build validation rules
-            $fieldRules = [];
-
-            if ($profile->mandatory) {
-                $fieldRules[] = 'required';
-            } else {
-                $fieldRules[] = 'nullable';
-            }
-
-            // Add data type validation
-            $fieldRules = array_merge($fieldRules, $this->getDataTypeRules($definition->data_type, $definition));
-
-            // Add custom validation rules from profile
-            if ($profile->validation_rules) {
-                $fieldRules = array_merge($fieldRules, $profile->validation_rules);
-            }
-
-            // Add custom validation rules from definition
-            if ($definition->validation_rules) {
-                $fieldRules = array_merge($fieldRules, $definition->validation_rules);
-            }
-
-            $rules[$fieldName] = $fieldRules;
-            $attributes[$fieldName] = $definition->name;
-        }
-
-        $validator = Validator::make($metadata, $rules, $messages, $attributes);
-
-        return $validator->validate();
-    }
-
-    /**
-     * Validate metadata for a folder type.
-     *
-     * @return array Validated metadata
-     *
-     * @throws ValidationException
-     */
-    public function validateFolderMetadata(RecordDigitalFolderType $folderType, array $metadata): array
-    {
-        $profiles = $folderType->metadataProfiles()->with('metadataDefinition')->ordered()->get();
-
-        $rules = [];
-        $messages = [];
-        $attributes = [];
-
-        foreach ($profiles as $profile) {
-            $definition = $profile->metadataDefinition;
-            $fieldName = $definition->code;
-
-            // Build validation rules
-            $fieldRules = [];
-
-            if ($profile->mandatory) {
-                $fieldRules[] = 'required';
-            } else {
-                $fieldRules[] = 'nullable';
-            }
-
-            // Add data type validation
-            $fieldRules = array_merge($fieldRules, $this->getDataTypeRules($definition->data_type, $definition));
-
-            // Add custom validation rules from profile
-            if ($profile->validation_rules) {
-                $fieldRules = array_merge($fieldRules, $profile->validation_rules);
-            }
-
-            // Add custom validation rules from definition
-            if ($definition->validation_rules) {
-                $fieldRules = array_merge($fieldRules, $definition->validation_rules);
-            }
-
-            $rules[$fieldName] = $fieldRules;
-            $attributes[$fieldName] = $definition->name;
-        }
-
-        $validator = Validator::make($metadata, $rules, $messages, $attributes);
-
-        return $validator->validate();
-    }
-
-    /**
      * Get validation rules based on data type.
      */
     protected function getDataTypeRules(string $dataType, MetadataDefinition $definition): array
@@ -276,34 +174,6 @@ class MetadataValidationService
     }
 
     /**
-     * Get metadata form fields for a document type.
-     */
-    public function getDocumentMetadataFields(RecordDigitalDocumentType $documentType): array
-    {
-        $profiles = $documentType->metadataProfiles()
-            ->with(['metadataDefinition.referenceList.activeValues'])
-            ->visible()
-            ->ordered()
-            ->get();
-
-        return $this->buildMetadataFields($profiles);
-    }
-
-    /**
-     * Get metadata form fields for a folder type.
-     */
-    public function getFolderMetadataFields(RecordDigitalFolderType $folderType): array
-    {
-        $profiles = $folderType->metadataProfiles()
-            ->with(['metadataDefinition.referenceList.activeValues'])
-            ->visible()
-            ->ordered()
-            ->get();
-
-        return $this->buildMetadataFields($profiles);
-    }
-
-    /**
      * Build metadata fields array from profiles.
      *
      * @param  \Illuminate\Support\Collection  $profiles
@@ -351,7 +221,7 @@ class MetadataValidationService
     /**
      * Apply default values to metadata.
      *
-     * @param  RecordDigitalDocumentType|RecordDigitalFolderType  $type
+     * @param  RecordType  $type
      */
     public function applyDefaultValues($type, array $metadata): array
     {

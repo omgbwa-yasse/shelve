@@ -51,22 +51,6 @@
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link {{ $activeTab === 'folders' ? 'active' : '' }}" href="{{ route('workplaces.content.folders', $workplace) }}">
-            <i class="bi bi-folder me-1"></i>Dossiers
-            @if($workplace->folders_count > 0)
-                <span class="badge bg-secondary rounded-pill ms-1">{{ $workplace->folders_count }}</span>
-            @endif
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link {{ $activeTab === 'documents' ? 'active' : '' }}" href="{{ route('workplaces.content.documents', $workplace) }}">
-            <i class="bi bi-file-earmark-text me-1"></i>Documents
-            @if($workplace->documents_count > 0)
-                <span class="badge bg-secondary rounded-pill ms-1">{{ $workplace->documents_count }}</span>
-            @endif
-        </a>
-    </li>
-    <li class="nav-item">
         <a class="nav-link {{ $activeTab === 'messages' ? 'active' : '' }}" href="{{ route('workplaces.messages.index', $workplace) }}">
             <i class="bi bi-chat-left-text me-1"></i>Messages
             @php

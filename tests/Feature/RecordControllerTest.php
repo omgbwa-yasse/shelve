@@ -28,6 +28,8 @@ class RecordControllerTest extends TestCase
     protected RecordLevel $level;
     protected RecordStatus $status;
     protected RecordType $type;
+    protected RecordType $containerType;
+    protected Record $parentRecord;
     protected MetadataDefinition $contentDefinition;
     protected static int $counter = 0;
 
@@ -58,6 +60,26 @@ class RecordControllerTest extends TestCase
             'name' => 'Type de test ' . self::$counter,
             'is_container' => false,
             'is_active' => true,
+        ]);
+
+        $this->containerType = RecordType::create([
+            'code' => 'RT-RC-DOSSIER-' . self::$counter,
+            'name' => 'Dossier de test ' . self::$counter,
+            'is_container' => true,
+            'is_active' => true,
+        ]);
+
+        $this->parentRecord = Record::create([
+            'code' => 'REC-PARENT-' . self::$counter,
+            'name' => 'Dossier parent ' . self::$counter,
+            'level_id' => $this->level->id,
+            'status_id' => $this->status->id,
+            'type_id' => $this->containerType->id,
+            'organisation_id' => $this->organisation->id,
+            'creator_id' => $this->user->id,
+            'access_level' => 'internal',
+            'version_number' => 1,
+            'is_current_version' => true,
         ]);
 
         $this->contentDefinition = MetadataDefinition::create([
@@ -92,6 +114,7 @@ class RecordControllerTest extends TestCase
         $response = $this->actingAs($this->user)->post(route('records.store'), [
             'name' => 'Notice sans contenu',
             'type_id' => $this->type->id,
+            'parent_id' => $this->parentRecord->id,
             'organisation_id' => $this->organisation->id,
             // 'metadata' volontairement absent : content_rc_N est obligatoire pour ce type.
         ]);
@@ -105,6 +128,7 @@ class RecordControllerTest extends TestCase
         $response = $this->actingAs($this->user)->post(route('records.store'), [
             'name' => 'Notice avec contenu',
             'type_id' => $this->type->id,
+            'parent_id' => $this->parentRecord->id,
             'organisation_id' => $this->organisation->id,
             'metadata' => [$this->contentDefinition->code => 'Un contenu de test'],
         ]);
@@ -147,6 +171,7 @@ class RecordControllerTest extends TestCase
             'level_id' => $this->level->id,
             'status_id' => $this->status->id,
             'type_id' => $this->type->id,
+            'parent_id' => $this->parentRecord->id,
             'organisation_id' => $this->organisation->id,
             'creator_id' => $this->user->id,
             'access_level' => 'internal',
@@ -158,6 +183,7 @@ class RecordControllerTest extends TestCase
 
         $response = $this->actingAs($this->user)->put(route('records.update', $record), [
             'name' => $record->name,
+            'parent_id' => $this->parentRecord->id,
             'organisation_id' => $this->organisation->id,
             'metadata' => [$this->contentDefinition->code => 'Après'],
         ]);

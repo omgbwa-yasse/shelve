@@ -53,17 +53,6 @@
                     <i class="bi bi-arrow-left-right"></i> {{ __('transfer') }}
                 </a>
             </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=digital_folder">
-                    <i class="bi bi-folder-plus"></i> {{ __('digital_folders') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=digital_document">
-                    <i class="bi bi-file-earmark-text"></i> {{ __('digital_documents') }}
-                </a>
-            </div>
-
         </div>
     </div>
     @endcan

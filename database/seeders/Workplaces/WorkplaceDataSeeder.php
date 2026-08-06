@@ -5,15 +5,11 @@ namespace Database\Seeders\Workplaces;
 use Illuminate\Database\Seeder;
 use App\Models\Workplace;
 use App\Models\WorkplaceMember;
-use App\Models\WorkplaceFolder;
-use App\Models\WorkplaceDocument;
 use App\Models\WorkplaceActivity;
 use App\Models\WorkplaceInvitation;
 use App\Models\WorkplaceBookmark;
 use App\Models\WorkplaceTemplate;
 use App\Models\WorkplaceCategory;
-use App\Models\RecordDigitalFolder;
-use App\Models\RecordDigitalDocument;
 use App\Models\Organisation;
 use App\Models\User;
 use Illuminate\Support\Str;
@@ -126,41 +122,9 @@ class WorkplaceDataSeeder extends Seeder
             }
         }
 
-        // --- 4. Workplace Folders & Documents ---
-        $folder = RecordDigitalFolder::first();
-        $document = RecordDigitalDocument::first();
-
-        if ($folder) {
-            foreach (array_slice($createdWorkplaces, 0, 3) as $ws) {
-                WorkplaceFolder::firstOrCreate(
-                    ['workplace_id' => $ws->id, 'folder_id' => $folder->id],
-                    [
-                        'shared_by' => $user->id,
-                        'shared_at' => now()->subDays(rand(1, 20)),
-                        'share_note' => 'Dossier partagé pour collaboration',
-                        'access_level' => 'edit',
-                        'is_pinned' => $ws->id === $createdWorkplaces[0]->id,
-                        'display_order' => 1,
-                    ]
-                );
-            }
-        }
-
-        if ($document) {
-            foreach (array_slice($createdWorkplaces, 0, 3) as $ws) {
-                WorkplaceDocument::firstOrCreate(
-                    ['workplace_id' => $ws->id, 'document_id' => $document->id],
-                    [
-                        'shared_by' => $user->id,
-                        'shared_at' => now()->subDays(rand(1, 15)),
-                        'share_note' => 'Document de référence',
-                        'access_level' => 'view',
-                        'is_featured' => false,
-                        'views_count' => rand(0, 20),
-                    ]
-                );
-            }
-        }
+        // --- 4. Workplace Folders & Documents supprimé le 2026-08-06 avec
+        // WorkplaceFolder/WorkplaceDocument (dépendaient de RecordDigitalFolder/
+        // RecordDigitalDocument, supprimés dans le même chantier).
 
         // --- 5. Workplace Activities ---
         $activityTypes = ['joined', 'shared_document', 'created_folder', 'member_added', 'settings_changed', 'created_document'];
@@ -199,16 +163,11 @@ class WorkplaceDataSeeder extends Seeder
         }
 
         // --- 7. Workplace Bookmarks ---
-        if ($folder) {
+        $record = \App\Models\Record::first();
+        if ($record) {
             WorkplaceBookmark::firstOrCreate(
-                ['workplace_id' => $createdWorkplaces[0]->id, 'user_id' => $user->id, 'bookmarkable_type' => RecordDigitalFolder::class, 'bookmarkable_id' => $folder->id],
-                ['note' => 'Dossier important à suivre']
-            );
-        }
-        if ($document) {
-            WorkplaceBookmark::firstOrCreate(
-                ['workplace_id' => $createdWorkplaces[0]->id, 'user_id' => $user->id, 'bookmarkable_type' => RecordDigitalDocument::class, 'bookmarkable_id' => $document->id],
-                ['note' => 'Document de référence clé']
+                ['workplace_id' => $createdWorkplaces[0]->id, 'user_id' => $user->id, 'bookmarkable_type' => \App\Models\Record::class, 'bookmarkable_id' => $record->id],
+                ['note' => 'Notice importante à suivre']
             );
         }
 

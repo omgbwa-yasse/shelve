@@ -49,7 +49,7 @@ class RecordController extends Controller
         $this->authorize('viewAny', Record::class);
 
         $query = Record::inOrganisation(Auth::user()->current_organisation_id)
-            ->with('type')
+            ->with('type', 'level', 'status')
             ->currentVersion();
 
         $this->applyFilters($query, $request, self::FILTERABLE);
@@ -70,7 +70,7 @@ class RecordController extends Controller
 
         // Isolation R03 : une notice hors de l'organisation courante est 404.
         $record = Record::inOrganisation(Auth::user()->current_organisation_id)
-            ->with('type', 'level', 'status', 'activity', 'organisation', 'creator', 'parent', 'mediums', 'authors', 'keywords', 'attachments')
+            ->with('type', 'level', 'status', 'activity', 'organisation', 'creator', 'parent', 'mediums', 'authors', 'keywords', 'attachments', 'assignedUser', 'approver', 'confidentiality', 'accessLimit')
             ->findOrFail($record->id);
 
         return response()->json(['data' => new RecordResource($record)]);
@@ -165,6 +165,76 @@ class RecordController extends Controller
         $record = Record::inOrganisation(Auth::user()->current_organisation_id)->findOrFail($record->id);
 
         $record->delete();
+
+        return response()->noContent();
+    }
+
+    /**
+     * GET /api/v1/records/{record}/metadata-fields — métadonnées dynamiques du type
+     * de la notice, avec leur valeur actuelle (voir `Record::getVisibleMetadataFields()`).
+     * Sert à construire l'onglet "Métadonnées" du formulaire d'édition.
+     */
+    public function metadataFields(Record $record): JsonResponse
+    {
+        $this->authorize('view', $record);
+
+        $record = Record::inOrganisation(Auth::user()->current_organisation_id)->findOrFail($record->id);
+
+        return response()->json(['data' => $record->getVisibleMetadataFields()]);
+    }
+
+    /**
+     * GET /api/v1/records-trash — notices supprimées (soft delete) de l'organisation
+     * courante, pour l'écran Corbeille (restaurer / supprimer définitivement).
+     */
+    public function trash(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Record::class);
+
+        $query = Record::onlyTrashed()
+            ->inOrganisation(Auth::user()->current_organisation_id)
+            ->with('type');
+
+        $this->applyFilters($query, $request, self::FILTERABLE);
+        $this->applySorting($query, $request, self::SORTABLE, 'deleted_at');
+        $this->applyIncludes($query, $request, self::INCLUDABLE);
+
+        $page = $query->paginate($this->pageSize($request))->withQueryString();
+
+        return response()->json($this->paginatedResponse($page, RecordResource::class));
+    }
+
+    /**
+     * POST /api/v1/records/{record}/restore — sort une notice de la corbeille.
+     * Route déclarée `withTrashed()` : le binding implicite doit résoudre une notice
+     * soft-supprimée (sinon 404 avant même d'atteindre l'action).
+     */
+    public function restore(Record $record): JsonResponse
+    {
+        $this->authorize('restore', $record);
+
+        $record = Record::onlyTrashed()
+            ->inOrganisation(Auth::user()->current_organisation_id)
+            ->findOrFail($record->id);
+
+        $record->restore();
+
+        return response()->json(['data' => new RecordResource($record->fresh())]);
+    }
+
+    /**
+     * DELETE /api/v1/records/{record}/force — suppression définitive depuis la
+     * corbeille (`records_force_delete`, distincte de `records_delete`).
+     */
+    public function forceDelete(Record $record): Response
+    {
+        $this->authorize('forceDelete', $record);
+
+        $record = Record::onlyTrashed()
+            ->inOrganisation(Auth::user()->current_organisation_id)
+            ->findOrFail($record->id);
+
+        $record->forceDelete();
 
         return response()->noContent();
     }

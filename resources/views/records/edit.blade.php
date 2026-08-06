@@ -27,3 +27,27 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        (function () {
+            const select = document.getElementById('recordTypeSelect');
+            const parentSelect = document.getElementById('parentIdSelect');
+            const parentMark = document.getElementById('parentIdRequiredMark');
+            if (!select || !parentSelect || !parentMark) {
+                return;
+            }
+
+            function toggleParentRequirement() {
+                const opt = select.options[select.selectedIndex];
+                const isContainer = opt ? opt.getAttribute('data-container') === '1' : null;
+                const isDocument = isContainer === false;
+                parentSelect.required = isDocument;
+                parentMark.classList.toggle('d-none', !isDocument);
+            }
+
+            select.addEventListener('change', toggleParentRequirement);
+            toggleParentRequirement();
+        })();
+    </script>
+@endpush

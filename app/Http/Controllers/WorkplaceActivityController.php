@@ -34,7 +34,7 @@ class WorkplaceActivityController extends Controller
 
         $activities = $query->paginate(20);
 
-        $workplace->load(['category', 'members.user'])->loadCount(['folders', 'documents', 'members']);
+        $workplace->load(['category', 'members.user'])->loadCount(['members']);
 
         return view('workplaces.activities.index', compact('workplace', 'activities'));
     }

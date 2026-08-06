@@ -17,7 +17,7 @@ class WorkplaceMemberController extends Controller
     {
         $this->authorize('view', $workplace);
 
-        $workplace->load('category')->loadCount(['folders', 'documents', 'members']);
+        $workplace->load('category')->loadCount(['members']);
 
         $members = $workplace->members()
             ->with('user')

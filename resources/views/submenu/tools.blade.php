@@ -161,16 +161,6 @@
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('tools.folder-types.index') }}">
-                    <i class="bi bi-folder2"></i> Types de dossiers numériques
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('tools.document-types.index') }}">
-                    <i class="bi bi-file-earmark"></i> Types de documents numériques
-                </a>
-            </div>
-            <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('tools.record-statuses.index') }}">
                     <i class="bi bi-flag"></i> Statuts des notices
                 </a>

@@ -5,8 +5,6 @@ namespace App\Http\Controllers\OPAC;
 use App\Http\Controllers\Controller;
 use App\Models\PublicSearchLog;
 use App\Models\RecordBook;
-use App\Models\RecordDigitalDocument;
-use App\Models\RecordDigitalFolder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -128,101 +126,8 @@ class SearchController extends Controller
             $results = $results->merge($books);
         }
 
-        // Search Digital Folders
-        if (!$type || $type === 'archive') {
-            $folderQuery = RecordDigitalFolder::query();
-
-            if ($query) {
-                $folderQuery->where(function($q) use ($query) {
-                    $q->where('name', 'like', "%{$query}%")
-                      ->orWhere('description', 'like', "%{$query}%");
-                });
-            }
-
-            if (!empty($validated['title'])) {
-                $folderQuery->where('name', 'like', "%{$validated['title']}%");
-            }
-
-            if (!empty($validated['author'])) {
-                $folderQuery->whereHas('creator', function($q) use ($validated) {
-                    $q->where('name', 'like', "%{$validated['author']}%");
-                });
-            }
-
-            if (!empty($validated['subject'])) {
-                $folderQuery->whereHas('keywords', function($q) use ($validated) {
-                    $q->where('name', 'like', "%{$validated['subject']}%");
-                });
-            }
-
-            $folders = $folderQuery->get()->map(function($folder) {
-                return (object) [
-                    'id' => $folder->id,
-                    'type' => 'folder',
-                    'title' => $folder->name,
-                    'description' => Str::limit($folder->description, 150),
-                    'author' => $folder->creator ? $folder->creator->name : null,
-                    'date' => $folder->created_at->format('Y'),
-                    'image' => null,
-                    'url' => route('opac.digital.folders.show', $folder->id),
-                    'model' => $folder
-                ];
-            });
-
-            $results = $results->merge($folders);
-        }
-
-        // Search Digital Documents
-        if (!$type || in_array($type, ['article', 'report', 'thesis', 'manuscript'])) {
-            $docQuery = RecordDigitalDocument::query()->with('creator');
-
-            if ($query) {
-                $docQuery->where(function($q) use ($query) {
-                    $q->where('name', 'like', "%{$query}%")
-                      ->orWhere('description', 'like', "%{$query}%");
-                });
-            }
-
-            if (!empty($validated['title'])) {
-                $docQuery->where('name', 'like', "%{$validated['title']}%");
-            }
-
-            if (!empty($validated['author'])) {
-                $docQuery->whereHas('creator', function($q) use ($validated) {
-                    $q->where('name', 'like', "%{$validated['author']}%");
-                });
-            }
-
-            if (!empty($validated['subject'])) {
-                $docQuery->whereHas('keywords', function($q) use ($validated) {
-                    $q->where('name', 'like', "%{$validated['subject']}%");
-                });
-            }
-
-            if (!empty($validated['date_from'])) {
-                $docQuery->where('document_date', '>=', $validated['date_from']);
-            }
-
-            if (!empty($validated['date_to'])) {
-                $docQuery->where('document_date', '<=', $validated['date_to']);
-            }
-
-            $documents = $docQuery->get()->map(function($doc) {
-                return (object) [
-                    'id' => $doc->id,
-                    'type' => 'document',
-                    'title' => $doc->name,
-                    'description' => Str::limit($doc->description, 150),
-                    'author' => $doc->creator ? $doc->creator->name : null,
-                    'date' => $doc->document_date ? $doc->document_date->format('Y') : null,
-                    'image' => null,
-                    'url' => route('opac.digital.documents.show', $doc->id),
-                    'model' => $doc
-                ];
-            });
-
-            $results = $results->merge($documents);
-        }
+        // Recherche « Dossiers/Documents numériques » retirée le 2026-08-06
+        // (RecordDigitalFolder/RecordDigitalDocument supprimés — voir App\Models\Record).
 
         // Sorting
         $sort = $validated['sort'] ?? 'relevance';
