@@ -20,14 +20,15 @@ class StoreObjectiveRequest extends FormRequest
     {
         return [
             'project_id' => 'nullable|integer|exists:projects,id',
+            'task_id' => 'nullable|integer|exists:tasks,id',
             'title' => 'required|string|max:190',
             'description' => 'nullable|string',
             'period_start' => 'nullable|date',
             'period_end' => 'nullable|date|after_or_equal:period_start',
             'status' => 'sometimes|string|in:on_track,at_risk,off_track,done',
             'owner_id' => 'nullable|integer|exists:users,id',
-            'attachable_type' => 'required|string|in:' . implode(',', array_keys(Objective::attachableAliases())),
-            'attachable_id' => 'required|integer',
+            'attachable_type' => 'nullable|string|in:' . implode(',', array_keys(Objective::attachableAliases())),
+            'attachable_id' => 'nullable|integer',
             'key_results' => 'sometimes|array',
             'key_results.*.title' => 'required_with:key_results|string|max:190',
             'key_results.*.metric_type' => 'sometimes|string|in:number,percentage,currency,boolean',

@@ -27,6 +27,9 @@ class StoreTaskRequest extends FormRequest
             'priority' => 'required|in:low,normal,high,urgent',
             'assigned_to' => 'nullable|exists:users,id',
             'due_date' => 'nullable|date',
+            // Rattachement d'une tâche à un projet (création depuis la fiche projet).
+            'taskable_type' => ['nullable', 'string', 'in:App\Models\Project'],
+            'taskable_id' => ['nullable', 'required_with:taskable_type', 'integer', 'exists:projects,id'],
         ];
     }
 }

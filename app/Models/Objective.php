@@ -21,6 +21,7 @@ class Objective extends Model
 
     protected $fillable = [
         'project_id',
+        'task_id',
         'title',
         'description',
         'period_start',

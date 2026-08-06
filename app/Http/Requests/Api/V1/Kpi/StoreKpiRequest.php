@@ -22,9 +22,10 @@ class StoreKpiRequest extends FormRequest
             'target_value' => 'nullable|numeric',
             'direction' => 'sometimes|string|in:higher_is_better,lower_is_better',
             'frequency' => 'sometimes|string|in:daily,weekly,monthly,quarterly,yearly',
+            'task_id' => 'nullable|integer|exists:tasks,id',
             'owner_id' => 'nullable|integer|exists:users,id',
-            'attachable_type' => 'required|string|in:' . implode(',', array_keys(Kpi::attachableAliases())),
-            'attachable_id' => 'required|integer',
+            'attachable_type' => 'nullable|string|in:' . implode(',', array_keys(Kpi::attachableAliases())),
+            'attachable_id' => 'nullable|integer',
         ];
     }
 }

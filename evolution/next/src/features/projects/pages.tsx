@@ -453,6 +453,86 @@ function StatusReportsPanel({ projectId }: { projectId: string }) {
   );
 }
 
+/** Panneau de création de tâche projet avec ajout d'OKR / KPI rattachés à la tâche. */
+function TaskOkrKpiPanel({ projectId }: { projectId: string }) {
+  const queryClient = useQueryClient();
+  const [taskTitle, setTaskTitle] = useState('');
+  const [createdTaskId, setCreatedTaskId] = useState<string | null>(null);
+  const [okrTitle, setOkrTitle] = useState('');
+  const [kpiName, setKpiName] = useState('');
+  const [kpiCode, setKpiCode] = useState('');
+
+  function invalidate() {
+    queryClient.invalidateQueries({ queryKey: ['project-tasks', projectId] });
+    queryClient.invalidateQueries({ queryKey: ['projects', projectId] });
+    queryClient.invalidateQueries({ queryKey: ['objectives', projectId] });
+  }
+
+  async function createTask(e: React.FormEvent) {
+    e.preventDefault();
+    const res = await apiFetch<{ data: Entity }>('/api/v1/tasks', {
+      method: 'POST',
+      body: { title: taskTitle, status: 'pending', priority: 'normal', taskable_type: 'App\\Models\\Project', taskable_id: projectId },
+    });
+    setCreatedTaskId(String(res.data.id));
+    setTaskTitle('');
+    invalidate();
+  }
+
+  async function addOkr(e: React.FormEvent) {
+    e.preventDefault();
+    await apiFetch('/api/v1/objectives', {
+      method: 'POST',
+      body: { title: okrTitle, project_id: projectId, task_id: createdTaskId, status: 'on_track' },
+    });
+    setOkrTitle('');
+    invalidate();
+  }
+
+  async function addKpi(e: React.FormEvent) {
+    e.preventDefault();
+    await apiFetch('/api/v1/kpis', {
+      method: 'POST',
+      body: { name: kpiName, code: kpiCode, task_id: createdTaskId, direction: 'higher_is_better', frequency: 'monthly' },
+    });
+    setKpiName('');
+    setKpiCode('');
+    invalidate();
+  }
+
+  return (
+    <div className="rounded border border-border bg-surface p-4">
+      <h2 className="mb-2 text-sm font-semibold">Créer une tâche du projet</h2>
+      <form onSubmit={createTask} className="flex flex-wrap items-end gap-2 text-sm">
+        <label className="flex flex-1 flex-col gap-1">
+          <span>Titre de la tâche *</span>
+          <input value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} required className="rounded border border-border bg-background px-2 py-1.5" />
+        </label>
+        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Créer la tâche</button>
+      </form>
+
+      {createdTaskId && (
+        <div className="mt-3 border-t border-border pt-3">
+          <p className="mb-2 text-xs text-green-700">Tâche créée — ajoutez un OKR ou un KPI rattaché à cette tâche :</p>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <form onSubmit={addOkr} className="flex flex-col gap-2 rounded border border-border bg-background p-3 text-sm">
+              <span className="text-xs font-semibold">Ajouter un OKR</span>
+              <input placeholder="Titre de l'objectif *" value={okrTitle} onChange={(e) => setOkrTitle(e.target.value)} required className="rounded border border-border bg-background px-2 py-1.5" />
+              <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Ajouter l'OKR</button>
+            </form>
+            <form onSubmit={addKpi} className="flex flex-col gap-2 rounded border border-border bg-background p-3 text-sm">
+              <span className="text-xs font-semibold">Ajouter un KPI</span>
+              <input placeholder="Nom de l'indicateur *" value={kpiName} onChange={(e) => setKpiName(e.target.value)} required className="rounded border border-border bg-background px-2 py-1.5" />
+              <input placeholder="Code *" value={kpiCode} onChange={(e) => setKpiCode(e.target.value)} required className="rounded border border-border bg-background px-2 py-1.5" />
+              <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Ajouter le KPI</button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ProjectDetail({ id }: { id: string }) {
   const { data } = useResource(api.projectsApi, 'projects', id);
   const { data: tasksData } = useQuery({ queryKey: ['project-tasks', id], queryFn: () => api.getProjectTasks(id) });
@@ -468,6 +548,7 @@ function ProjectDetail({ id }: { id: string }) {
         description={project ? String(project.description ?? '') : undefined}
         actions={<Link href={`/projects/${id}/edit`} className="rounded border border-border px-3 py-1.5 text-sm">Modifier</Link>}
       />
+      <TaskOkrKpiPanel projectId={id} />
       {project && (
         <InfoPanel title="Informations" items={[
           ['Code', String(project.code)],

@@ -22,6 +22,7 @@ class Kpi extends Model
         'target_value',
         'direction',
         'frequency',
+        'task_id',
         'attachable_type',
         'attachable_id',
         'owner_id',

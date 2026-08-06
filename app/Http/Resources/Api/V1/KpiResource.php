@@ -20,6 +20,7 @@ class KpiResource extends JsonResource
             'target_value' => $this->target_value !== null ? (float) $this->target_value : null,
             'direction' => $this->direction,
             'frequency' => $this->frequency,
+            'task_id' => $this->task_id,
             'owner_id' => $this->owner_id,
             'attachable_type' => Kpi::attachableAliasFor($this->attachable_type),
             'attachable_id' => $this->attachable_id,

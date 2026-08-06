@@ -14,6 +14,7 @@ class ObjectiveResource extends JsonResource
             'id' => $this->id,
             'organisation_id' => $this->organisation_id,
             'project_id' => $this->project_id,
+            'task_id' => $this->task_id,
             'title' => $this->title,
             'description' => $this->description,
             'period_start' => $this->period_start?->toDateString(),

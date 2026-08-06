@@ -118,11 +118,12 @@ export const navigation: NavDomain[] = [
       { key: 'projects-board', group: 'Visualisations', label: 'Tableau Kanban', href: '/projects/board', icon: 'columns' },
       { key: 'projects-gantt', group: 'Visualisations', label: 'Diagramme de Gantt', href: '/projects/gantt', icon: 'gantt' },
 
+      // OKR et KPI : visualisation seule (tous les projets). La création se fait
+      // depuis la fiche projet → Créer une tâche → Ajouter un OKR / KPI (rattachés
+      // à la tâche, non créés en singleton).
       { key: 'objectives-all', group: 'Objectifs (OKR)', label: 'Tous les objectifs', href: '/objectives', icon: 'target' },
-      { key: 'objectives-create', group: 'Objectifs (OKR)', label: 'Nouvel objectif', href: '/objectives/create', icon: 'plusSquare' },
 
       { key: 'kpis-all', group: 'KPI', label: 'Tous les KPI', href: '/kpis', icon: 'trendingUp' },
-      { key: 'kpis-create', group: 'KPI', label: 'Nouveau KPI', href: '/kpis/create', icon: 'plusSquare' },
     ],
   },
 
