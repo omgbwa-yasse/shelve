@@ -14,6 +14,65 @@ import { PageHeader, InfoPanel, StatCard } from '@/components/ui/page';
 import type { FeatureRoute } from '@/lib/routing';
 import * as api from './services/project.service';
 import { ATTACHABLE_LABELS, RESOURCE_TYPE_LABELS, type AttachableAlias } from './services/project.service';
+import { workplacesApi } from '@/features/workplaces/services/workplace.service';
+import { organisationsApi } from '@/features/tools/services/tool.service';
+import { usersApi } from '@/features/settings/services/setting.service';
+
+/** Charge les options d'un périmètre (workplace / organisation / user) pour un champ clair. */
+function loadAttachableOptions(type: AttachableAlias) {
+  const params = { 'page.size': 200 } as never;
+  const map = (r: { data?: Entity[] }) => (r.data ?? []).map((x) => ({ id: String(x.id), name: String(x.name ?? '') }));
+
+  if (type === 'workplace') return workplacesApi.list(params).then(map);
+  if (type === 'organisation') return organisationsApi.list(params).then(map);
+  return usersApi.list(params).then(map);
+}
+
+/** Sélecteur de périmètre lisible (type + élément chargé depuis l'API). */
+function AttachableField({ value, onChange }: { value: { type: string; id: string }; onChange: (v: { type: string; id: string }) => void }) {
+  const type = (value.type || 'workplace') as AttachableAlias;
+  const { data } = useQuery({
+    queryKey: ['attachable-options', type],
+    queryFn: () => loadAttachableOptions(type),
+    enabled: !!type,
+  });
+  return (
+    <div className="grid grid-cols-1 gap-3 md:col-span-2">
+      <p className="text-xs font-medium text-muted-foreground">Périmètre de suivi</p>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <label className="flex flex-col gap-1 text-sm">
+          <span>Type de périmètre</span>
+          <select value={type} onChange={(e) => onChange({ type: e.target.value, id: '' })} className="rounded border border-border bg-background px-2 py-1.5 text-sm">
+            {Object.entries(ATTACHABLE_LABELS).map(([t, l]) => <option key={t} value={t}>{l}</option>)}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          <span>Élément rattaché</span>
+          <select value={value.id} onChange={(e) => onChange({ type, id: e.target.value })} className="rounded border border-border bg-background px-2 py-1.5 text-sm">
+            <option value="">— Choisir —</option>
+            {(data ?? []).map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+          </select>
+        </label>
+      </div>
+      <p className="text-xs text-muted-foreground">Laissez vide pour un suivi global ; renseignez un projet dans le champ « Projet » si cet OKR appartient à un projet.</p>
+    </div>
+  );
+}
+
+/** Sélecteur de projet lisible (OKR rattaché à un projet). */
+function ProjectField({ value, onChange }: { value?: string; onChange: (v: string) => void }) {
+  const { data } = useQuery({ queryKey: ['project-options'], queryFn: () => api.projectsApi.list({ 'page.size': 200 } as never) });
+  const projects = (data?.data ?? []) as Entity[];
+  return (
+    <label className="flex flex-col gap-1 text-sm">
+      <span>Projet rattaché</span>
+      <select value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm">
+        <option value="">— Aucun (OKR global) —</option>
+        {projects.map((p) => <option key={String(p.id)} value={String(p.id)}>{String(p.code ?? '')} — {String(p.name ?? '')}</option>)}
+      </select>
+    </label>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Primitives partagées (mêmes idiomes que les autres features — voir workflow/pages.tsx)
@@ -49,8 +108,8 @@ function makeList(r: ResourceApi, key: string, columns: TableColumn<Entity>[], o
   };
 }
 
-function Field({ label, value, onChange, required, type = 'text', options }: {
-  label: string; value?: string; onChange: (v: string) => void; required?: boolean; type?: string; options?: { value: string; label: string }[];
+function Field({ label, value, onChange, required, type = 'text', options, placeholder }: {
+  label: string; value?: string; onChange: (v: string) => void; required?: boolean; type?: string; options?: { value: string; label: string }[]; placeholder?: string;
 }) {
   return (
     <label className="flex flex-col gap-1 text-sm">
@@ -61,7 +120,7 @@ function Field({ label, value, onChange, required, type = 'text', options }: {
           {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       ) : (
-        <input type={type} value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
+        <input type={type} placeholder={placeholder} value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
       )}
     </label>
   );
@@ -74,7 +133,33 @@ function attachableLabel(row: Entity): string {
   return `${ATTACHABLE_LABELS[type] ?? type}${attachable?.label ? ` — ${attachable.label}` : ` #${row.attachable_id}`}`;
 }
 
-const ATTACHABLE_OPTIONS = (Object.keys(ATTACHABLE_LABELS) as AttachableAlias[]).map((value) => ({ value, label: ATTACHABLE_LABELS[value] }));
+function statusBadge(value: unknown): React.ReactNode {
+  const s = String(value ?? '');
+  const styles: Record<string, string> = {
+    on_track: 'bg-green-100 text-green-700',
+    at_risk: 'bg-orange-100 text-orange-700',
+    off_track: 'bg-red-100 text-red-700',
+    done: 'bg-emerald-100 text-emerald-700',
+    active: 'bg-blue-100 text-blue-700',
+    on_hold: 'bg-yellow-100 text-yellow-700',
+    completed: 'bg-emerald-100 text-emerald-700',
+    archived: 'bg-muted text-muted-foreground',
+    draft: 'bg-muted text-muted-foreground',
+  };
+  return <span className={`rounded px-1.5 py-0.5 text-xs ${styles[s] ?? 'bg-muted text-muted-foreground'}`}>{s}</span>;
+}
+
+function progressBar(progress: unknown): React.ReactNode {
+  const pct = Math.round(Number(progress ?? 0) * 100);
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-2 w-24 overflow-hidden rounded-full bg-muted">
+        <div className="h-full bg-primary" style={{ width: `${Math.min(100, Math.max(0, pct))}%` }} />
+      </div>
+      <span className="text-xs text-muted-foreground">{pct}%</span>
+    </div>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Projets
@@ -92,34 +177,40 @@ function ProjectForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
   const { data } = useResource(api.projectsApi, 'projects', id);
   const create = useCreate(api.projectsApi, 'projects');
   const update = useUpdate(api.projectsApi, 'projects');
-  const [v, setV] = useState<Record<string, string>>({});
-  if (mode === 'edit' && data?.data && Object.keys(v).length === 0) {
+  const [v, setV] = useState<Record<string, string>>({ attachable_type: 'workplace', attachable_id: '' });
+  if (mode === 'edit' && data?.data && Object.keys(v).length <= 3) {
     const d = data.data;
     setV({
       code: String(d.code ?? ''), name: String(d.name ?? ''), description: String(d.description ?? ''),
-      status: String(d.status ?? ''), attachable_type: String(d.attachable_type ?? ''), attachable_id: String(d.attachable_id ?? ''),
+      status: String(d.status ?? 'draft'),
+      attachable_type: String(d.attachable_type ?? 'workplace'), attachable_id: String(d.attachable_id ?? ''),
     });
   }
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (mode === 'edit' && id) await update.mutateAsync({ id, payload: v });
-    else await create.mutateAsync(v);
+    const payload: Record<string, unknown> = {
+      code: v.code, name: v.name, description: v.description, status: v.status || 'draft',
+      attachable_type: v.attachable_id ? v.attachable_type : undefined,
+      attachable_id: v.attachable_id || undefined,
+    };
+    if (mode === 'edit' && id) await update.mutateAsync({ id, payload });
+    else await create.mutateAsync(payload);
     router.push('/projects');
   }
   return (
     <form onSubmit={submit} className="flex w-full flex-col gap-4">
       <PageHeader
         title={mode === 'edit' ? 'Modifier — projet' : 'Nouveau projet'}
+        description="Un projet : un chantier suivi avec objectifs (OKR), KPI, jalons, livrables, ressources et rapports d'étape."
         actions={<button type="button" onClick={() => router.push('/projects')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>}
       />
       <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-3">
         <Field label="Code" value={v.code} onChange={(x) => setV((p) => ({ ...p, code: x }))} required={mode === 'create'} />
-        <Field label="Nom" value={v.name} onChange={(x) => setV((p) => ({ ...p, name: x }))} required />
+        <Field label="Nom *" value={v.name} onChange={(x) => setV((p) => ({ ...p, name: x }))} required />
         <Field label="Description" value={v.description} onChange={(x) => setV((p) => ({ ...p, description: x }))} />
         <Field label="Statut" value={v.status} onChange={(x) => setV((p) => ({ ...p, status: x }))}
-          options={['draft', 'active', 'on_hold', 'completed', 'archived'].map((s) => ({ value: s, label: s }))} />
-        <Field label="Rattaché à" value={v.attachable_type} onChange={(x) => setV((p) => ({ ...p, attachable_type: x }))} required={mode === 'create'} options={ATTACHABLE_OPTIONS} />
-        <Field label="Identifiant de la cible" value={v.attachable_id} onChange={(x) => setV((p) => ({ ...p, attachable_id: x }))} required={mode === 'create'} type="number" />
+          options={[{ value: 'draft', label: 'Brouillon' }, { value: 'active', label: 'En cours' }, { value: 'on_hold', label: 'En pause' }, { value: 'completed', label: 'Terminé' }, { value: 'archived', label: 'Archivé' }]} />
+        <AttachableField value={{ type: v.attachable_type ?? 'workplace', id: v.attachable_id ?? '' }} onChange={(a) => setV((p) => ({ ...p, attachable_type: a.type, attachable_id: a.id }))} />
       </div>
       <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">Enregistrer</button></footer>
     </form>
@@ -432,9 +523,14 @@ function ProjectDetail({ id }: { id: string }) {
 
 const OBJECTIVE_COLS: TableColumn<Entity>[] = [
   { key: 'title', label: 'Titre', render: (r) => <Link href={`/objectives/${r.id}`} className="hover:underline">{String(r.title ?? '')}</Link> },
-  { key: 'status', label: 'Statut' },
-  { key: 'progress', label: 'Progression', render: (r) => `${Math.round(Number(r.progress ?? 0) * 100)}%` },
-  { key: 'attachable', label: 'Rattaché à', render: attachableLabel },
+  { key: 'status', label: 'Statut', render: (r) => statusBadge(r.status) },
+  { key: 'progress', label: 'Progression', render: (r) => progressBar(r.progress) },
+  { key: 'project', label: 'Projet', render: (r) => (r.project_id ? <Link href={`/projects/${r.project_id}`} className="hover:underline text-primary">{String((r.project as { name?: string })?.name ?? `Projet #${r.project_id}`)}</Link> : <span className="text-muted-foreground">OKR global</span>) },
+  { key: 'period', label: 'Période', render: (r) => {
+    const s = r.period_start ? new Date(String(r.period_start)).toLocaleDateString('fr-FR') : '—';
+    const e = r.period_end ? new Date(String(r.period_end)).toLocaleDateString('fr-FR') : '—';
+    return <span className="text-xs text-muted-foreground">{s} → {e}</span>;
+  } },
 ];
 
 function ObjectiveForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
@@ -442,35 +538,47 @@ function ObjectiveForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
   const { data } = useResource(api.objectivesApi, 'objectives', id);
   const create = useCreate(api.objectivesApi, 'objectives');
   const update = useUpdate(api.objectivesApi, 'objectives');
-  const [v, setV] = useState<Record<string, string>>({});
-  if (mode === 'edit' && data?.data && Object.keys(v).length === 0) {
+  const [v, setV] = useState<Record<string, string>>({ project_id: '', attachable_type: 'workplace', attachable_id: '' });
+  if (mode === 'edit' && data?.data && Object.keys(v).length <= 3) {
     const d = data.data;
     setV({
-      title: String(d.title ?? ''), description: String(d.description ?? ''), status: String(d.status ?? ''),
-      attachable_type: String(d.attachable_type ?? ''), attachable_id: String(d.attachable_id ?? ''),
+      title: String(d.title ?? ''), description: String(d.description ?? ''),
+      project_id: String(d.project_id ?? ''), status: String(d.status ?? 'on_track'),
+      period_start: String(d.period_start ?? ''), period_end: String(d.period_end ?? ''),
+      attachable_type: String(d.attachable_type ?? 'workplace'), attachable_id: String(d.attachable_id ?? ''),
     });
   }
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (mode === 'edit' && id) await update.mutateAsync({ id, payload: v });
-    else await create.mutateAsync(v);
+    const payload: Record<string, unknown> = {
+      title: v.title, description: v.description, status: v.status || 'on_track',
+      period_start: v.period_start || undefined, period_end: v.period_end || undefined,
+      project_id: v.project_id || undefined,
+      attachable_type: v.attachable_id ? v.attachable_type : undefined,
+      attachable_id: v.attachable_id || undefined,
+    };
+    if (mode === 'edit' && id) await update.mutateAsync({ id, payload });
+    else await create.mutateAsync(payload);
     router.push('/objectives');
   }
   return (
     <form onSubmit={submit} className="flex w-full flex-col gap-4">
       <PageHeader
-        title={mode === 'edit' ? 'Modifier — objectif' : 'Nouvel objectif (OKR)'}
+        title={mode === 'edit' ? 'Modifier — objectif (OKR)' : 'Nouvel objectif (OKR)'}
+        description="Un objectif (OKR) : un résultat visé, suivi par des résultats clés. Rattachez-le à un projet pour un OKR de projet, ou laissez-le global."
         actions={<button type="button" onClick={() => router.push('/objectives')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>}
       />
       <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-3">
-        <Field label="Titre" value={v.title} onChange={(x) => setV((p) => ({ ...p, title: x }))} required />
+        <Field label="Titre de l'objectif *" value={v.title} onChange={(x) => setV((p) => ({ ...p, title: x }))} required />
         <Field label="Description" value={v.description} onChange={(x) => setV((p) => ({ ...p, description: x }))} />
+        <ProjectField value={v.project_id} onChange={(x) => setV((p) => ({ ...p, project_id: x }))} />
+        <Field label="Début de période" type="date" value={v.period_start} onChange={(x) => setV((p) => ({ ...p, period_start: x }))} />
+        <Field label="Fin de période" type="date" value={v.period_end} onChange={(x) => setV((p) => ({ ...p, period_end: x }))} />
         <Field label="Statut" value={v.status} onChange={(x) => setV((p) => ({ ...p, status: x }))}
-          options={['on_track', 'at_risk', 'off_track', 'done'].map((s) => ({ value: s, label: s }))} />
-        <Field label="Rattaché à" value={v.attachable_type} onChange={(x) => setV((p) => ({ ...p, attachable_type: x }))} required={mode === 'create'} options={ATTACHABLE_OPTIONS} />
-        <Field label="Identifiant de la cible" value={v.attachable_id} onChange={(x) => setV((p) => ({ ...p, attachable_id: x }))} required={mode === 'create'} type="number" />
+          options={[{ value: 'on_track', label: 'Sur la bonne voie' }, { value: 'at_risk', label: 'À risque' }, { value: 'off_track', label: 'En dérive' }, { value: 'done', label: 'Terminé' }]} />
+        <AttachableField value={{ type: v.attachable_type ?? 'workplace', id: v.attachable_id ?? '' }} onChange={(a) => setV((p) => ({ ...p, attachable_type: a.type, attachable_id: a.id }))} />
       </div>
-      <p className="text-xs text-muted-foreground">Les résultats clés s'ajoutent depuis la fiche de l'objectif, une fois créé.</p>
+      <p className="text-xs text-muted-foreground">Les résultats clés (avec cibles et progression) s'ajoutent depuis la fiche de l'objectif, une fois créé.</p>
       <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">Enregistrer</button></footer>
     </form>
   );
@@ -544,11 +652,30 @@ function ObjectiveDetail({ id }: { id: string }) {
         actions={<Link href={`/objectives/${id}/edit`} className="rounded border border-border px-3 py-1.5 text-sm">Modifier</Link>}
       />
       {objective && (
-        <InfoPanel title="Informations" items={[
-          ['Statut', String(objective.status)],
-          ['Progression', `${Math.round(Number(objective.progress ?? 0) * 100)}%`],
-          ['Rattaché à', attachableLabel(objective)],
-        ]} />
+        <>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+            <div className="rounded border border-border bg-surface p-4 text-center">
+              <div className="text-2xl font-semibold">{Math.round(Number(objective.progress ?? 0) * 100)}%</div>
+              <div className="mt-1 text-xs text-muted-foreground">Progression</div>
+            </div>
+            <div className="rounded border border-border bg-surface p-4 text-center">
+              <div className="flex justify-center">{statusBadge(objective.status)}</div>
+              <div className="mt-1 text-xs text-muted-foreground">Statut</div>
+            </div>
+            <div className="rounded border border-border bg-surface p-4 text-center">
+              <div className="text-sm">{objective.project_id ? <Link href={`/projects/${objective.project_id}`} className="text-primary hover:underline">{String((objective.project as { name?: string })?.name ?? `Projet #${objective.project_id}`)}</Link> : 'OKR global'}</div>
+              <div className="mt-1 text-xs text-muted-foreground">Projet rattaché</div>
+            </div>
+            <div className="rounded border border-border bg-surface p-4 text-center">
+              <div className="text-sm">{objective.period_start && objective.period_end ? `${new Date(String(objective.period_start)).toLocaleDateString('fr-FR')} → ${new Date(String(objective.period_end)).toLocaleDateString('fr-FR')}` : '—'}</div>
+              <div className="mt-1 text-xs text-muted-foreground">Période</div>
+            </div>
+          </div>
+          <InfoPanel title="Informations" items={[
+            ['Description', String(objective.description ?? '—')],
+            ['Périmètre', attachableLabel(objective)],
+          ]} />
+        </>
       )}
       <div className="rounded border border-border bg-surface p-4">
         <h2 className="mb-2 text-sm font-semibold">Résultats clés</h2>
@@ -572,9 +699,10 @@ function ObjectiveDetail({ id }: { id: string }) {
 const KPI_COLS: TableColumn<Entity>[] = [
   { key: 'code', label: 'Code', render: (r) => <span className="font-mono text-xs">{String(r.code ?? '')}</span> },
   { key: 'name', label: 'Nom', render: (r) => <Link href={`/kpis/${r.id}`} className="hover:underline">{String(r.name ?? '')}</Link> },
-  { key: 'unit', label: 'Unité' },
-  { key: 'direction', label: 'Direction' },
-  { key: 'attachable', label: 'Rattaché à', render: attachableLabel },
+  { key: 'target_value', label: 'Cible', render: (r) => (r.target_value !== null && r.target_value !== undefined ? `${r.target_value} ${r.unit ?? ''}` : '—') },
+  { key: 'direction', label: 'Objectif', render: (r) => <span className="rounded bg-muted px-1.5 py-0.5 text-xs">{r.direction === 'lower_is_better' ? 'Plus bas = mieux' : 'Plus haut = mieux'}</span> },
+  { key: 'frequency', label: 'Fréquence' },
+  { key: 'attachable', label: 'Périmètre', render: attachableLabel },
 ];
 
 function KpiForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
@@ -582,38 +710,49 @@ function KpiForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
   const { data } = useResource(api.kpisApi, 'kpis', id);
   const create = useCreate(api.kpisApi, 'kpis');
   const update = useUpdate(api.kpisApi, 'kpis');
-  const [v, setV] = useState<Record<string, string>>({});
-  if (mode === 'edit' && data?.data && Object.keys(v).length === 0) {
+  const [v, setV] = useState<Record<string, string>>({ attachable_type: 'workplace', attachable_id: '' });
+  if (mode === 'edit' && data?.data && Object.keys(v).length <= 3) {
     const d = data.data;
     setV({
-      code: String(d.code ?? ''), name: String(d.name ?? ''), unit: String(d.unit ?? ''),
-      direction: String(d.direction ?? ''), frequency: String(d.frequency ?? ''),
-      attachable_type: String(d.attachable_type ?? ''), attachable_id: String(d.attachable_id ?? ''),
+      code: String(d.code ?? ''), name: String(d.name ?? ''), description: String(d.description ?? ''),
+      unit: String(d.unit ?? ''), target_value: String(d.target_value ?? ''), direction: String(d.direction ?? 'higher_is_better'),
+      frequency: String(d.frequency ?? 'monthly'),
+      attachable_type: String(d.attachable_type ?? 'workplace'), attachable_id: String(d.attachable_id ?? ''),
     });
   }
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (mode === 'edit' && id) await update.mutateAsync({ id, payload: v });
-    else await create.mutateAsync(v);
+    const payload: Record<string, unknown> = {
+      code: v.code, name: v.name, description: v.description, unit: v.unit,
+      target_value: v.target_value !== '' ? v.target_value : undefined,
+      direction: v.direction || 'higher_is_better', frequency: v.frequency || 'monthly',
+      attachable_type: v.attachable_id ? v.attachable_type : undefined,
+      attachable_id: v.attachable_id || undefined,
+    };
+    if (mode === 'edit' && id) await update.mutateAsync({ id, payload });
+    else await create.mutateAsync(payload);
     router.push('/kpis');
   }
   return (
     <form onSubmit={submit} className="flex w-full flex-col gap-4">
       <PageHeader
         title={mode === 'edit' ? 'Modifier — KPI' : 'Nouveau KPI'}
+        description="Un indicateur clé de performance : une mesure chiffrée suivie régulièrement (valeur cible, fréquence, sens du « mieux »)."
         actions={<button type="button" onClick={() => router.push('/kpis')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>}
       />
       <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-3">
-        <Field label="Code" value={v.code} onChange={(x) => setV((p) => ({ ...p, code: x }))} required={mode === 'create'} />
-        <Field label="Nom" value={v.name} onChange={(x) => setV((p) => ({ ...p, name: x }))} required />
-        <Field label="Unité" value={v.unit} onChange={(x) => setV((p) => ({ ...p, unit: x }))} />
-        <Field label="Direction" value={v.direction} onChange={(x) => setV((p) => ({ ...p, direction: x }))}
-          options={[{ value: 'higher_is_better', label: 'Plus haut = mieux' }, { value: 'lower_is_better', label: 'Plus bas = mieux' }]} />
-        <Field label="Fréquence" value={v.frequency} onChange={(x) => setV((p) => ({ ...p, frequency: x }))}
+        <Field label="Code *" value={v.code} onChange={(x) => setV((p) => ({ ...p, code: x }))} required={mode === 'create'} />
+        <Field label="Nom de l'indicateur *" value={v.name} onChange={(x) => setV((p) => ({ ...p, name: x }))} required />
+        <Field label="Description" value={v.description} onChange={(x) => setV((p) => ({ ...p, description: x }))} />
+        <Field label="Unité" value={v.unit} onChange={(x) => setV((p) => ({ ...p, unit: x }))} placeholder="ex. %, jours, €" />
+        <Field label="Valeur cible" type="number" value={v.target_value} onChange={(x) => setV((p) => ({ ...p, target_value: x }))} />
+        <Field label="Le « mieux » est…" value={v.direction} onChange={(x) => setV((p) => ({ ...p, direction: x }))}
+          options={[{ value: 'higher_is_better', label: 'Une valeur plus haute' }, { value: 'lower_is_better', label: 'Une valeur plus basse' }]} />
+        <Field label="Fréquence de mesure" value={v.frequency} onChange={(x) => setV((p) => ({ ...p, frequency: x }))}
           options={['daily', 'weekly', 'monthly', 'quarterly', 'yearly'].map((f) => ({ value: f, label: f }))} />
-        <Field label="Rattaché à" value={v.attachable_type} onChange={(x) => setV((p) => ({ ...p, attachable_type: x }))} required={mode === 'create'} options={ATTACHABLE_OPTIONS} />
-        <Field label="Identifiant de la cible" value={v.attachable_id} onChange={(x) => setV((p) => ({ ...p, attachable_id: x }))} required={mode === 'create'} type="number" />
+        <AttachableField value={{ type: v.attachable_type ?? 'workplace', id: v.attachable_id ?? '' }} onChange={(a) => setV((p) => ({ ...p, attachable_type: a.type, attachable_id: a.id }))} />
       </div>
+      <p className="text-xs text-muted-foreground">Les mesures (valeurs saisies périodiquement) se saisissent depuis la fiche du KPI.</p>
       <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">Enregistrer</button></footer>
     </form>
   );
