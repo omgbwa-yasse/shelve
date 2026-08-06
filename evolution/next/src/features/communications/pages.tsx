@@ -47,7 +47,7 @@ function makeForm(r: ResourceApi, key: string, o: { title: string; back: string 
           <h1 className="text-xl font-semibold">{o.title}</h1>
           <button type="button" onClick={() => router.push(o.back)} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>
         </header>
-        <div className="grid max-w-2xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4">
+        <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4">
           <Field label="Code" value={v.code} onChange={(x) => setV((p) => ({ ...p, code: x }))} />
           <Field label="Nom *" value={v.name} onChange={(x) => setV((p) => ({ ...p, name: x }))} required />
         </div>

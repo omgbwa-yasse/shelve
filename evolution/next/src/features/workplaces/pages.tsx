@@ -54,7 +54,7 @@ export function WorkplaceForm({ mode, id }: { mode: 'create' | 'edit'; id?: stri
         <h1 className="text-xl font-semibold">{mode === 'edit' ? 'Modifier — workplace' : 'Créer — workplace'}</h1>
         <button type="button" onClick={() => router.push('/workplaces')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>
       </header>
-      <div className="grid max-w-2xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4">
+      <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4">
         <Field label="Nom *" value={v.name} onChange={(x) => setV((p) => ({ ...p, name: x }))} required />
         <Field label="Description" value={v.description} onChange={(x) => setV((p) => ({ ...p, description: x }))} />
       </div>

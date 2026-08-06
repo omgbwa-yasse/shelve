@@ -231,7 +231,7 @@ function FormForRef({ title, back, onSave, fields }: { title: string; back: stri
         <h1 className="text-xl font-semibold">{title}</h1>
         <button type="button" onClick={() => router.push(back)} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>
       </header>
-      <div className="grid max-w-2xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2">
+      <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-3">
         {fields.map((f) => <Field key={f.name} label={f.label} value={v[f.name] ?? ''} onChange={(x) => setV((p) => ({ ...p, [f.name]: x }))} />)}
       </div>
       <footer className="flex justify-end">

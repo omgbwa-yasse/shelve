@@ -49,7 +49,7 @@ export function ChatForm({ mode, id }: { mode: 'create' | 'edit'; id?: string })
         <h1 className="text-xl font-semibold">{mode === 'edit' ? 'Modifier — conversation' : 'Nouvelle conversation'}</h1>
         <button type="button" onClick={() => router.push('/chats')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>
       </header>
-      <div className="grid max-w-xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4">
+      <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4">
         <label className="flex flex-col gap-1 text-sm">
           <span>Nom *</span>
           <input value={v.name ?? ''} onChange={(e) => setV((p) => ({ ...p, name: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5 text-sm" />

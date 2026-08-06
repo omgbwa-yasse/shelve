@@ -71,7 +71,7 @@ function DefinitionForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) 
         <h1 className="text-xl font-semibold">{mode === 'edit' ? 'Modifier — définition' : 'Créer — définition de workflow'}</h1>
         <button type="button" onClick={() => router.push('/workflow/definitions')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>
       </header>
-      <div className="grid max-w-3xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2">
+      <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-3">
         <Field label="Nom *" value={v.name} onChange={(x) => setV((p) => ({ ...p, name: x }))} required />
         <Field label="Description" value={v.description} onChange={(x) => setV((p) => ({ ...p, description: x }))} />
         <Field label="BPMN XML" value={v.bpmn_xml} onChange={(x) => setV((p) => ({ ...p, bpmn_xml: x }))} full />
