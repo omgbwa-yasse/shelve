@@ -175,7 +175,6 @@ export const navigation: NavDomain[] = [
       { key: 'records-select-last', group: 'Recherche — Critères', label: 'Récents', href: '/records/select/last', icon: 'history' },
       { key: 'records-advanced', group: 'Recherche — Critères', label: 'Avancée', href: '/records/advanced', icon: 'search' },
 
-      { key: 'records-create', group: 'Enregistrement', label: 'Nouveau', href: '/records/create', icon: 'plusSquare' },
       { key: 'records-dossier', group: 'Enregistrement', label: 'Dossier', href: '/records/create?kind=folder', icon: 'folderOpen' },
       { key: 'records-document', group: 'Enregistrement', label: 'Document', href: '/records/create?kind=document', icon: 'fileText' },
 

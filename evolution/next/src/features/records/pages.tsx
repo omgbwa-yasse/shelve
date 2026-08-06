@@ -370,6 +370,10 @@ export function RecordForm({ mode, id }: { mode: 'create' | 'edit'; id?: string 
   const [v, setV] = useState<Record<string, string>>(mode === 'create' ? { parent_id: searchParams.get('parent_id') ?? '', type_id: lockedTypeId } : {});
   const [metadata, setMetadata] = useState<Record<string, string>>({});
   const [loaded, setLoaded] = useState(false);
+  // Dossier / Document : la modale de choix de typologie s'ouvre d'abord.
+  const [typeModalOpen, setTypeModalOpen] = useState<boolean>(
+    mode === 'create' && (kind === 'folder' || kind === 'document') && !lockedTypeId,
+  );
 
   if (mode === 'edit' && data?.data && !loaded) {
     const e = data.data;
@@ -447,12 +451,26 @@ export function RecordForm({ mode, id }: { mode: 'create' | 'edit'; id?: string 
         <Field label="Nom *" value={v.name} onChange={(x) => setField('name', x)} />
         <Field label="Code" value={v.code} onChange={(x) => setField('code', x)} help="Généré automatiquement depuis la typologie si vide." />
         <Field label="Description" value={v.description} onChange={(x) => setField('description', x)} />
-        <Field
-          label={kind ? 'Typologie' : 'Typologie (dossier ou document)'}
-          value={v.type_id} onChange={(x) => setField('type_id', x)} options={typeOptions}
-          disabled={Boolean(lockedTypeId)}
-          help={lockedTypeId ? 'Typologie choisie via la fenêtre de sélection.' : undefined}
-        />
+        <div className="flex flex-col gap-1">
+          <span className="text-sm">Typologie {kind ? `(${kind === 'folder' ? 'dossier' : 'document'})` : '(dossier ou document)'}</span>
+          <div className="flex items-center gap-2">
+            <select
+              value={v.type_id}
+              onChange={(e) => setField('type_id', e.target.value)}
+              disabled={Boolean(lockedTypeId) || kind !== null}
+              className="flex-1 rounded border border-border bg-background px-2 py-1.5 text-sm"
+            >
+              <option value="">—</option>
+              {typeOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+            {kind && (
+              <button type="button" onClick={() => setTypeModalOpen(true)} className="shrink-0 rounded border border-border px-2 py-1.5 text-xs hover:bg-muted">
+                Choisir…
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">{kind ? 'Typologie choisie via la fenêtre de sélection.' : undefined}</p>
+        </div>
         <Field label="Niveau" value={v.level_id} onChange={(x) => setField('level_id', x)} options={levelOptions} />
         <Field label="Statut" value={v.status_id} onChange={(x) => setField('status_id', x)} options={statusOptions} />
         <Field label="Activité" value={v.activity_id} onChange={(x) => setField('activity_id', x)} options={activityOptions} />
@@ -495,6 +513,14 @@ export function RecordForm({ mode, id }: { mode: 'create' | 'edit'; id?: string 
       <MetadataFieldsSection recordId={mode === 'edit' ? id : undefined} typeId={v.type_id || undefined} value={metadata} onChange={setMetadata} />
 
       <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">Enregistrer</button></footer>
+
+      {typeModalOpen && kind && (
+        <TypePickerModal
+          kind={kind as 'folder' | 'document'}
+          onClose={() => setTypeModalOpen(false)}
+          onSelect={(typeId) => { setField('type_id', typeId); setTypeModalOpen(false); }}
+        />
+      )}
     </form>
   );
 }
