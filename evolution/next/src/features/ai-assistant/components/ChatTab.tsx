@@ -108,7 +108,7 @@ export function ChatTab() {
             }}
             placeholder="Écrire un message…"
             rows={2}
-            className="w-full resize-none rounded border border-border bg-background px-2 py-1.5 text-sm outline-none focus:border-primary"
+            className="w-[70%] resize-none rounded border border-border bg-background px-2 py-1.5 text-sm outline-none focus:border-primary"
           />
         </form>
 
