@@ -21,9 +21,13 @@ async function proxy(request: NextRequest, ctx: { params: Promise<{ path: string
   const target = `${backendUrl}/${path.join('/')}${request.nextUrl.search}`;
   const token = request.cookies.get(TOKEN_COOKIE)?.value;
 
+  // Préserve le Content-Type entrant (application/json pour les API, ou
+  // multipart/form-data avec boundary pour les téléversements de fichier).
+  const incomingContentType = request.headers.get('content-type');
+
   const headers: Record<string, string> = {
     Accept: 'application/json',
-    'Content-Type': 'application/json',
+    'Content-Type': incomingContentType ?? 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
   // On propage l'en-tête d'origine si présent (ex. X-XSRF-TOKEN en état).

@@ -903,6 +903,110 @@ export function AuthorDetail({ id }: { id: string }) {
   );
 }
 
+/** Export des notices : choix du format (Excel / SEDA / EAD). */
+export function RecordsExport() {
+  const [format, setFormat] = useState('excel');
+  return (
+    <div className="flex h-full flex-col gap-4">
+      <header>
+        <h1 className="text-xl font-semibold">Exporter les notices</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Choisissez un format, puis exportez toutes les notices de l'organisation.</p>
+      </header>
+      <div className="grid max-w-2xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4">
+        <label className="flex flex-col gap-1 text-sm">
+          <span>Format d'export</span>
+          <select value={format} onChange={(e) => setFormat(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm">
+            <option value="excel">Excel (.xlsx)</option>
+            <option value="seda">SEDA 2.1 (.xml)</option>
+            <option value="ead">EAD (.xml)</option>
+          </select>
+        </label>
+        <a
+          href={`/api/proxy/api/v1/records/export?format=${format}`}
+          className="inline-flex w-fit items-center gap-2 rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+        >
+          Exporter
+        </a>
+        <p className="text-xs text-muted-foreground">Le fichier est téléchargé directement depuis l'API.</p>
+      </div>
+    </div>
+  );
+}
+
+/** Import des notices : choix du format + fichier. */
+export function RecordsImport() {
+  const [format, setFormat] = useState('excel');
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<{ created: number; updated: number; errors: string[] } | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function doImport(e: React.FormEvent) {
+    e.preventDefault();
+    if (!file) return;
+    setBusy(true);
+    setMessage(null);
+    setResult(null);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/proxy/api/v1/records/import', { method: 'POST', body: fd });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) {
+        setMessage(json?.message ?? "Erreur d'import.");
+        return;
+      }
+      setResult(json?.data ?? null);
+    } catch {
+      setMessage("Erreur réseau lors de l'import.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex h-full flex-col gap-4">
+      <header>
+        <h1 className="text-xl font-semibold">Importer des notices</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Choisissez le format et le fichier à importer. Gabarit Excel : code | name | description | type_id | start_date | end_date.</p>
+      </header>
+      <form onSubmit={doImport} className="grid max-w-2xl grid-cols-1 gap-4 rounded border border-border bg-surface p-4">
+        <label className="flex flex-col gap-1 text-sm">
+          <span>Format</span>
+          <select value={format} onChange={(e) => setFormat(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm">
+            <option value="excel">Excel (.xlsx, .xls)</option>
+            <option value="seda">SEDA 2.1 (.xml)</option>
+            <option value="ead">EAD (.xml)</option>
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          <span>Fichier</span>
+          <input type="file" accept={format === 'excel' ? '.xlsx,.xls' : '.xml'} onChange={(e) => setFile(e.target.files?.[0] ?? null)} required className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
+        </label>
+        <div>
+          <button type="submit" disabled={busy || !file} className="inline-flex items-center gap-2 rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
+            {busy ? 'Import en cours…' : 'Importer'}
+          </button>
+        </div>
+        {message && <p className="text-sm text-danger">{message}</p>}
+        {result && (
+          <div className="rounded border border-border bg-background p-3 text-sm">
+            <p className="font-medium">{result.created} notice(s) créée(s) · {result.updated} mise(s) à jour · {result.errors.length} erreur(s).</p>
+            {result.errors.length > 0 && (
+              <ul className="mt-2 list-disc pl-5 text-xs text-danger">
+                {result.errors.map((err, i) => <li key={i}>{err}</li>)}
+              </ul>
+            )}
+          </div>
+        )}
+        {format !== 'excel' && (
+          <p className="text-xs text-muted-foreground">Les formats SEDA/EAD sont détectés automatiquement ; pour un import Excel utilisez le gabarit indiqué.</p>
+        )}
+      </form>
+    </div>
+  );
+}
+
 export const routes: FeatureRoute[] = [
   { path: '/records', List: RecordList, Detail: RecordDetail, Form: RecordForm },
   { path: '/records/trash', List: RecordTrash },
@@ -918,4 +1022,6 @@ export const routes: FeatureRoute[] = [
 
   { path: '/records/tree', List: RecordsTree },
   { path: '/records/drag-drop', List: DragDrop },
+  { path: '/records/import', List: RecordsImport },
+  { path: '/records/export', List: RecordsExport },
 ];

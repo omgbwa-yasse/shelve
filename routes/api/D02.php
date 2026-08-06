@@ -42,6 +42,10 @@ Route::post('record-reactivations/{reactivation}/reject', [RecordReactivationCon
 Route::post('records/{record}/restore', [RecordController::class, 'restore'])->name('records.restore')->withTrashed();
 Route::delete('records/{record}/force', [RecordController::class, 'forceDelete'])->name('records.force-delete')->withTrashed();
 
+
+// Import / Export en masse des notices (choix du format) — routes statiques AVANT l'apiResource records.
+Route::get('records/export', [\App\Http\Controllers\Api\V1\RecordImportExportController::class, 'export'])->name('records.export');
+Route::post('records/import', [\App\Http\Controllers\Api\V1\RecordImportExportController::class, 'import'])->name('records.import');
 Route::apiResource('records', RecordController::class)->except(['create', 'edit']);
 Route::apiResource('record-reactivations', RecordReactivationController::class)->only(['index']);
 
@@ -67,3 +71,4 @@ Route::post('records/{record}/attachments/upload', [RecordAttachmentController::
     ->name('records.attachments.upload');
 Route::delete('records/{record}/attachments/{attachment}', [RecordAttachmentController::class, 'destroy'])
     ->name('records.attachments.destroy');
+

@@ -179,6 +179,8 @@ export const navigation: NavDomain[] = [
       { key: 'records-document', group: 'Enregistrement', label: 'Document', href: '/records/create?kind=document', icon: 'fileText' },
 
       { key: 'records-tree', group: 'Import / Export (EAD, Excel, SEDA)', label: 'Arbre des notices', href: '/records/tree', icon: 'network' },
+      { key: 'records-import', group: 'Import / Export (EAD, Excel, SEDA)', label: 'Importer', href: '/records/import', icon: 'download' },
+      { key: 'records-export', group: 'Import / Export (EAD, Excel, SEDA)', label: 'Exporter', href: '/records/export', icon: 'upload' },
     ],
   },
 
