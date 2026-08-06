@@ -110,6 +110,14 @@ export const navigation: NavDomain[] = [
       { key: 'projects-all', group: 'Projets', label: 'Tous les projets', href: '/projects', icon: 'projects' },
       { key: 'projects-create', group: 'Projets', label: 'Nouveau projet', href: '/projects/create', icon: 'plusSquare' },
 
+      { key: 'projects-milestones', group: 'Suivi global', label: 'Tous les jalons', href: '/projects/milestones', icon: 'milestone' },
+      { key: 'projects-deliverables', group: 'Suivi global', label: 'Tous les livrables', href: '/projects/deliverables', icon: 'package' },
+      { key: 'projects-alerts', group: 'Suivi global', label: 'Toutes les alertes', href: '/projects/alerts', icon: 'bell' },
+      { key: 'projects-resources', group: 'Suivi global', label: 'Ressources', href: '/projects/resources', icon: 'users' },
+
+      { key: 'projects-board', group: 'Visualisations', label: 'Tableau Kanban', href: '/projects/board', icon: 'columns' },
+      { key: 'projects-gantt', group: 'Visualisations', label: 'Diagramme de Gantt', href: '/projects/gantt', icon: 'gantt' },
+
       { key: 'objectives-all', group: 'Objectifs (OKR)', label: 'Tous les objectifs', href: '/objectives', icon: 'target' },
       { key: 'objectives-create', group: 'Objectifs (OKR)', label: 'Nouvel objectif', href: '/objectives/create', icon: 'plusSquare' },
 

@@ -14,6 +14,7 @@ import { PageHeader, InfoPanel, StatCard } from '@/components/ui/page';
 import type { FeatureRoute } from '@/lib/routing';
 import * as api from './services/project.service';
 import { ATTACHABLE_LABELS, RESOURCE_TYPE_LABELS, type AttachableAlias } from './services/project.service';
+import { GlobalMilestonesList, GlobalDeliverablesList, GlobalAlertsList, GlobalResourcesList, KanbanBoard, GanttChart } from './components/overview';
 import { workplacesApi } from '@/features/workplaces/services/workplace.service';
 import { organisationsApi } from '@/features/tools/services/tool.service';
 import { usersApi } from '@/features/settings/services/setting.service';
@@ -826,4 +827,14 @@ export const routes: FeatureRoute[] = [
   { path: '/projects', List: makeList(api.projectsApi, 'projects', PROJECT_COLS, { title: 'Projets', create: '/projects/create', del: true }), Detail: ProjectDetail, Form: ProjectForm },
   { path: '/objectives', List: makeList(api.objectivesApi, 'objectives', OBJECTIVE_COLS, { title: 'Objectifs (OKR)', create: '/objectives/create', del: true }), Detail: ObjectiveDetail, Form: ObjectiveForm },
   { path: '/kpis', List: makeList(api.kpisApi, 'kpis', KPI_COLS, { title: 'KPI', create: '/kpis/create', del: true }), Detail: KpiDetail, Form: KpiForm },
+
+  // Suivi global (agrégation de tous les projets)
+  { path: '/projects/milestones', List: GlobalMilestonesList },
+  { path: '/projects/deliverables', List: GlobalDeliverablesList },
+  { path: '/projects/alerts', List: GlobalAlertsList },
+  { path: '/projects/resources', List: GlobalResourcesList },
+
+  // Visualisations
+  { path: '/projects/board', List: KanbanBoard },
+  { path: '/projects/gantt', List: GanttChart },
 ];
