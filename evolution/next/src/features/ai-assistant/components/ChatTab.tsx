@@ -71,28 +71,64 @@ export function ChatTab() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex gap-1 border-b border-border p-2" role="radiogroup" aria-label="Mode de l'assistant">
-        {MODES.map((m) => (
-          <button
-            key={m}
-            type="button"
-            role="radio"
-            aria-checked={mode === m}
-            title={api.ASSISTANT_MODE_DESCRIPTIONS[m]}
-            onClick={() => setMode(m)}
-            className={clsx(
-              'flex-1 rounded px-2 py-1 text-xs font-medium transition-colors',
-              mode === m ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground',
-            )}
-          >
-            {api.ASSISTANT_MODE_LABELS[m]}
-          </button>
-        ))}
-      </div>
-      <p className="border-b border-border px-3 py-1.5 text-xs text-muted-foreground">
-        {api.ASSISTANT_MODE_DESCRIPTIONS[mode]}
-      </p>
+      {/* Saisie — en haut, pleine largeur */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void send();
+        }}
+        className="border-b border-border p-3"
+      >
+        <textarea
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              void send();
+            }
+          }}
+          placeholder="Écrire un message…"
+          rows={2}
+          className="w-full resize-none rounded border border-border bg-background px-2 py-1.5 text-sm outline-none focus:border-primary"
+        />
+      </form>
 
+      {/* Sous la saisie : mode à gauche, bouton Envoyer à droite */}
+      <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex gap-1" role="radiogroup" aria-label="Mode de l'assistant">
+            {MODES.map((m) => (
+              <button
+                key={m}
+                type="button"
+                role="radio"
+                aria-checked={mode === m}
+                title={api.ASSISTANT_MODE_DESCRIPTIONS[m]}
+                onClick={() => setMode(m)}
+                className={clsx(
+                  'rounded px-2 py-1 text-[11px] font-medium transition-colors',
+                  mode === m ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {api.ASSISTANT_MODE_LABELS[m]}
+              </button>
+            ))}
+          </div>
+          <p className="mt-1 truncate text-[11px] text-muted-foreground">{api.ASSISTANT_MODE_DESCRIPTIONS[mode]}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => void send()}
+          disabled={sending || draft.trim() === ''}
+          className="flex shrink-0 items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
+        >
+          <Icon name="send" className="h-4 w-4" />
+          Envoyer
+        </button>
+      </div>
+
+      {/* Messages — remplissent le reste */}
       <div className="flex-1 space-y-3 overflow-y-auto p-3">
         {messages.length === 0 ? (
           <p className="text-sm text-muted-foreground">
@@ -110,35 +146,6 @@ export function ChatTab() {
         )}
         {sending && <div className="mr-auto max-w-[85%] rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">…</div>}
       </div>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          void send();
-        }}
-        className="flex items-end gap-2 border-t border-border p-3"
-      >
-        <textarea
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              void send();
-            }
-          }}
-          placeholder="Écrire un message…"
-          rows={2}
-          className="flex-1 resize-none rounded border border-border bg-background px-2 py-1.5 text-sm outline-none focus:border-primary"
-        />
-        <button
-          type="submit"
-          disabled={sending || draft.trim() === ''}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-primary text-primary-foreground disabled:opacity-50"
-        >
-          <Icon name="send" className="h-4 w-4" />
-        </button>
-      </form>
     </div>
   );
 }
