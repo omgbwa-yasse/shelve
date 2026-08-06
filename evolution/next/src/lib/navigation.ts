@@ -350,25 +350,8 @@ export const navigation: NavDomain[] = [
   },
 
   // ------------------------------------------------------------------
-  // 13. IA — submenu/ai-search.blade.php
-  // ------------------------------------------------------------------
-  {
-    key: 'aiSearch',
-    label: 'IA',
-    href: '/ai-search',
-    icon: 'aiSearch',
-    items: [
-      { key: 'ai-skills', group: 'Ressources IA', label: 'Skills', href: '/ai-search/resources?tab=skills', icon: 'sparkles' },
-      { key: 'ai-prompts', group: 'Ressources IA', label: 'Prompts', href: '/ai-search/resources?tab=prompts', icon: 'messageCircle' },
-      { key: 'ai-templates', group: 'Ressources IA', label: 'Templates', href: '/ai-search/resources?tab=templates', icon: 'layoutTemplate' },
-
-      { key: 'ai-test', group: 'Configuration IA', label: 'Tester le système', href: '/ai-search/test', icon: 'bug' },
-      { key: 'ai-settings', group: 'Configuration IA', label: 'Paramètres IA', href: '/settings/prompts', icon: 'settings' },
-    ],
-  },
-
-  // ------------------------------------------------------------------
   // 14. Settings / Paramètres — submenu/settings.blade.php
+  //    (intègre l'assistant IA en sous-section "Intelligence artificielle")
   // ------------------------------------------------------------------
   {
     key: 'settings',
@@ -407,7 +390,10 @@ export const navigation: NavDomain[] = [
       { key: 'settings-container-status', group: 'Dépôt', label: 'Statuts des contenants', href: '/settings/container-status', icon: 'flag' },
       { key: 'settings-container-property', group: 'Dépôt', label: 'Propriétés des contenants', href: '/settings/container-property', icon: 'listCheck' },
 
-      { key: 'settings-ai-prompts', group: 'Intelligence artificielle', label: 'Prompts', href: '/settings/prompts', icon: 'messageCircle' },
+      { key: 'settings-ai-skills', group: 'Intelligence artificielle', label: 'Skills', href: '/ai-search/resources?tab=skills', icon: 'sparkles' },
+      { key: 'settings-ai-prompts', group: 'Intelligence artificielle', label: 'Prompts', href: '/ai-search/resources?tab=prompts', icon: 'messageCircle' },
+      { key: 'settings-ai-templates', group: 'Intelligence artificielle', label: 'Templates', href: '/ai-search/resources?tab=templates', icon: 'layoutTemplate' },
+      { key: 'settings-ai-test', group: 'Intelligence artificielle', label: 'Tester le système', href: '/ai-search/test', icon: 'bug' },
 
       { key: 'settings-sorts', group: 'Outils de gestion', label: 'Sorts finaux', href: '/settings/sorts', icon: 'sortAlpha' },
       { key: 'settings-thesaurus-terms', group: 'Outils de gestion', label: 'Termes du thésaurus', href: '/tools/thesaurus', icon: 'tags' },
