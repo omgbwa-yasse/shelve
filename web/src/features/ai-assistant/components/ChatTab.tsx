@@ -1,0 +1,166 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Icon } from '@/components/icons';
+import type { Entity } from '@/lib/api/types';
+import { useAiAssistant } from '@/features/ai-assistant/context';
+import * as api from '@/features/ai-assistant/services/assistant.service';
+import { SandboxFiles } from '@/features/ai-assistant/components/SandboxFiles';
+import type { AssistantMode } from '@/features/ai-assistant/services/assistant.service';
+
+const MODES: AssistantMode[] = ['manuel', 'edit', 'plan', 'autonome'];
+
+/**
+ * Discussion avec l'assistant IA — transmet le contexte de la page active
+ * (chemin + querystring) à chaque message, voir `AiAssistantChatService`
+ * côté Laravel (`systemPrompt()` l'injecte dans le prompt système). Le mode
+ * choisi (voir `AssistantMode`) pilote le degré de confirmation exigé avant
+ * une action de création/modification/suppression.
+ */
+export function ChatTab() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { activeConversationId, openConversation } = useAiAssistant();
+  const queryClient = useQueryClient();
+  const [draft, setDraft] = useState('');
+  const [sending, setSending] = useState(false);
+  const [mode, setMode] = useState<AssistantMode>('manuel');
+
+  const pageContext: api.PageContext = {
+    path: pathname ?? '/',
+    search: searchParams?.toString() || undefined,
+  };
+
+  const { data } = useQuery({
+    queryKey: ['ai-conversation', activeConversationId],
+    queryFn: () => api.getConversation(activeConversationId as string),
+    enabled: activeConversationId !== null,
+  });
+
+  const messages = (data?.data.messages as Entity[] | undefined) ?? [];
+  const conversationMode = data?.data.mode as AssistantMode | undefined;
+
+  // Reflète le mode de la conversation rouverte (Historique) ; retombe sur
+  // "manuel" pour un nouveau fil.
+  useEffect(() => {
+    setMode(conversationMode ?? 'manuel');
+  }, [activeConversationId, conversationMode]);
+
+  async function send() {
+    const message = draft.trim();
+    if (!message || sending) return;
+
+    setSending(true);
+    setDraft('');
+    try {
+      if (activeConversationId === null) {
+        const response = await api.startConversation(message, pageContext, mode);
+        openConversation(String(response.data.id));
+        queryClient.invalidateQueries({ queryKey: ['ai-conversations'] });
+      } else {
+        await api.sendConversationMessage(activeConversationId, message, pageContext, mode);
+        queryClient.invalidateQueries({ queryKey: ['ai-conversation', activeConversationId] });
+        queryClient.invalidateQueries({ queryKey: ['ai-conversations'] });
+      }
+    } finally {
+      setSending(false);
+    }
+  }
+
+  /** Fichiers sandbox joints à un message assistant (context.sandbox_files). */
+  function sandboxFilesOf(m: Entity): Array<{
+    name?: string;
+    size?: number;
+    mime?: string;
+    sandbox_id?: number | string;
+    file_id?: number | string;
+  }> {
+    const context = m.context as { sandbox_files?: Array<Record<string, unknown>> } | undefined;
+    return (context?.sandbox_files ?? []) as Array<{
+      name?: string;
+      size?: number;
+      mime?: string;
+      sandbox_id?: number | string;
+      file_id?: number | string;
+    }>;
+  }
+
+  return (
+    <div className="flex h-full flex-col">
+      {/* Messages — remplissent l'espace au-dessus de la saisie */}
+      <div className="flex-1 space-y-3 overflow-y-auto p-3">
+        {messages.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Posez une question sur la page en cours ({pageContext.path}) ou sur vos archives.
+          </p>
+        ) : (
+          messages.map((m) => (
+            <div
+              key={String(m.id)}
+              className={m.role === 'user' ? 'ml-auto max-w-[85%] rounded-lg bg-primary/10 px-3 py-2 text-sm' : 'mr-auto max-w-[85%] rounded-lg bg-muted px-3 py-2 text-sm'}
+            >
+              {String(m.content)}
+              <SandboxFiles files={sandboxFilesOf(m)} />
+            </div>
+          ))
+        )}
+        {sending && <div className="mr-auto max-w-[85%] rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">…</div>}
+      </div>
+
+      {/* Zone de saisie — en bas */}
+      <div className="flex flex-col gap-2 border-t border-border p-3">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void send();
+          }}
+        >
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                void send();
+              }
+            }}
+            placeholder="Écrire un message…"
+            rows={2}
+            className="w-full resize-none rounded border border-border bg-background px-2 py-1.5 text-sm outline-none focus:border-primary"
+          />
+        </form>
+
+        {/* Dessous de la saisie : mode (liste d'options) à gauche, Envoyer à droite */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="shrink-0">Mode</span>
+              <select
+                value={mode}
+                onChange={(e) => setMode(e.target.value as AssistantMode)}
+                className="w-[70%] rounded border border-border bg-background px-2 py-1.5 text-xs"
+              >
+                {MODES.map((m) => (
+                  <option key={m} value={m}>
+                    {api.ASSISTANT_MODE_LABELS[m]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <button
+            type="button"
+            onClick={() => void send()}
+            disabled={sending || draft.trim() === ''}
+            className="flex shrink-0 items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          >
+            <Icon name="send" className="h-4 w-4" />
+            Envoyer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

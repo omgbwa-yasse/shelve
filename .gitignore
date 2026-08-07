@@ -1,67 +1,35 @@
-# Laravel
-/.phpunit.cache
-/node_modules
-/public/build
-/public/hot
-/public/storage
-/public/mix-manifest.json
-/storage/*.key
-/storage/oauth-*.key
-/storage/logs/*.log
-/vendor
-/bootstrap/cache/*.php
-
-# Environment files
-.env
-.env.backup
-.env.production
-.env.local
-.env.testing
-
-# Testing
-.phpunit.result.cache
-/.phpunit.cache
-/tests/coverage
-*.log
-test_output.txt
-testresult.txt
-phpunit.xml.coverage
-
-# Generated/regenerable files
-composer.phar
-/storage/tntsearch/
-/storage/records.index
-/storage/api-docs/api-docs.json
-
-# Development tools
-Homestead.json
-Homestead.yaml
-auth.json
-npm-debug.log
-yarn-error.log
-package-lock.json
-yarn.lock
-
-# IDEs
-/.fleet
-/.idea
-/.vscode
-*.swp
-*.swo
-*~
-
-# OS generated files
+# OS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 
-# Sub-projects
-/opac/node_modules
-/mcp/node_modules
+# Environnement
+.env
+.env.local
+.env.backup
+.env.production
+.env.testing
 
-# Node_modules imbriqué de la suite de conformité
-contracts/conformance/node_modules/
+# Logs
+*.log
+
+# Fichiers temporaires (dumps SQL de travail, etc.)
+laravel/tmp/
+
+# Laravel (dans laravel/)
+laravel/vendor/
+laravel/node_modules/
+laravel/public/build/
+laravel/public/hot
+laravel/public/storage
+laravel/storage/*.key
+laravel/bootstrap/cache/*.php
+laravel/.phpunit.cache
+
+# Backend Spring Boot (dans backend/)
+backend/target/
+
+# Frontend Next.js (dans web/)
+web/node_modules/
+web/.next/
+web/out/
+web/coverage/

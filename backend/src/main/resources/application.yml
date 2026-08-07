@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: shelve-backend
+  datasource:
+    # Base MySQL partagée avec Laravel — voir evolution/PHASE-3-SPRINGBOOT.md §3.0.1.
+    url: jdbc:mysql://127.0.0.1:3306/shelve_db?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password: ""
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    hibernate:
+      # Le schéma est détenu par Laravel pendant la coexistence : Spring ne le
+      # modifie jamais. `none` évite les frictions de validation de mapping sur
+      # les clés composites inhabituelles (floors, shelves) pendant le portage ;
+      # la vérification réelle est faite par les tests de conformité.
+      ddl-auto: none
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+  flyway:
+    # Phase de coexistence : Laravel reste maître du schéma (PHASE-3 §3.0.1).
+    # Désactivé pour ne RIEN écrire sur la base partagée (pas même la table
+    # d'historique Flyway). Réactivé en `validate` seul à la bascule finale (§3.6).
+    enabled: false
+    baseline-on-migrate: false
+    locations: classpath:db/migration
+    validate-on-migrate: true
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: UTC
+    default-property-inclusion: always
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+app:
+  # Clé de hachage des tokens Sanctum : sha256(plain). Les tokens émis par Laravel
+  # et par Spring sont interopérables par construction (même table).
+  sanctum:
+    token-hash-algorithm: SHA-256
+  sandbox:
+    # Workspaces Python de l'assistant IA (D14) — même stockage physique que
+    # Laravel (storage/app/ai/sandboxes/{folder}). Chemin absolu du storage.
+    root: C:/wamp64_New/www/archives/shelve/laravel/storage/app/ai/sandboxes
+    # Catalogue des capacités injecté dans le prompt IA.
+    capabilities: C:/wamp64_New/www/archives/shelve/laravel/storage/app/ai/sandbox/capabilities.json
+    timeout-seconds: 120
+    ttl-hours: 24

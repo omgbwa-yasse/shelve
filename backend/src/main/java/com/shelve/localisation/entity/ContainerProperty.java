@@ -1,0 +1,98 @@
+package com.shelve.localisation.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import java.time.Instant;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+@Entity
+@Table(name = "container_properties")
+public class ContainerProperty {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @Column(nullable = false, unique = true, length = 100)
+  private String name;
+
+  @Column(nullable = false)
+  private Double width;
+
+  @Column(nullable = false)
+  private Double length;
+
+  @Column(nullable = false)
+  private Double depth;
+
+  @Column(name = "creator_id", nullable = false)
+  private Long creatorId;
+
+  @CreationTimestamp
+  @Column(name = "created_at", updatable = false)
+  private Instant createdAt;
+
+  @UpdateTimestamp
+  @Column(name = "updated_at")
+  private Instant updatedAt;
+
+  public Long getId() {
+    return this.id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public String getName() {
+    return this.name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public Double getWidth() {
+    return this.width;
+  }
+
+  public void setWidth(Double width) {
+    this.width = width;
+  }
+
+  public Double getLength() {
+    return this.length;
+  }
+
+  public void setLength(Double length) {
+    this.length = length;
+  }
+
+  public Double getDepth() {
+    return this.depth;
+  }
+
+  public void setDepth(Double depth) {
+    this.depth = depth;
+  }
+
+  public Long getCreatorId() {
+    return this.creatorId;
+  }
+
+  public void setCreatorId(Long creatorId) {
+    this.creatorId = creatorId;
+  }
+
+  public Instant getCreatedAt() {
+    return this.createdAt;
+  }
+
+  public Instant getUpdatedAt() {
+    return this.updatedAt;
+  }
+}
