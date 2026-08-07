@@ -38,7 +38,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (! $this->indexExists()) {
+        if (! Schema::hasTable('mails') || ! $this->indexExists()) {
             return;
         }
 

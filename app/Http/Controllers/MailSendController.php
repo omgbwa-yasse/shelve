@@ -537,7 +537,10 @@ class MailSendController extends Controller
         $suffix = 1;
 
         do {
-            $candidate = $originalCode . '-T' . $suffix;
+            $marque = '-T' . $suffix;
+            // mails.code est un varchar(30) : on rogne la base pour que le suffixe
+            // tienne, plutôt que de risquer une troncature côté SGBD.
+            $candidate = mb_substr($originalCode, 0, 30 - mb_strlen($marque)) . $marque;
             $suffix++;
         } while (Mail::where('code', $candidate)->exists());
 
