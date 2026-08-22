@@ -1,0 +1,16 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "shelve-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "web"],
+      "port": 3000
+    },
+    {
+      "name": "shelve-backend",
+      "url": "http://localhost:8080",
+      "port": 8080
+    }
+  ]
+}

@@ -53,7 +53,7 @@ return new class extends Migration
         Schema::create('record_comments', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('record_id');
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->text('content');
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();

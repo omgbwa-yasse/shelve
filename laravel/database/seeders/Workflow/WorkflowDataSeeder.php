@@ -10,6 +10,7 @@ use App\Models\Task;
 use App\Models\TaskHistory;
 use App\Models\TaskComment;
 use App\Models\User;
+use App\Models\Organisation;
 
 class WorkflowDataSeeder extends Seeder
 {
@@ -28,6 +29,7 @@ class WorkflowDataSeeder extends Seeder
             return;
         }
         $user = $users->first();
+        $org = Organisation::first();
 
         // --- 1. Workflow Definitions ---
         $defApproval = WorkflowDefinition::firstOrCreate(
@@ -37,6 +39,7 @@ class WorkflowDataSeeder extends Seeder
                 'bpmn_xml' => '<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"><bpmn:process id="doc_approval"><bpmn:startEvent id="start"/><bpmn:task id="submit" name="Soumettre"/><bpmn:task id="review" name="Réviser"/><bpmn:task id="approve" name="Approuver"/><bpmn:endEvent id="end"/></bpmn:process></bpmn:definitions>',
                 'version' => 1,
                 'status' => 'active',
+                'organisation_id' => $org->id,
                 'created_by' => $user->id,
                 'updated_by' => $user->id,
             ]
@@ -49,6 +52,7 @@ class WorkflowDataSeeder extends Seeder
                 'bpmn_xml' => '<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"><bpmn:process id="transfer"><bpmn:startEvent id="start"/><bpmn:task id="prepare" name="Préparer bordereau"/><bpmn:task id="validate" name="Valider"/><bpmn:task id="integrate" name="Intégrer"/><bpmn:endEvent id="end"/></bpmn:process></bpmn:definitions>',
                 'version' => 1,
                 'status' => 'active',
+                'organisation_id' => $org->id,
                 'created_by' => $user->id,
                 'updated_by' => $user->id,
             ]
@@ -61,6 +65,7 @@ class WorkflowDataSeeder extends Seeder
                 'bpmn_xml' => '<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"><bpmn:process id="mail_process"><bpmn:startEvent id="start"/><bpmn:task id="register" name="Enregistrer"/><bpmn:task id="distribute" name="Distribuer"/><bpmn:task id="process" name="Traiter"/><bpmn:task id="archive" name="Archiver"/><bpmn:endEvent id="end"/></bpmn:process></bpmn:definitions>',
                 'version' => 2,
                 'status' => 'active',
+                'organisation_id' => $org->id,
                 'created_by' => $user->id,
                 'updated_by' => $user->id,
             ]
@@ -104,6 +109,7 @@ class WorkflowDataSeeder extends Seeder
             $wi = WorkflowInstance::firstOrCreate(
                 ['name' => $inst['name']],
                 array_merge($inst, [
+                    'organisation_id' => $org->id,
                     'current_state' => ['step' => $inst['status'] === 'completed' ? 'end' : 'in_progress'],
                     'started_by' => $user->id,
                     'updated_by' => $user->id,
@@ -137,6 +143,7 @@ class WorkflowDataSeeder extends Seeder
             $task = Task::firstOrCreate(
                 ['title' => $td['title']],
                 array_merge($td, [
+                    'organisation_id' => $org->id,
                     'description' => 'Tâche de test : ' . $td['title'],
                     'assigned_to' => $assignee->id,
                     'sequence_order' => $i + 1,

@@ -52,8 +52,8 @@ app:
   sandbox:
     # Workspaces Python de l'assistant IA (D14) — même stockage physique que
     # Laravel (storage/app/ai/sandboxes/{folder}). Chemin absolu du storage.
-    root: C:/wamp64_New/www/archives/shelve/laravel/storage/app/ai/sandboxes
+    root: E:/project/procuregenious/shelve/laravel/storage/app/ai/sandboxes
     # Catalogue des capacités injecté dans le prompt IA.
-    capabilities: C:/wamp64_New/www/archives/shelve/laravel/storage/app/ai/sandbox/capabilities.json
+    capabilities: E:/project/procuregenious/shelve/laravel/storage/app/ai/sandbox/capabilities.json
     timeout-seconds: 120
     ttl-hours: 24
