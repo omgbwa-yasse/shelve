@@ -76,6 +76,8 @@ class Mail extends Model
         'dg_signed_at',
         'dg_signature_note',
         'explanatory_note',
+        'confidentiality_level',
+        'access_restricted',
     ];
 
     protected $casts = [
@@ -85,6 +87,7 @@ class Mail extends Model
         'assigned_at' => 'datetime',
         'dg_signed_at' => 'datetime',
         'is_archived' => 'boolean',
+        'access_restricted' => 'boolean',
         'estimated_processing_time' => 'integer', // en minutes
         'status' => MailStatusEnum::class,
     ];
@@ -199,6 +202,55 @@ class Mail extends Model
     public function assignedOrganisation()
     {
         return $this->belongsTo(Organisation::class, 'assigned_organisation_id');
+    }
+
+    /** Circuits métier successifs associés au courrier. */
+    public function circuits()
+    {
+        return $this->hasMany(MailCircuit::class)->latest('id');
+    }
+
+    /** Dernier circuit démarré, quel que soit son état. */
+    public function latestCircuit()
+    {
+        return $this->hasOne(MailCircuit::class)->latestOfMany();
+    }
+
+    /**
+     * Contrôle complémentaire appliqué aux courriers confidentiels : seuls les
+     * participants directs, leurs unités et les valideurs du circuit y accèdent.
+     */
+    public function canUserAccessRestricted(User $user): bool
+    {
+        if (! $this->access_restricted || $user->isSuperAdmin()) {
+            return true;
+        }
+
+        if (in_array((int) $user->id, array_filter([
+            (int) $this->sender_user_id,
+            (int) $this->recipient_user_id,
+            (int) $this->assigned_to,
+        ]), true)) {
+            return true;
+        }
+
+        $organisationIds = array_map('intval', array_filter([
+            $this->sender_organisation_id,
+            $this->recipient_organisation_id,
+            $this->assigned_organisation_id,
+        ]));
+
+        if (in_array((int) $user->current_organisation_id, $organisationIds, true)) {
+            return true;
+        }
+
+        if ($this->cotations()->where('organisation_id', $user->current_organisation_id)->exists()) {
+            return true;
+        }
+
+        return $this->circuits()
+            ->whereHas('steps', fn ($query) => $query->where('assigned_user_id', $user->id))
+            ->exists();
     }
 
     /**

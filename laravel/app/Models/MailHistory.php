@@ -29,6 +29,11 @@ class MailHistory extends Model
     ];
 
     protected $casts = [
+        // Ces colonnes sont de type JSON dans MySQL. Le cast permet aux
+        // workflows de journaliser aussi bien un statut simple qu'un objet
+        // structuré sans produire de JSON invalide.
+        'old_value' => 'json',
+        'new_value' => 'json',
         'location_data' => 'json',
         'metadata' => 'json',
         'processing_time' => 'integer', // en secondes

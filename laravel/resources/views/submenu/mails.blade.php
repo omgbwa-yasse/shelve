@@ -13,6 +13,15 @@
         </div>
         <div class="submenu-content" id="consultationMenu">
 
+            <div class="submenu-category-title">{{ __('Circulation') }}</div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mails.circulations.index') }}">
+                    <i class="bi bi-diagram-3"></i> {{ __('Circulations et validations') }}
+                </a>
+            </div>
+
+            <div class="submenu-divider"></div>
+
             <div class="submenu-category-title">{{ __('Courrier interne') }}</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-received.index') }}">

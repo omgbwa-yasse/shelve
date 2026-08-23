@@ -280,6 +280,19 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('workflow/{mail}/return-for-revision', [\App\Http\Controllers\MailWorkflowController::class, 'returnForRevision'])->name('mails.workflow.return-for-revision');
         Route::post('workflow/{mail}/resubmit', [\App\Http\Controllers\MailWorkflowController::class, 'resubmit'])->name('mails.workflow.resubmit');
 
+        // Circuits métier configurables : séquentiel, parallèle, conditionnel,
+        // délégation, escalade, correction et transmission finale.
+        Route::get('circulations', [\App\Http\Controllers\MailCircuitController::class, 'index'])->name('mails.circulations.index');
+        Route::get('workflow/{mail}/circulate', [\App\Http\Controllers\MailCircuitController::class, 'create'])->name('mails.circuits.create');
+        Route::post('workflow/{mail}/circuits', [\App\Http\Controllers\MailCircuitController::class, 'store'])->name('mails.circuits.store');
+        Route::get('circuits/{circuit}', [\App\Http\Controllers\MailCircuitController::class, 'show'])->name('mails.circuits.show');
+        Route::post('circuit-steps/{step}/act', [\App\Http\Controllers\MailCircuitController::class, 'act'])->name('mails.circuit-steps.act');
+        Route::post('circuit-steps/{step}/delegate', [\App\Http\Controllers\MailCircuitController::class, 'delegate'])->name('mails.circuit-steps.delegate');
+        Route::post('circuit-steps/{step}/escalate', [\App\Http\Controllers\MailCircuitController::class, 'escalate'])->name('mails.circuit-steps.escalate');
+        Route::post('circuits/{circuit}/resume', [\App\Http\Controllers\MailCircuitController::class, 'resume'])->name('mails.circuits.resume');
+        Route::post('circuits/{circuit}/cancel', [\App\Http\Controllers\MailCircuitController::class, 'cancel'])->name('mails.circuits.cancel');
+        Route::post('circuits/{circuit}/transmit', [\App\Http\Controllers\MailCircuitController::class, 'transmit'])->name('mails.circuits.transmit');
+
         // Route pour les courriers retournés
         Route::get('returned', [MailReceivedController::class, 'returned'])->name('mail-received.returned');
 

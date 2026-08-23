@@ -469,8 +469,37 @@
                     // Volets d'intérim de l'utilisateur sur les directions cotées (affichage).
                     $myInterimVolets = \App\Models\OrganisationInterim::activeVoletsOf($u->id)
                         ->whereIn('organisation_id', $cotations->pluck('organisation_id')->all());
+                    // Circuit métier sélectionnable (Finance, Juridique, DSI, parallèle, etc.).
+                    $businessCircuit = $mail->latestCircuit()->with('steps.assignedUser')->first();
                 @endphp
                 <div class="col-md-12 mt-3">
+                    <div class="card border-0 bg-light mb-3">
+                        <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+                            <div>
+                                <div class="fw-semibold"><i class="bi bi-diagram-3 text-primary me-1"></i>Circulation métier</div>
+                                @if($businessCircuit)
+                                    <div class="text-muted small">
+                                        {{ $businessCircuit->template_name }} - version {{ $businessCircuit->version }} -
+                                        {{ $businessCircuit->steps->whereIn('status', ['approved', 'skipped'])->count() }}/{{ $businessCircuit->steps->count() }} étape(s) traitée(s)
+                                    </div>
+                                @else
+                                    <div class="text-muted small">Choisissez un modèle simple, hiérarchique, Finance, contrat, incident, confidentiel ou personnalisé.</div>
+                                @endif
+                            </div>
+                            <div class="d-flex gap-2">
+                                @if($businessCircuit)
+                                    <a href="{{ route('mails.circuits.show', $businessCircuit) }}" class="btn btn-primary">
+                                        <i class="bi bi-eye me-1"></i>Ouvrir le circuit
+                                    </a>
+                                @endif
+                                @if(!$businessCircuit || in_array($businessCircuit->status, ['completed', 'rejected', 'cancelled']))
+                                    <a href="{{ route('mails.circuits.create', $mail) }}" class="btn btn-outline-primary">
+                                        <i class="bi bi-play-circle me-1"></i>{{ $businessCircuit ? 'Nouveau circuit' : 'Faire circuler' }}
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
                     <div class="d-flex flex-wrap gap-2">
 
                         {{-- Courrier ENTRANT : cotation par le DG (une ou plusieurs directions) --}}
@@ -578,7 +607,7 @@
                         @endif
 
                         {{-- Courrier SORTANT ou note interne renvoyé pour révision : l'initiateur corrige et resoumet --}}
-                        @if(in_array($mail->mail_type, ['outgoing', 'internal']) && $statusVal === 'rejected' && $isInitiator)
+                        @if(!$businessCircuit && in_array($mail->mail_type, ['outgoing', 'internal']) && $statusVal === 'rejected' && $isInitiator)
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#resubmitModal">
                                 <i class="bi bi-arrow-repeat"></i> Corriger et resoumettre
                             </button>

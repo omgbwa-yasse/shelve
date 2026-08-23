@@ -24,6 +24,10 @@ class MailPolicy extends BasePolicy
      */
     public function view(?User $user, Mail $mail): bool|Response
     {
+        if ($mail->access_restricted && (! $user || ! $mail->canUserAccessRestricted($user))) {
+            return Response::deny('Ce courrier confidentiel est réservé aux participants de son circuit.');
+        }
+
         return $this->canView($user, $mail, 'mail_view');
     }
 
@@ -42,6 +46,10 @@ class MailPolicy extends BasePolicy
      */
     public function update(?User $user, Mail $mail): bool|Response
     {
+        if ($mail->access_restricted && (! $user || ! $mail->canUserAccessRestricted($user))) {
+            return Response::deny('Ce courrier confidentiel est réservé aux participants de son circuit.');
+        }
+
         return $this->canUpdate($user, $mail, 'mail_update');
     }
 
