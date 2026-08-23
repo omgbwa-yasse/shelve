@@ -319,4 +319,64 @@ class User extends Authenticatable
 
         return $direct->merge($viaGlobalRoles)->merge($viaOrgRoles)->unique()->sort()->values()->all();
     }
+
+    /**
+     * Rôle de l'utilisateur dans une organisation donnée.
+     */
+    public function roleInOrganisation(?int $organisationId): ?Role
+    {
+        if (! $organisationId) {
+            return null;
+        }
+
+        $pivot = UserOrganisationRole::where('user_id', $this->id)
+            ->where('organisation_id', $organisationId)
+            ->first();
+
+        return $pivot ? Role::find($pivot->role_id) : null;
+    }
+
+    /**
+     * Vérifie si l'utilisateur porte l'un des rôles indiqués dans l'organisation.
+     *
+     * @param string|array<int, string> $roleNames
+     */
+    public function hasRoleInOrganisation($roleNames, ?int $organisationId): bool
+    {
+        $role = $this->roleInOrganisation($organisationId);
+
+        return $role !== null
+            && in_array($role->name, (array) $roleNames, true);
+    }
+
+    /**
+     * Calcule le valideur N+1 dans l'organigramme, en tenant compte des intérims.
+     */
+    public function hierarchicalSuperior(?int $organisationId = null): ?User
+    {
+        $organisationId ??= $this->current_organisation_id;
+        $organisation = Organisation::find($organisationId);
+
+        if (! $organisation) {
+            return null;
+        }
+
+        $myRoleName = $this->roleInOrganisation($organisationId)?->name;
+
+        if ($myRoleName === 'agent') {
+            $responsible = $organisation->responsible();
+            if ($responsible && (int) $responsible->id !== (int) $this->id) {
+                return $responsible;
+            }
+        }
+
+        foreach ($organisation->ancestors() as $ancestor) {
+            $responsible = $ancestor->responsible();
+            if ($responsible && (int) $responsible->id !== (int) $this->id) {
+                return $responsible;
+            }
+        }
+
+        return null;
+    }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Mail\MailCodeService;
+
 use App\Models\Mail;
 use App\Models\User;
 use App\Models\Batch;
@@ -61,9 +63,21 @@ class MailController extends Controller
      */
     public function indexOutgoing()
     {
-        $organisationId = Auth::user()->current_organisation_id;
-        $mails = Mail::where('sender_organisation_id', $organisationId)
-            ->where('mail_type', Mail::TYPE_OUTGOING)
+        $user = Auth::user();
+        $organisationId = $user->current_organisation_id;
+        $isDg = $user->isSuperAdmin() || $user->hasRoleInOrganisation('DG', $organisationId);
+
+        $mails = Mail::where('mail_type', Mail::TYPE_OUTGOING)
+            ->where(function ($q) use ($organisationId, $isDg) {
+                $q->where('sender_organisation_id', $organisationId);
+
+                if ($isDg) {
+                    // Le DG doit voir, en plus des courriers de son propre service,
+                    // tous les courriers sortants en attente de sa signature,
+                    // quel que soit le service émetteur (ex: DRH, DAG, etc.).
+                    $q->orWhere('status', MailStatusEnum::PENDING_APPROVAL);
+                }
+            })
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -76,21 +90,10 @@ class MailController extends Controller
      */
     public function createIncoming()
     {
-        $typologies = MailTypology::orderBy('name')->get();
-        $priorities = MailPriority::orderBy('duration')->get();
-        $actions = MailAction::orderBy('name')->get();
-        $senderOrganisations = Organisation::orderBy('name')->get();
-        $externalContacts = ExternalContact::with('organization')->orderBy('last_name')->get();
-        $externalOrganizations = ExternalOrganization::orderBy('name')->get();
-
-        return view('mails.incoming.create', compact(
-            'typologies',
-            'priorities',
-            'actions',
-            'senderOrganisations',
-            'externalContacts',
-            'externalOrganizations'
-        ));
+        // Les vues `mails.incoming.create` / `mails.outgoing.create` n'ont jamais
+        // existé : ces routes renvoyaient une erreur 500. Le formulaire complet
+        // d'enregistrement d'un entrant est celui du courrier externe.
+        return redirect()->route('mails.received.external.create');
     }
 
     /**
@@ -98,19 +101,7 @@ class MailController extends Controller
      */
     public function createOutgoing()
     {
-        $typologies = MailTypology::orderBy('name')->get();
-        $priorities = MailPriority::orderBy('duration')->get();
-        $actions = MailAction::orderBy('name')->get();
-        $externalContacts = ExternalContact::with('organization')->orderBy('last_name')->get();
-        $externalOrganizations = ExternalOrganization::orderBy('name')->get();
-
-        return view('mails.outgoing.create', compact(
-            'typologies',
-            'priorities',
-            'actions',
-            'externalContacts',
-            'externalOrganizations'
-        ));
+        return redirect()->route('mails.send.external.create');
     }
 
 
@@ -279,20 +270,29 @@ class MailController extends Controller
         // Configuration selon le type
         switch ($type) {
             case 'received':
+                // Le filtre de statut comparait auparavant à un TABLEAU (`!=` avec
+                // ['draft','reject']) et 'reject' n'est pas une valeur de l'enum :
+                // la condition ne filtrait rien. On exclut désormais les brouillons.
                 $query->with(['action', 'sender', 'senderOrganisation', 'attachments', 'containers'])
-                      ->where('recipient_organisation_id', $organisationId)
-                      ->where('status', '!=', ['draft', 'reject'])
-                      ->OrWhereHas('containers', function($q) use ($organisationId) {
-                          $q->where('creator_organisation_id', $organisationId);
+                      ->where(function ($q) use ($organisationId) {
+                          $q->where(function ($sub) use ($organisationId) {
+                              $sub->where('recipient_organisation_id', $organisationId)
+                                  ->where('status', '!=', MailStatusEnum::DRAFT->value);
+                          })->orWhereHas('containers', function ($sub) use ($organisationId) {
+                              $sub->where('creator_organisation_id', $organisationId);
+                          });
                       });
                 break;
 
             case 'send':
                 $query->with(['action', 'recipient', 'recipientOrganisation', 'attachments', 'containers'])
-                      ->where('sender_organisation_id', $organisationId)
-                      ->where('status', '!=', 'draft')
-                      ->orWhereHas('containers', function($q) use ($organisationId) {
-                          $q->where('creator_organisation_id', $organisationId);
+                      ->where(function ($q) use ($organisationId) {
+                          $q->where(function ($sub) use ($organisationId) {
+                              $sub->where('sender_organisation_id', $organisationId)
+                                  ->where('status', '!=', MailStatusEnum::DRAFT->value);
+                          })->orWhereHas('containers', function ($sub) use ($organisationId) {
+                              $sub->where('creator_organisation_id', $organisationId);
+                          });
                       });
                 break;
 
@@ -350,13 +350,19 @@ class MailController extends Controller
                 abort(404);
         }
 
+        // Relations communes pour la traçabilité (timeline), la signature DG et l'accusé de réception.
+        $relations = array_merge($relations, ['histories.user', 'dgSigner', 'assignedOrganisation', 'assignedTo']);
+
         $mail = Mail::with($relations)->findOrFail($id);
 
         // Vérification des permissions via policy
         $this->authorize('view', $mail);
 
+        // Historique trié du plus récent au plus ancien pour la timeline.
+        $timeline = $mail->histories->sortByDesc('created_at')->values();
+
         // Vue centralisée unique
-        return view('mails.show', compact('mail', 'type'));
+        return view('mails.show', compact('mail', 'type', 'timeline'));
     }
 
 
@@ -597,26 +603,9 @@ class MailController extends Controller
      */
     protected function generateMailCode(int $typologie_id)
     {
-        $typology = MailTypology::findOrFail($typologie_id);
-        $year = date('Y');
-
-        $count = Mail::whereYear('created_at', $year)
-                ->where('typology_id', $typologie_id)
-                ->count();
-
-        $nextNumber = $count + 1;
-        $codeExists = true;
-
-        while ($codeExists) {
-            $formattedNumber = str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
-            $candidateCode = $year . "/" . $typology->code . "/" . $formattedNumber;
-            $codeExists = Mail::where('code', $candidateCode)->exists();
-            if ($codeExists) {
-                $nextNumber++;
-            }
-        }
-
-        return $candidateCode;
+        // Numérotation du registre : attribution transactionnelle et unique, via
+        // MailCodeService. Le format AAAA/CODE/0001 reste inchangé.
+        return app(MailCodeService::class)->nextForTypology($typologie_id);
     }
 
     /**
@@ -629,13 +618,96 @@ class MailController extends Controller
         // Compter les mails entrants non traités pour l'organisation de l'utilisateur
         $count = Mail::where('recipient_organisation_id', $organisationId)
             ->where('mail_type', Mail::TYPE_INCOMING)
-            ->where('status', MailStatusEnum::RECEIVED)
+            ->whereIn('status', [MailStatusEnum::TRANSMITTED, MailStatusEnum::IN_PROGRESS])
             ->whereNull('processed_at')  // Mails non encore traités
             ->count();
 
         return response()->json([
             'count' => $count,
             'status' => 'success'
+        ]);
+    }
+
+    /**
+     * Compteurs des bulles de notification du courrier, selon le rôle de
+     * l'utilisateur dans son organisation courante :
+     *  - unread       : courriers entrants reçus/affectés, pas encore traités ;
+     *  - to_cote      : courriers entrants en attente de cotation (DG) ;
+     *  - to_sign      : courriers sortants en attente de signature (DG) ;
+     *  - to_confirm   : courriers cotés à mon service, réception à valider ;
+     *  - to_fix       : mes courriers sortants rejetés, à reprendre.
+     */
+    public function badgeCounts()
+    {
+        $user = Auth::user();
+        $organisationId = $user->current_organisation_id;
+        $isDg = $user->isSuperAdmin() || $user->hasRoleInOrganisation('DG', $organisationId);
+
+        $unread = Mail::whereIn('mail_type', [Mail::TYPE_INCOMING, Mail::TYPE_INTERNAL])
+            ->where(function ($q) use ($organisationId) {
+                $q->where('recipient_organisation_id', $organisationId)
+                  ->orWhere('assigned_organisation_id', $organisationId);
+            })
+            ->whereIn('status', [MailStatusEnum::TRANSMITTED, MailStatusEnum::IN_PROGRESS])
+            ->whereNull('processed_at')
+            ->count();
+
+        // Actions réservées au DG : cotation des entrants, signature des sortants.
+        $toCote = 0;
+        $toSign = 0;
+        if ($isDg) {
+            $toCote = Mail::where('mail_type', Mail::TYPE_INCOMING)
+                ->whereNull('assigned_organisation_id')
+                ->where('status', MailStatusEnum::TRANSMITTED)
+                ->count();
+
+            $toSign = Mail::where('mail_type', Mail::TYPE_OUTGOING)
+                ->where('status', MailStatusEnum::PENDING_APPROVAL)
+                ->count();
+        }
+
+        // Courriers sortants OU notes internes en attente de MON visa hiérarchique
+        // (validateur courant) — seule la signature DG reste réservée aux sortants.
+        $toValidate = Mail::whereIn('mail_type', [Mail::TYPE_OUTGOING, Mail::TYPE_INTERNAL])
+            ->where('status', MailStatusEnum::PENDING_REVIEW)
+            ->where('assigned_to', $user->id)
+            ->count();
+
+        // Réception à valider par MA direction. Avec la cotation multi-directions,
+        // chaque direction cotée a sa propre ligne : je ne compte que les cotations
+        // encore en attente POUR ma direction (si la mienne est validée mais qu'une
+        // autre direction reste en attente, cela ne me concerne plus).
+        // handledBy() couvre aussi les directions où je suis intérimaire, limitées
+        // à l'activité de mon volet.
+        $cotationPending = \App\Models\MailCotation::handledBy($user)
+            ->where('status', \App\Models\MailCotation::STATUS_PENDING)
+            ->count();
+
+        // Rétro-compat / notes internes : courriers affectés à ma direction sans
+        // ligne de cotation (courrier coté avant la multi-cotation, ou note interne).
+        $legacyConfirm = Mail::whereIn('mail_type', [Mail::TYPE_INCOMING, Mail::TYPE_INTERNAL])
+            ->where('assigned_organisation_id', $organisationId)
+            ->whereNot('status', MailStatusEnum::COMPLETED)
+            ->whereDoesntHave('cotations')
+            ->count();
+
+        $toConfirm = $cotationPending + $legacyConfirm;
+
+        // Mes courriers sortants ou notes internes rejetés, à reprendre.
+        $toFix = Mail::whereIn('mail_type', [Mail::TYPE_OUTGOING, Mail::TYPE_INTERNAL])
+            ->where('sender_user_id', $user->id)
+            ->where('status', MailStatusEnum::REJECTED)
+            ->count();
+
+        return response()->json([
+            'unread' => $unread,
+            'to_cote' => $toCote,
+            'to_sign' => $toSign,
+            'to_validate' => $toValidate,
+            'to_confirm' => $toConfirm,
+            'to_fix' => $toFix,
+            'pending_actions' => $toCote + $toSign + $toValidate + $toConfirm + $toFix,
+            'status' => 'success',
         ]);
     }
 

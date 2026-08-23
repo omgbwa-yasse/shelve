@@ -5,54 +5,15 @@
 
     <!-- Styles partagés via _submenu.scss -->
 
-    {{--
-        Email : vraie messagerie IMAP/SMTP, distincte du courrier administratif
-        ci-dessous. N'apparaît que si un administrateur a activé le module pour
-        l'organisation courante (settings.email-accounts, bouton "Email") —
-        les paramètres eux-mêmes restent toujours accessibles pour l'activer.
-    --}}
-    @if(auth()->user()?->currentOrganisation?->email_module_enabled)
-        <div class="submenu-section">
-            <div class="submenu-heading">
-                <i class="bi bi-envelope-at"></i> {{ __('Email') }}
-            </div>
-            <div class="submenu-content" id="emailMenu">
-                <div class="submenu-item">
-                    <a class="submenu-link" href="{{ route('mails.email.inbox') }}">
-                        <i class="bi bi-inbox"></i> {{ __('Boîte de réception') }}
-                    </a>
-                </div>
-                <div class="submenu-item">
-                    <a class="submenu-link" href="{{ route('mails.email.sent') }}">
-                        <i class="bi bi-send"></i> {{ __('Envoyés') }}
-                    </a>
-                </div>
-                <div class="submenu-item">
-                    <a class="submenu-link" href="{{ route('mails.email.compose') }}">
-                        <i class="bi bi-pencil-square"></i> {{ __('Composer') }}
-                    </a>
-                </div>
-                <div class="submenu-item">
-                    <a class="submenu-link" href="{{ route('mails.email.tags.manage.index') }}">
-                        <i class="bi bi-tags"></i> {{ __('Étiquettes') }}
-                    </a>
-                </div>
-                <div class="submenu-item">
-                    <a class="submenu-link" href="{{ route('settings.email-accounts.index') }}">
-                        <i class="bi bi-gear"></i> {{ __('Paramètres') }}
-                    </a>
-                </div>
-            </div>
-        </div>
-    @endif
+    <!-- Recherche Section - Consultations -->
 
-    <!-- Recherche Section - Consultations (courrier interne) -->
     <div class="submenu-section">
         <div class="submenu-heading">
-            <i class="bi bi-envelope"></i> {{ __('Consultations') }} — {{ __('Courrier interne') }}
+            <i class="bi bi-search"></i> {{ __('Consultations') }}
         </div>
-        <div class="submenu-content" id="consultationInterneMenu">
+        <div class="submenu-content" id="consultationMenu">
 
+            <div class="submenu-category-title">{{ __('Courrier interne') }}</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-received.index') }}">
                     <i class="bi bi-inbox"></i> {{ __('Reçus') }}
@@ -79,16 +40,8 @@
                 </a>
             </div>
 
-        </div>
-    </div>
-
-    <!-- Recherche Section - Consultations (externe / archives / recherche) -->
-    <div class="submenu-section">
-        <div class="submenu-heading">
-            <i class="bi bi-globe"></i> {{ __('Consultations') }} — {{ __('Externe / Archives / Recherche') }}
-        </div>
-        <div class="submenu-content" id="consultationExterneMenu">
-
+            <div class="submenu-divider"></div>
+            <div class="submenu-category-title">{{ __('Courrier externe') }}</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.send.external.index') }}">
                     <i class="bi bi-send"></i> {{ __('Envoyer') }}
@@ -99,6 +52,9 @@
                     <i class="bi bi-inbox"></i> {{ __('Recevoir') }}
                 </a>
             </div>
+
+            <div class="submenu-divider"></div>
+            <div class="submenu-category-title">{{ __('Archives') }}</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.archived') }}">
                     <i class="bi bi-folder"></i> {{ __('Courrier') }}
@@ -109,6 +65,9 @@
                     <i class="bi bi-archive"></i> {{ __('Boîtes') }}
                 </a>
             </div>
+
+            <div class="submenu-divider"></div>
+            <div class="submenu-category-title">{{ __('Recherche avancée') }}</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-select-typologies') }}">
                     <i class="bi bi-tags"></i> {{ __('typologies') }}
@@ -203,23 +162,19 @@
 
 </div>
 
+@once
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Fonctionnalité de collapse optionnelle pour les sous-menus
     const headings = document.querySelectorAll('.submenu-heading');
-
     headings.forEach(function(heading) {
         heading.addEventListener('click', function() {
             const content = this.nextElementSibling;
-
             if (content && content.classList.contains('submenu-content')) {
-                // Toggle la classe collapsed
                 content.classList.toggle('collapsed');
                 this.classList.toggle('collapsed');
             }
         });
     });
-
-    // Notifications retirées
 });
 </script>
+@endonce

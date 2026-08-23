@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Mail\MailActivityService;
+
+use App\Services\Mail\MailCodeService;
+
 use App\Models\Mail;
 use App\Models\Dolly;
 use App\Models\User;
@@ -11,6 +15,7 @@ use App\Models\MailTypology;
 use App\Models\MailAction;
 use App\Models\Organisation;
 use App\Models\MailAttachment;
+use App\Enums\MailStatusEnum;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -60,6 +65,10 @@ class MailSendController extends Controller
         $externalContacts = \App\Models\ExternalContact::orderBy('last_name')->orderBy('first_name')->get();
         $externalOrganizations = \App\Models\ExternalOrganization::orderBy('name')->get();
 
+        // Activité du plan de classement : indispensable au routage des intérims
+        // par volet — un courrier sans activité n'est traitable par aucun volet.
+        $activities = app(MailActivityService::class)->optionsFor(Auth::user());
+
         return view('mails.send.create', compact(
             'mailActions',
             'recipientOrganisations',
@@ -67,7 +76,8 @@ class MailSendController extends Controller
             'priorities',
             'typologies',
             'externalContacts',
-            'externalOrganizations'
+            'externalOrganizations',
+            'activities'
         ));
     }
 
@@ -209,15 +219,20 @@ class MailSendController extends Controller
                 'action_id' => 'required|exists:mail_actions,id',
                 'priority_id' => 'required|exists:mail_priorities,id',
                 'typology_id' => 'required|exists:mail_typologies,id',
+                'activity_id' => 'nullable|exists:activities,id',
                 'recipient_type' => 'required|in:internal,external_contact,external_organization',
                 'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
+                'attachments_pending' => 'nullable|array',
+                'attachments_pending.*' => 'integer|exists:attachments,id',
             ];
 
             // Validation conditionnelle selon le type de destinataire
             if ($request->input('recipient_type') === 'internal') {
+                // Le destinataire principal est l'organisation ; préciser une personne
+                // reste facultatif (à défaut, le courrier va au responsable attitré).
                 $recipientValidation = [
-                    'recipient_user_id' => 'required|exists:users,id',
                     'recipient_organisation_id' => 'required|exists:organisations,id',
+                    'recipient_user_id' => 'nullable|exists:users,id',
                 ];
             } elseif ($request->input('recipient_type') === 'external_contact') {
                 $recipientValidation = [
@@ -245,18 +260,34 @@ class MailSendController extends Controller
                 'action_id' => $validatedData['action_id'],
                 'priority_id' => $validatedData['priority_id'],
                 'typology_id' => $validatedData['typology_id'],
+                'activity_id' => $validatedData['activity_id'] ?? null,
                 'sender_organisation_id' => auth()->user()->current_organisation_id,
                 'sender_user_id' => auth()->id(),
-                'status' => 'in_progress',
-                'mail_type' => 'outgoing', // Courrier sortant
+                'status' => MailStatusEnum::IN_PROGRESS,
+                // Un destinataire interne = communication inter-services (visa N+1 puis
+                // livraison directe, sans signature DG) ; sinon, courrier sortant classique.
+                'mail_type' => $validatedData['recipient_type'] === 'internal' ? Mail::TYPE_INTERNAL : Mail::TYPE_OUTGOING,
                 'sender_type' => 'user', // L'expéditeur est toujours un utilisateur interne
             ];
 
             // Ajouter les données du destinataire selon le type
             if ($validatedData['recipient_type'] === 'internal') {
-                $mailData['recipient_user_id'] = $validatedData['recipient_user_id'];
                 $mailData['recipient_organisation_id'] = $validatedData['recipient_organisation_id'];
-                $mailData['recipient_type'] = 'user';
+
+                // Individu précisé ? Sinon, on route vers le responsable attitré de
+                // l'organisation destinataire (chaque entité a un responsable).
+                $recipientUserId = $validatedData['recipient_user_id'] ?? null;
+
+                if ($recipientUserId) {
+                    $mailData['recipient_user_id'] = $recipientUserId;
+                    $mailData['recipient_type'] = 'user';
+                } else {
+                    $organisation = Organisation::find($validatedData['recipient_organisation_id']);
+                    $responsible = $organisation?->responsible();
+
+                    $mailData['recipient_user_id'] = $responsible?->id;
+                    $mailData['recipient_type'] = 'organisation';
+                }
             } elseif ($validatedData['recipient_type'] === 'external_contact') {
                 $mailData['external_recipient_id'] = $validatedData['external_recipient_id'];
                 $mailData['recipient_type'] = 'external_contact';
@@ -277,6 +308,13 @@ class MailSendController extends Controller
                 foreach ($request->file('attachments') as $file) {
                     $this->handleFileUpload($file, $mail);
                 }
+            }
+
+            if (!empty($validatedData['attachments_pending'])) {
+                $pending = \App\Models\Attachment::whereIn('id', $validatedData['attachments_pending'])
+                    ->where('creator_id', auth()->id())
+                    ->pluck('id');
+                $mail->attachments()->attach($pending, ['added_by' => auth()->id()]);
             }
 
             \Log::info('Redirection vers mail-send.index');
@@ -312,12 +350,15 @@ class MailSendController extends Controller
             $transferredMail = new Mail();
 
             $transferredMail->fill([
-                'code' => $originalMail->code,
+                // Le transfert créait un second courrier portant EXACTEMENT le même
+                // numéro de registre. On dérive désormais un suffixe : le lien avec
+                // l'original reste lisible, et le registre garde des numéros uniques.
+                'code' => $this->derivedTransferCode($originalMail->code),
                 'name' => $originalMail->name,
                 'date' => now(),
                 'description' => $originalMail->description . "\n" . Auth::user()->name . " : " . now() . " : " . $validatedData['comment'],
                 'document_type' => $originalMail->document_type,
-                'status' => 'in_progress',
+                'status' => MailStatusEnum::IN_PROGRESS,
                 'typology_id' => $originalMail->typology_id,
 
                 'priority_id' => $originalMail->priority_id ?? null,
@@ -377,13 +418,16 @@ class MailSendController extends Controller
         $priorities = MailPriority::orderBy('name')->get();
         $typologies = MailTypology::orderBy('name')->get();
 
+        $activities = app(MailActivityService::class)->optionsFor(Auth::user());
+
         return view('mails.send.edit', compact(
             'mail',
             'mailActions',
             'recipientOrganisations',
             'users',
             'priorities',
-            'typologies'
+            'typologies',
+            'activities'
         ));
     }
 
@@ -402,6 +446,7 @@ class MailSendController extends Controller
                 'recipient_organisation_id' => 'required|exists:organisations,id',
                 'priority_id' => 'required|exists:mail_priorities,id',
                 'typology_id' => 'required|exists:mail_typologies,id',
+                'activity_id' => 'nullable|exists:activities,id',
                 'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
             ]);
 
@@ -484,28 +529,29 @@ class MailSendController extends Controller
 
 
 
+    /**
+     * Numéro dérivé pour un courrier transféré : CODE-T1, CODE-T2…
+     */
+    protected function derivedTransferCode(string $originalCode): string
+    {
+        $suffix = 1;
+
+        do {
+            $marque = '-T' . $suffix;
+            // mails.code est un varchar(30) : on rogne la base pour que le suffixe
+            // tienne, plutôt que de risquer une troncature côté SGBD.
+            $candidate = mb_substr($originalCode, 0, 30 - mb_strlen($marque)) . $marque;
+            $suffix++;
+        } while (Mail::where('code', $candidate)->exists());
+
+        return $candidate;
+    }
+
     public function generateMailCode(int $typologie_id)
     {
-        $typology = MailTypology::findOrFail($typologie_id);
-        $year = date('Y');
-
-        $count = Mail::whereYear('created_at', $year)
-                ->where('typology_id', $typologie_id)
-                ->count();
-
-        $nextNumber = $count + 1;
-        $codeExists = true;
-
-        while ($codeExists) {
-            $formattedNumber = str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
-            $candidateCode = $year . "/" . $typology->code . "/" . $formattedNumber;
-            $codeExists = Mail::where('code', $candidateCode)->exists();
-            if ($codeExists) {
-                $nextNumber++;
-            }
-        }
-
-        return $candidateCode;
+        // Numérotation du registre : attribution transactionnelle et unique, via
+        // MailCodeService. Le format AAAA/CODE/0001 reste inchangé.
+        return app(MailCodeService::class)->nextForTypology($typologie_id);
     }
 
 
@@ -641,11 +687,12 @@ public function inprogress()
     try {
         $mails = Mail::with(['action', 'sender', 'senderOrganisation', 'attachments'])
             ->where('recipient_user_id', Auth::id())
-            ->where('status', 'in_progress')
+            ->where('status', MailStatusEnum::IN_PROGRESS->value)
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('mails.send.index', compact('mails'));
+        $type = 'send';
+        return view('mails.index', compact('mails', 'type'));
     } catch (Exception $e) {
         Log::error('Erreur lors de la récupération des courriers en cours : ' . $e->getMessage());
         return back()->with('error', 'Une erreur est survenue lors du chargement des courriers.');
@@ -661,10 +708,11 @@ public function rejected()
     try {
             $mails = Mail::with(['action', 'sender', 'senderOrganisation', 'attachments'])
                 ->where('recipient_user_id', Auth::id())
-                ->where('status', 'reject')
+                ->where('status', MailStatusEnum::REJECTED->value)
                 ->orderBy('created_at', 'desc')
                 ->get();
-            return view('mails.send.index', compact('mails'));
+            $type = 'send';
+            return view('mails.index', compact('mails', 'type'));
 
         } catch (Exception $e) {
 
@@ -685,7 +733,7 @@ public function approve(Request $request)
 
         $mail->update([
             'recipient_user_id' => auth()->id(),
-            'status' => 'received'
+            'status' => MailStatusEnum::TRANSMITTED,
         ]);
 
         return redirect()->route('mail-received.index')

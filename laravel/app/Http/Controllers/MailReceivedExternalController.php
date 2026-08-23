@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Mail\MailActivityService;
+
+use App\Services\Mail\MailCodeService;
+
 use App\Models\Mail;
 use App\Models\User;
 use App\Models\MailTypology;
@@ -18,6 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Intervention\Image\Facades\Image;
 use FFMpeg\FFMpeg;
 
@@ -57,13 +62,18 @@ class MailReceivedExternalController extends Controller
         $externalContacts = ExternalContact::with('organization')->orderBy('last_name')->get();
         $externalOrganizations = ExternalOrganization::orderBy('name')->get();
 
+        // Activité du plan de classement : indispensable au routage des intérims
+        // par volet — un courrier sans activité n'est traitable par aucun volet.
+        $activities = app(MailActivityService::class)->optionsFor(Auth::user());
+
         return view('mails.received.external.create', compact(
             'typologies',
             'priorities',
             'actions',
             'senderOrganisations',
             'externalContacts',
-            'externalOrganizations'
+            'externalOrganizations',
+            'activities'
         ));
     }
 
@@ -79,8 +89,10 @@ class MailReceivedExternalController extends Controller
                 'description' => 'nullable',
                 'document_type' => 'required|in:original,duplicate,copy',
                 'typology_id' => 'required|exists:mail_typologies,id',
+                'activity_id' => 'nullable|exists:activities,id',
                 'priority_id' => 'nullable|exists:mail_priorities,id',
                 'action_id' => 'nullable|exists:mail_actions,id',
+                // Courrier reçu externe : l'émetteur est l'entité externe (ou une autre organisation).
                 'sender_type' => 'required|in:external_contact,external_organization,organisation',
                 'external_sender_id' => 'nullable|exists:external_contacts,id',
                 'external_sender_organization_id' => 'nullable|exists:external_organizations,id',
@@ -91,7 +103,12 @@ class MailReceivedExternalController extends Controller
                 'estimated_processing_time' => 'nullable|integer|min:1',
                 'attachments' => 'nullable|array',
                 'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
+                'attachments_pending' => 'nullable|array',
+                'attachments_pending.*' => 'integer|exists:attachments,id',
             ]);
+
+            $pendingAttachmentIds = $validatedData['attachments_pending'] ?? [];
+            unset($validatedData['attachments'], $validatedData['attachments_pending']);
 
             // Validation conditionnelle selon le type d'expéditeur
             if ($validatedData['sender_type'] === 'external_contact' && empty($validatedData['external_sender_id'])) {
@@ -129,8 +146,12 @@ class MailReceivedExternalController extends Controller
                 }
             }
 
-            // Initialize workflow for the mail
-            $mail->initializeWorkflow();
+            if (!empty($pendingAttachmentIds)) {
+                $pending = \App\Models\Attachment::whereIn('id', $pendingAttachmentIds)
+                    ->where('creator_id', Auth::id())
+                    ->pluck('id');
+                $mail->attachments()->attach($pending, ['added_by' => Auth::id()]);
+            }
 
             // Log the action
             $mail->logAction('created', null, null, null, 'Courrier entrant externe créé');
@@ -181,6 +202,8 @@ class MailReceivedExternalController extends Controller
         $externalContacts = ExternalContact::with('organization')->orderBy('last_name')->get();
         $externalOrganizations = ExternalOrganization::orderBy('name')->get();
 
+        $activities = app(MailActivityService::class)->optionsFor(Auth::user());
+
         return view('mails.received.external.edit', compact(
             'mail',
             'typologies',
@@ -188,7 +211,8 @@ class MailReceivedExternalController extends Controller
             'actions',
             'senderOrganisations',
             'externalContacts',
-            'externalOrganizations'
+            'externalOrganizations',
+            'activities'
         ));
     }
 
@@ -201,14 +225,18 @@ class MailReceivedExternalController extends Controller
             $mail = Mail::findOrFail($id);
 
             $validatedData = $request->validate([
-                'code' => 'required|exists:mails,code,' . $mail->id,
+                // Le code identifie le courrier au registre : il doit rester unique,
+                // ce courrier-ci excepté.
+                'code' => ['required', 'string', 'max:50', Rule::unique('mails', 'code')->ignore($mail->id)],
                 'name' => 'required|max:150',
                 'date' => 'required|date',
                 'description' => 'nullable',
                 'document_type' => 'required|in:original,duplicate,copy',
                 'typology_id' => 'required|exists:mail_typologies,id',
+                'activity_id' => 'nullable|exists:activities,id',
                 'priority_id' => 'nullable|exists:mail_priorities,id',
                 'action_id' => 'nullable|exists:mail_actions,id',
+                // Courrier reçu externe : l'émetteur est l'entité externe (ou une autre organisation).
                 'sender_type' => 'required|in:external_contact,external_organization,organisation',
                 'external_sender_id' => 'nullable|exists:external_contacts,id',
                 'external_sender_organization_id' => 'nullable|exists:external_organizations,id',
@@ -363,25 +391,8 @@ class MailReceivedExternalController extends Controller
      */
     protected function generateMailCode(int $typologie_id)
     {
-        $typology = MailTypology::findOrFail($typologie_id);
-        $year = date('Y');
-
-        $count = Mail::whereYear('created_at', $year)
-                ->where('typology_id', $typologie_id)
-                ->count();
-
-        $nextNumber = $count + 1;
-        $codeExists = true;
-
-        while ($codeExists) {
-            $formattedNumber = str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
-            $candidateCode = $year . "/" . $typology->code . "/" . $formattedNumber;
-            $codeExists = Mail::where('code', $candidateCode)->exists();
-            if ($codeExists) {
-                $nextNumber++;
-            }
-        }
-
-        return $candidateCode;
+        // Numérotation du registre : attribution transactionnelle et unique, via
+        // MailCodeService. Le format AAAA/CODE/0001 reste inchangé.
+        return app(MailCodeService::class)->nextForTypology($typologie_id);
     }
 }

@@ -29,7 +29,7 @@
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <label for="date" class="form-label">Date du courrier</label>
-                    <input type="date" id="date" name="date" class="form-control" value="{{ old('date', $mail->date) }}" required>
+                    <input type="date" id="date" name="date" class="form-control" value="{{ old('date', optional($mail->date)->format('Y-m-d')) }}" required>
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="typology_id" class="form-label">Typologie</label>
@@ -42,6 +42,8 @@
                         @endforeach
                     </select>
                 </div>
+                @include('mails.partials._activity', ['activities' => $activities, 'mail' => $mail ?? null])
+
                 <div class="col-md-4 mb-3">
                     <label for="document_type" class="form-label">Type de document</label>
                     <select name="document_type" id="document_type" class="form-select" required>
@@ -167,4 +169,3 @@
         });
     </script>
 @endpush
-@endsection

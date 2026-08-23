@@ -16,6 +16,9 @@
 
         <form action="{{ route('mails.send.external.store') }}" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
             @csrf
+
+            @include('mails.partials.ai-prefill', ['aiPrefillContext' => 'send_external'])
+
             <h5 class="card-title mb-4 text-secondary">Informations générales</h5>
 
             <div class="row">
@@ -41,6 +44,8 @@
                         @endforeach
                     </select>
                 </div>
+                @include('mails.partials._activity', ['activities' => $activities, 'mail' => $mail ?? null])
+
                 <div class="col-md-4 mb-3">
                     <label for="document_type" class="form-label">Type de document</label>
                     <select name="document_type" id="document_type" class="form-select border-primary" required>
@@ -429,4 +434,5 @@
             toggleRecipientSections();
         });
     </script>
+    <script src="{{ asset('js/mail-ai-prefill.js') }}"></script>
 @endpush

@@ -15,6 +15,9 @@
 
         <form action="{{ route('mail-received.store') }}" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
             @csrf
+
+            @include('mails.partials.ai-prefill', ['aiPrefillContext' => 'received'])
+
             <div class="row">
 
                 <h5 class="card-title mb-4">Informations générales</h5>
@@ -36,11 +39,13 @@
                         @endforeach
                     </select>
                 </div>
+                @include('mails.partials._activity', ['activities' => $activities, 'mail' => $mail ?? null])
+
             </div>
 
             <div class="mb-3">
-                <label for="name" class="form-label">Nom du courrier</label>
-                <input type="text" id="name" name="name" class="form-control" value="{{ old('name') }}" required>
+                <label for="name" class="form-label">{{ __('Objet') }}</label>
+                <input type="text" id="name" name="name" class="form-control" value="{{ old('name') }}" placeholder="{{ __('Objet du courrier') }}" required>
             </div>
 
             <div class="mb-3">
@@ -387,4 +392,5 @@
             });
         });
     </script>
+    <script src="{{ asset('js/mail-ai-prefill.js') }}"></script>
 @endpush

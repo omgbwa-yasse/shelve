@@ -238,8 +238,9 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('incoming', [MailController::class, 'indexIncoming'])->name('mails.incoming.index');
     Route::get('incoming/create', [MailController::class, 'createIncoming'])->name('mails.incoming.create');
     Route::get('count-unread', [MailController::class, 'countUnread'])->name('mails.count-unread');
+        Route::get('badge-counts', [MailController::class, 'badgeCounts'])->name('mails.badge-counts');
         Route::post('incoming', [MailController::class, 'storeIncoming'])->name('mails.incoming.store');
-        Route::get('incoming/{id}', [MailController::class, 'show'])->name('mails.incoming.show');
+        Route::get('incoming/{id}', fn ($id) => app(MailController::class)->show('received', $id))->name('mails.incoming.show');
         Route::get('incoming/{id}/edit', [MailController::class, 'edit'])->name('mails.incoming.edit');
         Route::put('incoming/{id}', [MailController::class, 'update'])->name('mails.incoming.update');
         Route::patch('incoming/{id}', [MailController::class, 'update']);
@@ -248,7 +249,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('outgoing', [MailController::class, 'indexOutgoing'])->name('mails.outgoing.index');
         Route::get('outgoing/create', [MailController::class, 'createOutgoing'])->name('mails.outgoing.create');
         Route::post('outgoing', [MailController::class, 'storeOutgoing'])->name('mails.outgoing.store');
-        Route::get('outgoing/{id}', [MailController::class, 'show'])->name('mails.outgoing.show');
+        Route::get('outgoing/{id}', fn ($id) => app(MailController::class)->show('send', $id))->name('mails.outgoing.show');
         Route::get('outgoing/{id}/edit', [MailController::class, 'edit'])->name('mails.outgoing.edit');
         Route::put('outgoing/{id}', [MailController::class, 'update'])->name('mails.outgoing.update');
         Route::patch('outgoing/{id}', [MailController::class, 'update']);
@@ -258,10 +259,26 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('{mail}/summarize', [\App\Http\Controllers\Api\AiMailController::class, 'summarize'])->name('mail.summarize');
         Route::post('{mail}/save-summary', [\App\Http\Controllers\Api\AiMailController::class, 'saveSummary'])->name('mail.saveSummary');
 
+        Route::post('ai-prefill/upload', [\App\Http\Controllers\Api\MailAiPrefillController::class, 'upload'])->name('mail.ai-prefill.upload');
+        Route::post('ai-prefill/suggest', [\App\Http\Controllers\Api\MailAiPrefillController::class, 'suggest'])->name('mail.ai-prefill.suggest');
+
         Route::resource('received', MailReceivedController::class)->names('mail-received');
 
         Route::get('received/{mail}/approve', [MailReceivedController::class, 'approve'])->name('mail-received.approve');
         Route::get('received/{mail}/reject', [MailReceivedController::class, 'reject'])->name('mail-received.reject');
+
+        // Circuit zéro papier : cotation, N+1, DG, correction et réception.
+        Route::get('workflow/{mail}/cote', [\App\Http\Controllers\MailWorkflowController::class, 'coteForm'])->name('mails.workflow.cote-form');
+        Route::post('workflow/{mail}/cote', [\App\Http\Controllers\MailWorkflowController::class, 'cote'])->name('mails.workflow.cote');
+        Route::post('workflow/{mail}/confirm-reception', [\App\Http\Controllers\MailWorkflowController::class, 'confirmReception'])->name('mails.workflow.confirm-reception');
+        Route::post('workflow/{mail}/reply', [\App\Http\Controllers\MailWorkflowController::class, 'reply'])->name('mails.workflow.reply');
+        Route::post('workflow/{mail}/assign-user', [\App\Http\Controllers\MailWorkflowController::class, 'assignToUser'])->name('mails.workflow.assign-user');
+        Route::post('workflow/{mail}/submit', [\App\Http\Controllers\MailWorkflowController::class, 'submit'])->name('mails.workflow.submit');
+        Route::post('workflow/{mail}/validate-n1', [\App\Http\Controllers\MailWorkflowController::class, 'validateByN1'])->name('mails.workflow.validate-n1');
+        Route::post('workflow/{mail}/sign', [\App\Http\Controllers\MailWorkflowController::class, 'sign'])->name('mails.workflow.sign');
+        Route::post('workflow/{mail}/reject', [\App\Http\Controllers\MailWorkflowController::class, 'reject'])->name('mails.workflow.reject');
+        Route::post('workflow/{mail}/return-for-revision', [\App\Http\Controllers\MailWorkflowController::class, 'returnForRevision'])->name('mails.workflow.return-for-revision');
+        Route::post('workflow/{mail}/resubmit', [\App\Http\Controllers\MailWorkflowController::class, 'resubmit'])->name('mails.workflow.resubmit');
 
         // Route pour les courriers retournés
         Route::get('returned', [MailReceivedController::class, 'returned'])->name('mail-received.returned');
@@ -830,6 +847,12 @@ Route::group(['middleware' => 'auth'], function () {
         // Routes pour la gestion des organisations dans tools
         Route::get('organisations/export/excel', [OrganisationController::class, 'exportExcel'])->name('organisations.export.excel');
         Route::get('organisations/export/pdf', [OrganisationController::class, 'exportPdf'])->name('organisations.export.pdf');
+        Route::get('organisation-interims', [\App\Http\Controllers\OrganisationInterimController::class, 'index'])->name('organisation-interims.index');
+        Route::get('organisation-interims/create', [\App\Http\Controllers\OrganisationInterimController::class, 'create'])->name('organisation-interims.create');
+        Route::post('organisation-interims', [\App\Http\Controllers\OrganisationInterimController::class, 'store'])->name('organisation-interims.store');
+        Route::patch('organisation-interims/{interim}/deactivate', [\App\Http\Controllers\OrganisationInterimController::class, 'deactivate'])->name('organisation-interims.deactivate');
+        Route::patch('organisation-interims/{interim}/primary', [\App\Http\Controllers\OrganisationInterimController::class, 'setPrimary'])->name('organisation-interims.primary');
+        Route::delete('organisation-interims/{interim}', [\App\Http\Controllers\OrganisationInterimController::class, 'destroy'])->name('organisation-interims.destroy');
         Route::resource('organisations', OrganisationController::class);
 
         Route::resource('access', ContainerStatusController::class);

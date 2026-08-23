@@ -193,6 +193,32 @@
         </div>
     </div>
     @endauth
+
+    @php
+        $canManageInterims = auth()->check() && (
+            auth()->user()->isSuperAdmin()
+            || auth()->user()->hasRoleInOrganisation('DG', auth()->user()->current_organisation_id)
+        );
+    @endphp
+    @if($canManageInterims)
+        <div class="submenu-section">
+            <div class="submenu-heading">
+                <i class="bi bi-person-badge"></i> {{ __('Intérims') }}
+            </div>
+            <div class="submenu-content" id="interimsMenu">
+                <div class="submenu-item">
+                    <a class="submenu-link" href="{{ route('organisation-interims.index') }}">
+                        <i class="bi bi-people"></i> {{ __('Intérims des responsables') }}
+                    </a>
+                </div>
+                <div class="submenu-item">
+                    <a class="submenu-link" href="{{ route('organisation-interims.create') }}">
+                        <i class="bi bi-plus-square"></i> {{ __('Désigner un intérimaire') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {

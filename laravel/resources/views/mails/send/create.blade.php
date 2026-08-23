@@ -15,13 +15,22 @@
 
         <form action="{{ route('mail-send.store') }}" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
             @csrf
+
+            @include('mails.partials.ai-prefill', ['aiPrefillContext' => 'send'])
+
             <div class="row">
 
                 <h5 class="card-title mb-4">Informations générales</h5>
 
+                {{-- Le numéro de registre est attribué par le système : le champ de
+                     saisie qui figurait ici n'était jamais lu par le contrôleur, ce
+                     qui laissait croire à l'agent qu'il choisissait le numéro. --}}
                 <div class="col-md-4 mb-3">
-                    <label for="code" class="form-label">Code</label>
-                    <input type="text" id="code" name="code" class="form-control" required>
+                    <label class="form-label">Code du courrier</label>
+                    <input type="text" class="form-control" value="Attribué automatiquement" disabled>
+                    <small class="form-text text-muted">
+                        Le numéro de registre est généré à l'enregistrement, à partir de la typologie.
+                    </small>
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="date" class="form-label">Date du courrier</label>
@@ -36,6 +45,8 @@
                         @endforeach
                     </select>
                 </div>
+                @include('mails.partials._activity', ['activities' => $activities, 'mail' => $mail ?? null])
+
             </div>
 
             <div class="mb-3">
@@ -103,24 +114,45 @@
                 </div>
             </div>
 
-            <div class="row" id="internal_recipient">
-                <div class="col-md-6 mb-3">
-                    <label for="recipient_organisation_id" class="form-label">Organisation de réception</label>
-                    <select name="recipient_organisation_id" id="recipient_organisation_id" class="form-select recipient-field internal-field" required>
-                        <option value="">Choisir une organisation</option>
-                        @foreach($recipientOrganisations as $organisation)
-                            <option value="{{ $organisation->id }}">{{ $organisation->name }}</option>
-                        @endforeach
-                    </select>
+            <div id="internal_recipient">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="recipient_organisation_id" class="form-label">Administration / organisation destinataire</label>
+                        <select name="recipient_organisation_id" id="recipient_organisation_id" class="form-select recipient-field internal-field" required>
+                            <option value="">Choisir une organisation</option>
+                            @foreach($recipientOrganisations as $organisation)
+                                <option value="{{ $organisation->id }}" {{ old('recipient_organisation_id') == $organisation->id ? 'selected' : '' }}>{{ $organisation->name }}</option>
+                            @endforeach
+                        </select>
+                        <small class="form-text text-muted">
+                            Par défaut, le courrier est adressé au responsable attitré de cette entité.
+                        </small>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="recipient_user_id" class="form-label">Utilisateur récepteur</label>
-                    <select name="recipient_user_id" id="recipient_user_id" class="form-select recipient-field internal-field" required>
-                        <option value="">Choisir un utilisateur</option>
-                        @foreach($users as $user)
-                            <option value="{{ $user->id }}">{{ $user->name }}</option>
-                        @endforeach
-                    </select>
+
+                <div class="row">
+                    <div class="col-12 mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="specify_person" name="specify_person" value="1"
+                                   {{ old('recipient_user_id') ? 'checked' : '' }}>
+                            <label class="form-check-label" for="specify_person">
+                                Préciser une personne en particulier
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row {{ old('recipient_user_id') ? '' : 'd-none' }}" id="specific_person_row">
+                    <div class="col-md-6 mb-3">
+                        <label for="recipient_user_id" class="form-label">Utilisateur récepteur</label>
+                        {{-- Pas de classe "internal-field" : le choix d'une personne reste facultatif. --}}
+                        <select name="recipient_user_id" id="recipient_user_id" class="form-select recipient-field">
+                            <option value="">Choisir un utilisateur</option>
+                            @foreach($users as $user)
+                                <option value="{{ $user->id }}" {{ old('recipient_user_id') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -416,8 +448,23 @@
 
                 const recipientOrganisationSelect = document.getElementById('recipient_organisation_id');
                 const recipientUserSelect = document.getElementById('recipient_user_id');
+                const specifyPersonCheckbox = document.getElementById('specify_person');
+                const specificPersonRow = document.getElementById('specific_person_row');
 
-                    recipientUserSelect.disabled = true;
+                    // Le destinataire principal est l'organisation : le choix d'une personne
+                    // n'est proposé que si l'utilisateur coche « Préciser une personne ».
+                    function toggleSpecificPerson() {
+                        if (specifyPersonCheckbox.checked) {
+                            specificPersonRow.classList.remove('d-none');
+                            recipientUserSelect.disabled = !recipientOrganisationSelect.value;
+                        } else {
+                            specificPersonRow.classList.add('d-none');
+                            recipientUserSelect.value = '';
+                        }
+                    }
+
+                    specifyPersonCheckbox.addEventListener('change', toggleSpecificPerson);
+                    toggleSpecificPerson();
 
                     recipientOrganisationSelect.addEventListener('change', function() {
                         const organisationId = this.value;
@@ -458,4 +505,5 @@
 
         });
     </script>
+    <script src="{{ asset('js/mail-ai-prefill.js') }}"></script>
 @endpush

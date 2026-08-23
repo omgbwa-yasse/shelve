@@ -1131,9 +1131,12 @@
                     items: mailIds
                 })
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error('Erreur HTTP: ' + response.status);
+                    return response.json();
+                })
                 .then(data => {
-                    if (data.success || response.ok) {
+                    if (data.success || data.message === 'success' || data) {
                         alert(`${mailIds.length} courrier(s) ajouté(s) au chariot avec succès.`);
 
                         // Fermer le modal
@@ -1357,22 +1360,25 @@
             console.log('Tous les courriers', allChecked ? 'décochés' : 'cochés');
         });
 
-        document.getElementById('searchInput').addEventListener('keyup', function() {
-            var input, filter, cards, card, i, txtValue;
-            input = document.getElementById('searchInput');
-            filter = input.value.toUpperCase();
-            cards = document.getElementById('mailList').getElementsByClassName('card');
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                var input, filter, cards, card, i, txtValue;
+                input = document.getElementById('searchInput');
+                filter = input.value.toUpperCase();
+                cards = document.getElementById('mailList').getElementsByClassName('card');
 
-            for (i = 0; i < cards.length; i++) {
-                card = cards[i];
-                txtValue = card.textContent || card.innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    card.style.display = "";
-                } else {
-                    card.style.display = "none";
+                for (i = 0; i < cards.length; i++) {
+                    card = cards[i];
+                    txtValue = card.textContent || card.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        card.style.display = "";
+                    } else {
+                        card.style.display = "none";
+                    }
                 }
-            }
-        });
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             const collapseElements = document.querySelectorAll('.collapse');

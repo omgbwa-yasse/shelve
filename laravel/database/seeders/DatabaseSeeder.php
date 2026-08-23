@@ -8,6 +8,7 @@ use Database\Seeders\Contacts\ExternalContactsSeeder;
 use Database\Seeders\Contacts\AuthorTypeSeeder;
 use Database\Seeders\Contacts\AddressTypeSeeder;
 use Database\Seeders\Mails\MailSystemSeeder;
+use Database\Seeders\Mails\MailWorkflowRolesSeeder;
 use Database\Seeders\Tools\ThesaurusTypologieSeeder;
 use Database\Seeders\Tools\ThesaurusMatiereSeeder;
 use Database\Seeders\Tools\ThesaurusGeographiqueSeeder;
@@ -60,6 +61,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             // 1. PERMISSIONS (Base du système d'authentification)
             PermissionCategorySeeder::class, // Seeder avec catégories et nomenclature unifiée
+            MailWorkflowRolesSeeder::class, // Rôles DG, directeur, responsable et agent du circuit Courrier
 
             // 2. DONNÉES DE BASE (Indépendantes)
             ExternalContactsSeeder::class, // Seeder pour les contacts externes
