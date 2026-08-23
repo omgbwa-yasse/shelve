@@ -29,7 +29,7 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white py-3"><h5 class="mb-0"><span class="badge rounded-pill bg-primary me-2">1</span>Choisir le modèle</h5></div>
                     <div class="card-body">
-                        @foreach(collect($templates)->groupBy('category') as $category => $group)
+                        @foreach(collect($templates)->groupBy('category', preserveKeys: true) as $category => $group)
                             <div class="text-uppercase text-muted small fw-semibold mb-2 {{ !$loop->first ? 'mt-4' : '' }}">{{ $category }}</div>
                             <div class="row g-2">
                                 @foreach($group as $code => $template)
