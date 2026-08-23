@@ -59,6 +59,11 @@
                         <th>Nom</th>
                         <th>Type</th>
                         <th>Niveau</th>
+                        @if($showLifecycleColumns ?? false)
+                            <th>Règle</th>
+                            <th>Échéance</th>
+                            <th>Phase</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -75,9 +80,19 @@
                                 </span>
                             </td>
                             <td>{{ $record->level?->name ?? '—' }}</td>
+                            @if($showLifecycleColumns ?? false)
+                                @php($cycle = $lifecycleData[$record->id] ?? null)
+                                <td>{{ $cycle['retention']?->code ?? 'À corriger' }}</td>
+                                <td>{{ $cycle['deadline']?->format('d/m/Y') ?? '—' }}</td>
+                                <td>
+                                    <span class="badge {{ ($cycle['issues'] ?? []) === [] ? 'bg-primary' : 'bg-danger' }}">
+                                        {{ $cycle['phase_label'] ?? '—' }}
+                                    </span>
+                                </td>
+                            @endif
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="text-center text-muted py-4">Aucune notice trouvée.</td></tr>
+                        <tr><td colspan="{{ ($showLifecycleColumns ?? false) ? 8 : 5 }}" class="text-center text-muted py-4">Aucune notice trouvée.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -117,11 +132,19 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Organisation destinataire</label>
-                        <select name="user_organisation_id" class="form-select">
+                        <select name="user_organisation_id" class="form-select" required>
                             @foreach(\App\Models\Organisation::orderBy('name')->get() as $org)
                                 <option value="{{ $org->id }}" {{ $org->id == auth()->user()->current_organisation_id ? 'selected' : '' }}>{{ $org->name }}</option>
                             @endforeach
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nature du mouvement</label>
+                        <select name="transfer_type" class="form-select" required>
+                            <option value="internal_transfer">Transfert entre directions</option>
+                            <option value="archival_deposit">Versement au service des archives</option>
+                        </select>
+                        <div class="form-text">Le transfert change la direction détentrice. Le versement place le dossier en conservation archivistique.</div>
                     </div>
                 </div>
                 <div class="modal-footer">

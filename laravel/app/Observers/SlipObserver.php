@@ -34,6 +34,10 @@ class SlipObserver
      */
     private function determineStatus(Slip $slip): string
     {
+        if ($slip->is_rejected) {
+            return 'Rejected';
+        }
+
         if ($slip->is_integrated) {
             return 'Integrated';
         }

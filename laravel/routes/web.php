@@ -651,6 +651,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('transferrings')->group(function () {
         // Gestion du cycle de vie des documents
+        Route::get('lifecycle/configure', [LifeCycleController::class, 'recordToConfigure'])->name('records.toconfigure');
         Route::get('lifecycle/transfer', [LifeCycleController::class, 'recordToTransfer'])->name('records.totransfer');
         Route::get('lifecycle/sort', [LifeCycleController::class, 'recordToSort'])->name('records.tosort');
         Route::get('lifecycle/eliminate', [LifeCycleController::class, 'recordToEliminate'])->name('records.toeliminate');
@@ -666,9 +667,11 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('slips/import', [SlipController::class, 'importForm'])->name('slips.import.form');
         Route::post('slips/import/{format}', [SlipController::class, 'import'])->name('slips.import');
         Route::get('search', [SearchController::class, 'index'])->name('transferrings.search');
-        Route::get('slips/reception', [SlipController::class, 'reception'])->name('slips.reception');
-        Route::get('slips/approve', [SlipController::class, 'approve'])->name('slips.approve');
-        Route::get('slips/integrate', [SlipController::class, 'integrate'])->name('slips.integrate');
+        Route::post('slips/{slip}/reception', [SlipController::class, 'reception'])->name('slips.reception');
+        Route::post('slips/{slip}/approve', [SlipController::class, 'approve'])->name('slips.approve');
+        Route::post('slips/{slip}/integrate', [SlipController::class, 'integrate'])->name('slips.integrate');
+        Route::post('slips/{slip}/reject', [SlipController::class, 'reject'])->name('slips.reject');
+        Route::post('slips/{slip}/resubmit', [SlipController::class, 'resubmit'])->name('slips.resubmit');
         Route::resource('slips', SlipController::class);
 
         // Export SEDA 2.1
@@ -706,7 +709,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::prefix('record-reactivations')->name('record-reactivations.')->group(function () {
         Route::get('/', [RecordReactivationController::class, 'index'])->name('index');
         Route::get('create/{record}', [RecordReactivationController::class, 'create'])->name('create');
-        Route::post('/', [RecordReactivationController::class, 'store'])->name('store');
+        Route::post('{record}', [RecordReactivationController::class, 'store'])->name('store');
         Route::post('{reactivation}/approve', [RecordReactivationController::class, 'approve'])->name('approve');
         Route::post('{reactivation}/reject', [RecordReactivationController::class, 'reject'])->name('reject');
     });

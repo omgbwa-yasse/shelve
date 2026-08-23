@@ -227,7 +227,9 @@ class RecordController extends Controller
             $nextId = $listIds[$pos + 1] ?? null;
         }
 
-        return view('records.show', compact('record', 'prevId', 'nextId'));
+        $lifecycle = app(\App\Services\RecordLifecycleService::class)->analyse($record);
+
+        return view('records.show', compact('record', 'prevId', 'nextId', 'lifecycle'));
     }
 
     public function edit(Record $record)
@@ -635,47 +637,108 @@ class RecordController extends Controller
             'code' => 'required|max:20',
             'name' => 'required|max:200',
             'description' => 'nullable',
+            'user_organisation_id' => 'required|exists:organisations,id',
+            'transfer_type' => 'required|in:internal_transfer,archival_deposit',
             'record_ids' => 'required|array',
+            'record_ids.*' => 'integer|exists:records,id',
         ]);
 
-        $defaultStatusId = \App\Models\SlipStatus::where('name', 'Projects')->value('id') ?? 1;
+        $recordIds = array_values(array_unique(array_map('intval', $request->input('record_ids'))));
+        $records = Record::query()
+            ->whereIn('id', $recordIds)
+            ->with(['activity.retentions', 'mediums'])
+            ->get();
 
-        $slip = \App\Models\Slip::create([
-            'code' => $request->code,
-            'name' => $request->name,
-            'description' => $request->description,
-            'officer_organisation_id' => $request->user()->current_organisation_id,
-            'officer_id' => $request->user()->id,
-            'user_organisation_id' => $request->input('user_organisation_id', $request->user()->current_organisation_id),
-            'slip_status_id' => $defaultStatusId,
-        ]);
+        if (! $request->user()->isSuperAdmin()) {
+            $records = $records->where('organisation_id', $request->user()->current_organisation_id);
+        }
 
-        foreach ($request->input('record_ids') as $recordId) {
-            $record = \App\Models\Record::find($recordId);
-            if (! $record) {
-                continue;
-            }
-
-            $supportId = \App\Models\RecordMedium::where('record_id', $recordId)->value('support_id') ?? 24;
-
-            \App\Models\SlipRecord::create([
-                'slip_id' => $slip->id,
-                'code' => $record->code,
-                'name' => $record->name,
-                'date_format' => $record->date_format,
-                'date_start' => $record->start_date,
-                'date_end' => $record->end_date,
-                'date_exact' => $record->date_exact,
-                'content' => $record->getMetadataValue('content'),
-                'level_id' => $record->level_id,
-                'support_id' => $supportId,
-                'activity_id' => $record->activity_id,
-                'creator_id' => $request->user()->id,
+        if ($records->count() !== count($recordIds)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'record_ids' => 'Une ou plusieurs notices ne sont pas accessibles depuis la direction courante.',
             ]);
         }
 
-        return redirect()->route('slips.index')
-            ->with('success', 'Bordereau créé avec '.count($request->input('record_ids')).' notice(s).');
+        if ($records->pluck('organisation_id')->unique()->count() !== 1) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'record_ids' => 'Toutes les notices d’un même bordereau doivent provenir de la même direction.',
+            ]);
+        }
+
+        $sourceOrganisationId = (int) $records->first()->organisation_id;
+        if ((int) $request->input('user_organisation_id') === $sourceOrganisationId) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'user_organisation_id' => 'La direction destinataire doit être différente de la direction de départ.',
+            ]);
+        }
+
+        foreach ($records as $record) {
+            if (! $record->activity || $record->activity->retentions->count() !== 1) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'record_ids' => "La notice {$record->code} doit avoir une classe et une seule règle de conservation avant transfert.",
+                ]);
+            }
+
+            $alreadyPending = \App\Models\SlipRecord::query()
+                ->where('record_id', $record->id)
+                ->whereHas('slip', fn ($q) => $q->where('is_integrated', false)->where('is_rejected', false))
+                ->exists();
+
+            if ($alreadyPending) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'record_ids' => "La notice {$record->code} figure déjà dans un transfert en cours.",
+                ]);
+            }
+        }
+
+        $defaultStatusId = \App\Models\SlipStatus::where('name', 'Projects')->value('id') ?? 1;
+
+        $slip = DB::transaction(function () use ($request, $records, $defaultStatusId, $sourceOrganisationId) {
+            $slip = \App\Models\Slip::create([
+                'code' => $request->code,
+                'name' => $request->name,
+                'description' => $request->description,
+                'transfer_type' => $request->input('transfer_type'),
+                'officer_organisation_id' => $sourceOrganisationId,
+                'officer_id' => $request->user()->id,
+                'user_organisation_id' => $request->integer('user_organisation_id'),
+                'slip_status_id' => $defaultStatusId,
+            ]);
+
+            $fallbackSupportId = RecordSupport::query()->value('id');
+            $fallbackLevelId = RecordLevel::query()->value('id');
+
+            foreach ($records as $record) {
+                $supportId = $record->mediums->first()?->support_id ?? $fallbackSupportId;
+
+                \App\Models\SlipRecord::create([
+                    'slip_id' => $slip->id,
+                    'record_id' => $record->id,
+                    'code' => $record->code,
+                    'name' => $record->name,
+                    'date_format' => $record->date_format ?: 'D',
+                    'date_start' => $record->start_date?->format('Y-m-d'),
+                    'date_end' => $record->end_date?->format('Y-m-d'),
+                    'date_exact' => $record->date_exact,
+                    'content' => $record->getMetadataValue('content', $record->description),
+                    'level_id' => $record->level_id ?: $fallbackLevelId,
+                    'support_id' => $supportId,
+                    'activity_id' => $record->activity_id,
+                    'creator_id' => $request->user()->id,
+                ]);
+
+                $record->update([
+                    'archival_status_gvaa' => $request->input('transfer_type') === 'archival_deposit'
+                        ? 'deposit_pending'
+                        : 'transfer_pending',
+                ]);
+            }
+
+            return $slip;
+        });
+
+        return redirect()->route('slips.show', $slip)
+            ->with('success', 'Bordereau préparé avec '.$records->count().' notice(s).');
     }
 
     /**

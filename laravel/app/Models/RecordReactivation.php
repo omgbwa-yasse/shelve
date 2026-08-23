@@ -29,6 +29,8 @@ class RecordReactivation extends Model
         'is_approved' => 'boolean',
         'previous_transfer_date' => 'date',
         'new_transfer_date' => 'date',
+        'requested_date' => 'datetime',
+        'approved_date' => 'datetime',
     ];
 
     public function record()

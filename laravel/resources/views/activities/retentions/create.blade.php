@@ -2,8 +2,8 @@
 
 @section('content')
 <div class="container">
-    <h1>{{ __('Add Retention Rule') }}</h1>
-    {{ __('Activity') }}: <strong>{{ $activity->code }} - {{ $activity->name }} </strong>
+    <h1>Appliquer une règle de conservation</h1>
+    Classe : <strong>{{ $activity->code }} - {{ $activity->name }} </strong>
         <table class="table">
             <thead>
                 <tr>
@@ -28,13 +28,13 @@
 <form action="{{ route('activities.retentions.store', $activity->id) }}" method="POST">
     @csrf
     <div class="form-group">
-        <label for="retention_id">{{ __('Choose Retention Rule') }}</label>
+        <label for="retention_id">Choisir la règle effective</label>
         <select class="form-control" id="retention_id" name="retention_id">
             @foreach($retentions as $retention)
-            <option value="{{ $retention->id }}">{{ $retention->name }}</option>
+            <option value="{{ $retention->id }}">{{ $retention->code }} — {{ $retention->name }} — {{ $retention->duration }} an(s) — sort {{ $retention->sort?->code }}</option>
             @endforeach
         </select>
     </div>
-    <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
+    <button type="submit" class="btn btn-primary">Appliquer</button>
 </form>
 @endsection

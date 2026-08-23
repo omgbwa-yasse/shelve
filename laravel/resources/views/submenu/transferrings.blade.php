@@ -95,33 +95,33 @@
         </div>
         <div class="submenu-content" id="lifeCycleMenu">
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('records.tostore') }}">
-                    <i class="bi bi-folder-check"></i> {{ __('to_transfer') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('records.toretain') }}">
-                    <i class="bi bi-folder-check"></i> {{ __('active_files') }}
+                <a class="submenu-link" href="{{ route('records.toconfigure') }}">
+                    <i class="bi bi-exclamation-triangle"></i> À configurer
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('records.totransfer') }}">
-                    <i class="bi bi-arrow-right-square"></i> {{ __('to_deposit') }}
+                    <i class="bi bi-arrow-left-right"></i> À transférer
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('records.toeliminate') }}">
-                    <i class="bi bi-trash"></i> {{ __('to_eliminate') }}
+                <a class="submenu-link" href="{{ route('records.toretain') }}">
+                    <i class="bi bi-hourglass-split"></i> Conservation en cours
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('records.tokeep') }}">
-                    <i class="bi bi-archive"></i> {{ __('to_keep') }}
+                <a class="submenu-link" href="{{ route('records.tostore') }}">
+                    <i class="bi bi-archive"></i> À verser définitivement
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('records.tosort') }}">
-                    <i class="bi bi-sort-down"></i> {{ __('to_sort') }}
+                    <i class="bi bi-sort-down"></i> À trier
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('records.toeliminate') }}">
+                    <i class="bi bi-trash"></i> À éliminer
                 </a>
             </div>
         </div>

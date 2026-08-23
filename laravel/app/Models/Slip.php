@@ -24,6 +24,7 @@ class Slip extends Model
         'code',
         'name',
         'description',
+        'transfer_type',
         'officer_organisation_id',
         'officer_id',
         'user_organisation_id',
@@ -38,6 +39,21 @@ class Slip extends Model
         'is_integrated',
         'integrated_date',
         'integrated_by',
+        'is_rejected',
+        'rejected_date',
+        'rejected_by',
+        'rejection_reason',
+    ];
+
+    protected $casts = [
+        'is_received' => 'boolean',
+        'is_approved' => 'boolean',
+        'is_integrated' => 'boolean',
+        'is_rejected' => 'boolean',
+        'received_date' => 'datetime',
+        'approved_date' => 'datetime',
+        'integrated_date' => 'datetime',
+        'rejected_date' => 'datetime',
     ];
 
 
@@ -90,6 +106,37 @@ class Slip extends Model
     public function integratedAgent()
     {
         return $this->belongsTo(User::class, 'integrated_by');
+    }
+
+    public function rejectedAgent()
+    {
+        return $this->belongsTo(User::class, 'rejected_by');
+    }
+
+    public function getTransferTypeLabelAttribute(): string
+    {
+        return $this->transfer_type === 'archival_deposit'
+            ? 'Versement au service des archives'
+            : 'Transfert entre directions';
+    }
+
+    /**
+     * Keep the search payload flat. A slip can be saved while its records and
+     * source records are eager-loaded during integration; Scout/TNTSearch only
+     * accepts scalar values and must never receive these nested relations.
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => (string) $this->id,
+            'code' => (string) $this->code,
+            'name' => (string) $this->name,
+            'description' => (string) ($this->description ?? ''),
+            'transfer_type' => (string) ($this->transfer_type ?? ''),
+            'officer_organisation_id' => (string) ($this->officer_organisation_id ?? ''),
+            'user_organisation_id' => (string) ($this->user_organisation_id ?? ''),
+            'slip_status_id' => (string) ($this->slip_status_id ?? ''),
+        ];
     }
 
 

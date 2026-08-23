@@ -6,7 +6,7 @@
             <div class="">
                 <div class="">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h2 class="mb-0">Détails du bordereau du versement</h2>
+                        <h2 class="mb-0">Détails du mouvement d’archives</h2>
                         <div>
                             <a href="{{ route('slips.print', $slip->id) }}" class="btn btn-danger me-2" target="_blank">
                                 <i class="fas fa-file-pdf"></i> Générer PDF du bordereau
@@ -33,24 +33,18 @@
                             <div class="col-md-6">
                                 <div class="card h-100">
                                     <div class="card-body">
-                                        <h4 class="card-title text-primary">Service versant</h4>
-                                        <p class="card-text"><strong><a href="{{ route('organisations.show', $slip->userOrganisation->id) }}">{{ $slip->userOrganisation->name }}</a></strong></p>
-                                        <p class="card-text">Intervenant: <strong>
-                                            @if($slip->user)
-                                                <a href="{{ route('users.show', $slip->user->id) }}">{{ $slip->user->name }}</a>
-                                            @else
-                                                Aucun
-                                            @endif
-                                        </strong></p>
+                                        <h4 class="card-title text-primary">Direction de départ / service versant</h4>
+                                        <p class="card-text"><strong><a href="{{ route('organisations.show', $slip->officerOrganisation->id) }}">{{ $slip->officerOrganisation->name }}</a></strong></p>
+                                        <p class="card-text">Préparé par : <strong><a href="{{ route('users.show', $slip->officer->id) }}">{{ $slip->officer->name }}</a></strong></p>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="card h-100">
                                     <div class="card-body">
-                                        <h4 class="card-title text-primary">Service des archives</h4>
-                                        <p class="card-text"><strong><a href="{{ route('organisations.show', $slip->officerOrganisation->id) }}">{{ $slip->officerOrganisation->name }}</a></strong></p>
-                                        <p class="card-text">Responsable: <strong><a href="{{ route('users.show', $slip->officer->id) }}">{{ $slip->officer->name }}</a></strong></p>
+                                        <h4 class="card-title text-primary">Direction destinataire</h4>
+                                        <p class="card-text"><strong><a href="{{ route('organisations.show', $slip->userOrganisation->id) }}">{{ $slip->userOrganisation->name }}</a></strong></p>
+                                        <p class="card-text">Nature : <strong>{{ $slip->transfer_type_label }}</strong></p>
                                     </div>
                                 </div>
                             </div>
@@ -92,6 +86,35 @@
                             </div>
                         </div>
 
+                        @if($slip->is_rejected)
+                            <div class="alert alert-danger">
+                                <strong>Bordereau rejeté :</strong> {{ $slip->rejection_reason }}
+                                @if($slip->rejected_date)<br><small>{{ $slip->rejected_date->format('d/m/Y H:i') }}</small>@endif
+                            </div>
+                        @endif
+
+                        <div class="card mb-4">
+                            <div class="card-header"><i class="bi bi-diagram-3"></i> Chaîne de prise en charge</div>
+                            <div class="card-body">
+                                <div class="row text-center g-2">
+                                    @foreach([
+                                        ['Préparé', true, $slip->created_at],
+                                        ['Réceptionné', $slip->is_received, $slip->received_date],
+                                        ['Approuvé', $slip->is_approved, $slip->approved_date],
+                                        ['Intégré', $slip->is_integrated, $slip->integrated_date],
+                                    ] as [$label, $done, $date])
+                                        <div class="col-md-3">
+                                            <div class="border rounded p-3 h-100 {{ $done ? 'border-success bg-success-subtle' : 'text-muted' }}">
+                                                <i class="bi {{ $done ? 'bi-check-circle-fill text-success' : 'bi-circle' }} fs-4"></i>
+                                                <div class="fw-bold">{{ $label }}</div>
+                                                <small>{{ $date ? $date->format('d/m/Y H:i') : 'En attente' }}</small>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
 
                         <div class="mt-5">
                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -111,7 +134,7 @@
                                                 <input class="form-check-input" type="checkbox" id="record-{{ $record->id }}">
                                                 <label class="form-check-label" for="record-{{ $record->id }}">
                                                     <a href="{{  route('slips.records.show', [$slip,$record] ) }}">
-                                                    <strong>{{ $record->code }} : {{ $record->name }} de {{ $record->author->name?? 'Nan' }}</strong>
+                                                    <strong>{{ $record->code }} : {{ $record->name }}</strong>
                                                         @if (is_null($record->date_exact) && is_null($record->date_end))
                                                              du {{ $record->date_start }}
                                                         @elseif (is_null($record->date_exact) && !is_null($record->date_end))
@@ -120,6 +143,9 @@
                                                             du {{ $record->date_exact }}
                                                         @endif
                                                     </a>
+                                                    @if($record->sourceRecord)
+                                                        <a class="ms-2" href="{{ route('records.show', $record->sourceRecord) }}">Voir la notice source</a>
+                                                    @endif
                                                 </label>
                                             </div>
                                             <div class="ms-3">
@@ -153,28 +179,35 @@
                             </a>
                             <div>
 
-                                @if($slip->is_received  == FALSE && $slip->is_approved  == FALSE && $slip->is_integrated  == FALSE)
+                                @php($canDestinationAct = auth()->user()->isSuperAdmin() || auth()->user()->current_organisation_id == $slip->user_organisation_id)
+                                @php($canEmitterAct = auth()->user()->isSuperAdmin() || auth()->user()->current_organisation_id == $slip->officer_organisation_id)
+
+                                @if($slip->is_rejected)
+                                    @if($canEmitterAct)
+                                        <a href="{{ route('slips.edit', $slip) }}" class="btn btn-warning me-2"><i class="bi bi-pencil"></i> Corriger</a>
+                                        <form method="POST" action="{{ route('slips.resubmit', $slip) }}" class="d-inline">@csrf<button class="btn btn-primary"><i class="bi bi-send"></i> Resoumettre</button></form>
+                                    @endif
+                                @elseif($slip->is_received == FALSE && $slip->is_approved == FALSE && $slip->is_integrated == FALSE)
                                     <a href="{{ route('slips.records.create', $slip) }}" class="btn btn-success">
                                         <i class="fas bi-file-upload me-2"></i>Ajouter des documents
                                     </a>
-                                    <a href="{{ route('slips.reception') }}?id={{ $slip->id }}" class="btn btn-success">
-                                            <i class="fas bi-inbox me-2"></i> Receptionner
-                                    </a>
-                                    <a href="{{ route('slips.edit', $slip->id) }}" class="btn btn-warning me-2">
+                                    @if($canDestinationAct)
+                                        <form method="POST" action="{{ route('slips.reception', $slip) }}" class="d-inline">@csrf<button class="btn btn-success"><i class="bi bi-inbox"></i> Réceptionner</button></form>
+                                    @endif
+                                    @if($canEmitterAct)<a href="{{ route('slips.edit', $slip->id) }}" class="btn btn-warning me-2">
                                         <i class="fas fa-edit me-2"></i>Modifier
-                                    </a>
+                                    </a>@endif
                                     <button type="button" class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
                                         <i class="fas bi-trash-alt me-2"></i>Supprimer
                                     </button>
 
-                                @elseif($slip->is_received  == TRUE && $slip->is_approved  == FALSE && $slip->is_integrated  == FALSE)
-                                    <a href="{{ route('slips.approve') }}?id={{ $slip->id }}" class="btn btn-success">
-                                        <i class="fas bi-check-circle me-2"></i> Approuver
-                                    </a>
+                                @elseif($slip->is_received == TRUE && $slip->is_approved == FALSE && $slip->is_integrated == FALSE)
+                                    @if($canDestinationAct)
+                                        <form method="POST" action="{{ route('slips.approve', $slip) }}" class="d-inline">@csrf<button class="btn btn-success"><i class="bi bi-check-circle"></i> Approuver</button></form>
+                                        <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectTransferModal"><i class="bi bi-x-circle"></i> Rejeter</button>
+                                    @endif
                                 @elseif ($slip->is_received  == TRUE && $slip->is_approved  == TRUE && $slip->is_integrated  == FALSE )
-                                    <a href="{{ route('slips.integrate') }}?id={{ $slip->id }}" class="btn btn-success">
-                                        <i class="fas bi-folder-plus me-2"></i>Intégrer dans le repertoire
-                                    </a>
+                                    @if($canDestinationAct)<form method="POST" action="{{ route('slips.integrate', $slip) }}" class="d-inline">@csrf<button class="btn btn-success"><i class="bi bi-folder-plus"></i> Intégrer dans le répertoire</button></form>@endif
                                 @elseif ($slip->is_received  == TRUE && $slip->is_approved  == TRUE && $slip->is_integrated  == true)
                                     <a href="{{ route('slips.print', $slip) }}" class="btn btn-success" target="_blank">
                                         <i class="fas fa-print me-2"></i>Imprimer le bordereau
@@ -187,6 +220,14 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="modal fade" id="rejectTransferModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog"><form method="POST" action="{{ route('slips.reject', $slip) }}" class="modal-content">@csrf
+            <div class="modal-header"><h5 class="modal-title">Rejeter le bordereau</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body"><label class="form-label">Motif et corrections attendues</label><textarea name="reason" class="form-control" rows="4" required></textarea></div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button><button class="btn btn-danger">Rejeter</button></div>
+        </form></div>
     </div>
 
     <!-- Delete Confirmation Modal -->

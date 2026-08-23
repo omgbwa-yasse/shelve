@@ -19,6 +19,7 @@ class SlipRecord extends Model
 
     protected $fillable = [
         'slip_id',
+        'record_id',
         'code',
         'name',
         'date_format',
@@ -41,6 +42,11 @@ class SlipRecord extends Model
     public function slip()
     {
         return $this->belongsTo(Slip::class, 'slip_id');
+    }
+
+    public function sourceRecord()
+    {
+        return $this->belongsTo(Record::class, 'record_id');
     }
 
     public function level()

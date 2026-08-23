@@ -43,7 +43,7 @@ class ActivityController extends Controller
 
     public function show(Activity $activity)
     {
-        $activity->load('communicability');
+        $activity->load('communicability', 'retentions.sort', 'parent.retentions.sort');
         return view('activities.show', compact('activity'));
     }
 

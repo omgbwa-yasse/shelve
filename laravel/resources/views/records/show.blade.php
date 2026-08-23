@@ -44,6 +44,11 @@
                     </a>
                 @endcan
                 @can('records_update')
+                    @if(($record->transfer_effective_date || $record->deposit_effective_date) && !$record->destruction_effective_date)
+                        @can('create', App\Models\RecordReactivation::class)
+                            <a href="{{ route('record-reactivations.create', $record) }}" class="btn btn-outline-success"><i class="bi bi-arrow-counterclockwise"></i> Réactiver</a>
+                        @endcan
+                    @endif
                     <a href="{{ route('records.shares', $record) }}" class="btn btn-outline-primary"><i class="bi bi-share"></i> Partager</a>
                     <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#duplicateModal">
                         <i class="bi bi-copy"></i> Dupliquer
@@ -78,6 +83,32 @@
                 <a href="{{ route('records.versions', $record) }}">Voir l'historique</a>.
             </div>
         @endif
+
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-arrow-repeat"></i> Cycle de vie calculé</span>
+                <span class="badge bg-light text-primary">{{ $lifecycle['phase_label'] }}</span>
+            </div>
+            <div class="card-body">
+                @if($lifecycle['issues'])
+                    <div class="alert alert-warning mb-3">
+                        <strong>Configuration à compléter :</strong>
+                        <ul class="mb-0">@foreach($lifecycle['issues'] as $issue)<li>{{ $issue }}</li>@endforeach</ul>
+                    </div>
+                @endif
+                <div class="row g-3">
+                    <div class="col-md-3"><small class="text-muted d-block">Classe</small><strong>{{ $lifecycle['activity']?->code ?? '—' }}</strong><br>{{ $lifecycle['activity']?->name ?? 'Non classé' }}</div>
+                    <div class="col-md-3"><small class="text-muted d-block">Règle / sort final</small><strong>{{ $lifecycle['retention']?->code ?? '—' }}</strong><br>{{ $lifecycle['sort']?->code ?? '—' }} — {{ $lifecycle['sort']?->name ?? 'Non défini' }}</div>
+                    <div class="col-md-2"><small class="text-muted d-block">Date de référence</small><strong>{{ $lifecycle['reference_date']?->format('d/m/Y') ?? '—' }}</strong></div>
+                    <div class="col-md-2"><small class="text-muted d-block">Échéance</small><strong>{{ $lifecycle['deadline']?->format('d/m/Y') ?? '—' }}</strong></div>
+                    <div class="col-md-2"><small class="text-muted d-block">Communicable dès</small><strong>{{ $lifecycle['communicable_from']?->format('d/m/Y') ?? '—' }}</strong></div>
+                </div>
+                <div class="progress mt-3" style="height: 10px" aria-label="Progression du cycle de vie">
+                    @php($cycleProgress = match($lifecycle['phase']) {'active' => 20, 'transfer_due' => 35, 'intermediate_conservation' => 60, 'permanent_conservation_due', 'appraisal_due', 'elimination_due' => 80, 'deposited', 'eliminated' => 100, default => 10})
+                    <div class="progress-bar" style="width: {{ $cycleProgress }}%"></div>
+                </div>
+            </div>
+        </div>
 
         <div class="row g-4">
             {{-- Description --}}

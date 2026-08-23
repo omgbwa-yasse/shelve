@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RecordPhysical;
+use App\Models\Record;
 use App\Models\RecordReactivation;
+use App\Models\RecordStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,16 +27,18 @@ class RecordReactivationController extends Controller
         return view('record-reactivations.index', compact('reactivations'));
     }
 
-    public function create(RecordPhysical $record)
+    public function create(Record $record)
     {
         $this->authorize('create', RecordReactivation::class);
+        abort_if($record->destruction_effective_date, 409, 'Une archive effectivement détruite ne peut pas être réactivée.');
 
         return view('record-reactivations.create', compact('record'));
     }
 
-    public function store(Request $request, RecordPhysical $record)
+    public function store(Request $request, Record $record)
     {
         $this->authorize('create', RecordReactivation::class);
+        abort_if($record->destruction_effective_date, 409, 'Une archive effectivement détruite ne peut pas être réactivée.');
 
         $request->validate([
             'reason' => 'required',
@@ -43,8 +46,10 @@ class RecordReactivationController extends Controller
         ]);
 
         $reactivation = RecordReactivation::create([
-            'record_physical_id' => $record->id,
+            'record_id' => $record->id,
+            'organisation_id' => $record->organisation_id,
             'previous_status_id' => $record->status_id,
+            'previous_transfer_date' => $record->transfer_effective_date,
             'reason' => $request->input('reason'),
             'new_transfer_date' => $request->input('new_transfer_date'),
             'requested_by' => Auth::id(),
@@ -69,12 +74,27 @@ class RecordReactivationController extends Controller
             'approved_date' => now(),
         ]);
 
-        if ($reactivation->previous_status_id) {
-            $reactivation->record->update(['status_id' => $reactivation->previous_status_id]);
-        }
+        $activeStatusId = RecordStatus::where('name', 'Publié')->value('id')
+            ?? RecordStatus::where('name', 'Brouillon')->value('id');
+
+        $reactivation->record->update(array_filter([
+            'status_id' => $activeStatusId,
+            'closing_date' => null,
+            'transfer_approved_date' => null,
+            'transfer_effective_date' => null,
+            'deposit_approved_date' => null,
+            'deposit_effective_date' => null,
+            'archival_status_gvaa' => 'reactivated',
+        ], fn ($value, $key) => $value !== null || in_array($key, [
+            'closing_date',
+            'transfer_approved_date',
+            'transfer_effective_date',
+            'deposit_approved_date',
+            'deposit_effective_date',
+        ], true), ARRAY_FILTER_USE_BOTH));
 
         return redirect()->route('record-reactivations.index')
-            ->with('success', 'Réactivation approuvée : le dossier a retrouvé son statut antérieur.');
+            ->with('success', 'Réactivation approuvée : le dossier est de nouveau actif.');
     }
 
     public function reject(Request $request, RecordReactivation $reactivation)

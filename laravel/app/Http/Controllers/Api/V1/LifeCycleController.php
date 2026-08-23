@@ -26,7 +26,7 @@ class LifeCycleController extends Controller
 
     private function referenceDateExpression(): string
     {
-        return 'COALESCE(records.end_date, records.date_exact)';
+        return 'COALESCE(records.closing_date, records.end_date, records.date_exact, records.opening_date, records.start_date)';
     }
 
     private function retentionExpiredCondition(): string
@@ -47,6 +47,7 @@ class LifeCycleController extends Controller
     private function retentionBaseQuery(): \Illuminate\Database\Eloquent\Builder
     {
         return Record::join('activities', 'records.activity_id', '=', 'activities.id')
+            ->has('activity.retentions', '=', 1)
             ->join('retention_activity', 'activities.id', '=', 'retention_activity.activity_id')
             ->join('retentions', 'retention_activity.retention_id', '=', 'retentions.id')
             ->join('sorts', 'retentions.sort_id', '=', 'sorts.id')
@@ -91,18 +92,15 @@ class LifeCycleController extends Controller
 
     /**
      * GET /api/v1/transferrings/lifecycle/transfer
-     * Communicabilité écoulée.
+     * Dossier fermé, pas encore transféré. La communicabilité reste une règle d'accès.
      */
     public function recordToTransfer(Request $request): JsonResponse
     {
         $this->authorize('viewAny', Record::class);
 
-        $query = Record::join('activities', 'records.activity_id', '=', 'activities.id')
-            ->join('communicabilities', 'activities.communicability_id', '=', 'communicabilities.id')
-            ->where('records.organisation_id', Auth::user()->current_organisation_id)
-            ->whereRaw($this->communicabilityExpiredCondition())
-            ->select('records.*')
-            ->orderByRaw($this->referenceDateExpression() . ' DESC');
+        $query = $this->retentionBaseQuery()
+            ->whereNotNull('records.closing_date')
+            ->whereNull('records.transfer_effective_date');
 
         return $this->respond($query, $request);
     }

@@ -12,11 +12,14 @@ use Illuminate\Http\Request;
 use App\Models\Organisation;
 use App\Models\MailContainer;
 use App\Models\Slip;
+use App\Models\Record;
+use App\Models\RecordStatus;
 use App\Models\RecordPhysical;
 use App\Models\SlipStatus;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\EADImportService;
 use App\Services\SedaImportService;
@@ -250,106 +253,175 @@ class SlipController extends Controller
 
 
 
-    public function reception(Request $request)
+    public function reception(Slip $slip)
     {
+        $this->authorize('update', $slip);
+        $this->ensureDestinationCanAct($slip);
 
-        $request->validate([
-            'id' => 'required|exists:slips,id',
-        ]);
+        DB::transaction(function () use ($slip) {
+            $slip = Slip::query()->lockForUpdate()->findOrFail($slip->id);
+            abort_if($slip->is_rejected || $slip->is_integrated, 409, 'Ce bordereau ne peut plus être réceptionné.');
 
-        $slip = Slip::findOrFail($request->input('id'));
-        $slip->update([
-            'is_received' => true,
-            'received_by' => Auth::id(),
-            'received_date' => now(),
-        ]);
+            $slip->update([
+                'is_received' => true,
+                'received_by' => Auth::id(),
+                'received_date' => now(),
+            ]);
 
-        return redirect()->route('slips.index')
-            ->with('success', 'Slip received successfully.');
+            $this->updateLinkedRecords($slip, $slip->transfer_type === 'archival_deposit' ? 'deposit_received' : 'transfer_received');
+        });
+
+        return redirect()->route('slips.show', $slip)
+            ->with('success', 'Bordereau réceptionné par la direction destinataire.');
     }
 
 
-    public function approve(Request $request){
+    public function approve(Slip $slip)
+    {
+        $this->authorize('update', $slip);
+        $this->ensureDestinationCanAct($slip);
 
-        $request->validate([
-            'id' => [
-                'required',
-                'exists:slips,id',
-                function ($_, $value, $fail) {
-                    $slip = Slip::find($value);
-                    if (!$slip) {
-                        $fail('Le slip spécifié n\'existe pas.');
-                    } elseif (!$slip->is_received) {
-                        $fail('Le slip sélectionné n\'a pas encore été reçu.');
-                    } elseif (empty($slip->received_date)) {
-                        $fail('La date de réception du slip n\'est pas définie.');
-                    }
-                },
-            ],
-        ]);
+        DB::transaction(function () use ($slip) {
+            $slip = Slip::query()->lockForUpdate()->findOrFail($slip->id);
+            abort_unless($slip->is_received && $slip->received_date, 409, 'Le bordereau doit être réceptionné avant approbation.');
+            abort_if($slip->is_rejected || $slip->is_integrated, 409, 'Ce bordereau ne peut plus être approuvé.');
 
-        $slip = Slip::findOrFail($request->input('id'));
+            $slip->update([
+                'is_approved' => true,
+                'approved_by' => Auth::id(),
+                'approved_date' => now(),
+            ]);
 
-        $slip->update([
-            'is_approved' => true,
-            'approved_by' => Auth::id(),
-            'approved_date' => now(),
-        ]);
+            $dateField = $slip->transfer_type === 'archival_deposit'
+                ? 'deposit_approved_date'
+                : 'transfer_approved_date';
+            $this->updateLinkedRecords(
+                $slip,
+                $slip->transfer_type === 'archival_deposit' ? 'deposit_approved' : 'transfer_approved',
+                [$dateField => now()->toDateString()]
+            );
+        });
 
-        return redirect()->route('slips.show',$slip)
-            ->with('success', 'Slip received successfully.');
-
+        return redirect()->route('slips.show', $slip)
+            ->with('success', 'Bordereau approuvé. Le mouvement peut être intégré.');
     }
 
 
 
 
-    public function integrate(Request $request)
+    public function integrate(Slip $slip)
     {
-    $request->validate([
-            'id' => 'required|exists:slips,id',
-        ]);
+        $this->authorize('update', $slip);
+        $this->ensureDestinationCanAct($slip);
 
-        $slip = Slip::updateOrCreate(
-            ['id' => $request->input('id')],
-            [
+        DB::transaction(function () use ($slip) {
+            $slip = Slip::query()->with('records.sourceRecord')->lockForUpdate()->findOrFail($slip->id);
+            abort_unless($slip->is_received && $slip->is_approved, 409, 'Le bordereau doit être reçu et approuvé avant intégration.');
+            abort_if($slip->is_rejected || $slip->is_integrated, 409, 'Ce bordereau ne peut plus être intégré.');
+
+            foreach ($slip->records as $source) {
+                $record = $source->sourceRecord
+                    ?? Record::query()
+                        ->where('code', $source->code)
+                        ->where('organisation_id', $slip->officer_organisation_id)
+                        ->first();
+
+                abort_unless($record, 409, "La notice source {$source->code} n'est pas reliée au bordereau.");
+
+                if (! $source->record_id) {
+                    $source->update(['record_id' => $record->id]);
+                }
+
+                $changes = [
+                    'organisation_id' => $slip->user_organisation_id,
+                    'archival_status_gvaa' => $slip->transfer_type === 'archival_deposit' ? 'deposited' : 'transferred',
+                ];
+
+                if ($slip->transfer_type === 'archival_deposit') {
+                    $changes['deposit_effective_date'] = now()->toDateString();
+                    $changes['status_id'] = RecordStatus::where('name', 'Archivé')->value('id') ?? $record->status_id;
+                } else {
+                    $changes['transfer_effective_date'] = now()->toDateString();
+                }
+
+                $record->update($changes);
+            }
+
+            $slip->update([
                 'is_integrated' => true,
                 'integrated_by' => Auth::id(),
                 'integrated_date' => now(),
-            ]
-        );
-
-        if ($slip) {
-            foreach ($slip->records as $source) {
-
-                $record = RecordPhysical::create([
-                    'code' => $source->code,
-                    'name' => $source->name,
-                    'date_format' => $source->date_format,
-                    'date_start' => $source->date_start,
-                    'date_end' => $source->date_end,
-                    'date_exact' => $source->date_exact,
-                    'content' => $source->content,
-                    'level_id' => $source->level_id,
-                    'width' => $source->width,
-                    'width_description' => $source->width_description,
-                    'support_id' => $source->support_id,
-                    'activity_id' => $source->activity_id,
-                    // container_id removed; manage containers via pivot after creation if needed
-                    'user_id' => $source->creator_id,
-                    'status_id' => 1,
-                ]);
-                if($source->authors){
-                    $record->authors()->attach($source->authors->pluck('id'));
-                }
-
-            }
-        } else {
-            return back()->withErrors(['error' => 'Failed to integrate slip.']);
-        }
+            ]);
+        });
 
         return redirect()->route('slips.show', $slip)
-            ->with('success', 'Slip integrated successfully.');
+            ->with('success', 'Mouvement intégré : la direction détentrice et les dates du cycle de vie ont été mises à jour.');
+    }
+
+    public function reject(Request $request, Slip $slip)
+    {
+        $this->authorize('update', $slip);
+        $this->ensureDestinationCanAct($slip);
+        $request->validate(['reason' => 'required|string|max:2000']);
+
+        abort_if($slip->is_integrated, 409, 'Un bordereau intégré ne peut pas être rejeté.');
+
+        $slip->update([
+            'is_rejected' => true,
+            'rejected_by' => Auth::id(),
+            'rejected_date' => now(),
+            'rejection_reason' => $request->input('reason'),
+        ]);
+
+        $this->updateLinkedRecords($slip, $slip->transfer_type === 'archival_deposit' ? 'deposit_rejected' : 'transfer_rejected');
+
+        return redirect()->route('slips.show', $slip)->with('success', 'Bordereau rejeté et renvoyé au service versant.');
+    }
+
+    public function resubmit(Slip $slip)
+    {
+        $this->authorize('update', $slip);
+        abort_unless(
+            Auth::user()->isSuperAdmin()
+                || (int) Auth::user()->current_organisation_id === (int) $slip->officer_organisation_id,
+            403
+        );
+        abort_unless($slip->is_rejected, 409, 'Seul un bordereau rejeté peut être resoumis.');
+
+        $slip->update([
+            'is_received' => false,
+            'received_by' => null,
+            'received_date' => null,
+            'is_approved' => false,
+            'approved_by' => null,
+            'approved_date' => null,
+            'is_rejected' => false,
+            'rejected_by' => null,
+            'rejected_date' => null,
+            'rejection_reason' => null,
+        ]);
+
+        $this->updateLinkedRecords($slip, $slip->transfer_type === 'archival_deposit' ? 'deposit_pending' : 'transfer_pending');
+
+        return redirect()->route('slips.show', $slip)->with('success', 'Bordereau corrigé et resoumis.');
+    }
+
+    private function ensureDestinationCanAct(Slip $slip): void
+    {
+        abort_unless(
+            Auth::user()->isSuperAdmin()
+                || (int) Auth::user()->current_organisation_id === (int) $slip->user_organisation_id,
+            403,
+            'Cette action appartient à la direction destinataire.'
+        );
+    }
+
+    private function updateLinkedRecords(Slip $slip, string $archivalStatus, array $extra = []): void
+    {
+        $recordIds = $slip->records()->whereNotNull('record_id')->pluck('record_id');
+        if ($recordIds->isNotEmpty()) {
+            Record::whereIn('id', $recordIds)->update(array_merge(['archival_status_gvaa' => $archivalStatus], $extra));
+        }
     }
 
 
@@ -357,7 +429,7 @@ class SlipController extends Controller
     public function show(Slip $slip)
     {
         $this->authorize('view', $slip);
-        $slip->load('records.level', 'records.support', 'records.activity', 'records.containers', 'records.creator');
+        $slip->load('records.level', 'records.support', 'records.activity', 'records.containers', 'records.creator', 'records.sourceRecord');
         $slipRecords = $slip->records;
         return view('slips.show', compact('slip', 'slipRecords'));
     }
@@ -386,30 +458,21 @@ class SlipController extends Controller
             'description' => 'nullable',
             'user_organisation_id' => 'required|exists:organisations,id',
             'user_id' => 'nullable|exists:users,id',
-            'slip_status_id' => 'required|exists:slip_statuses,id',
-            'is_received' => 'nullable|boolean',
-            'received_date' => 'nullable|date',
-            'is_approved' => 'nullable|boolean',
-            'approved_date' => 'nullable|date',
         ]);
 
+        // A correction must not silently change the emitter, the workflow
+        // status or any reception/approval dates. Those fields are controlled
+        // exclusively by the lifecycle actions (receive, reject, resubmit...).
         $slip->update([
             'code' => $request->code,
             'name' => $request->name,
             'description' => $request->description,
-            'officer_organisation_id' => Auth::user()->current_organisation_id,
-            'officer_id' => Auth::id(),
             'user_organisation_id' => $request->user_organisation_id,
             'user_id' => $request->user_id,
-            'slip_status_id' => $request->slip_status_id,
-            'is_received' => $request->is_received ?? false,
-            'received_date' => $request->received_date,
-            'is_approved' => $request->is_approved ?? false,
-            'approved_date' => $request->approved_date,
         ]);
 
-        return redirect()->route('slips.index')
-            ->with('success', 'Slip updated successfully.');
+        return redirect()->route('slips.show', $slip)
+            ->with('success', 'Bordereau corrigé. Vous pouvez maintenant le resoumettre.');
     }
 
 
@@ -676,5 +739,3 @@ class SlipController extends Controller
     }
 
 }
-
-

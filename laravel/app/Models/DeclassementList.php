@@ -92,35 +92,34 @@ class DeclassementList extends Model
      * écoulé, et qui ne figurent pas déjà dans une liste de déclassement non traitée.
      * Reproduit la requête de LifeCycleController::recordToEliminate().
      */
-    public static function eligibleRecordsQuery(?int $activityId = null)
+    public static function eligibleRecordsQuery(?int $activityId = null, ?int $organisationId = null)
     {
-        $referenceDate = "COALESCE(
-            CASE
-                WHEN record_physicals.date_format = 'Y' AND record_physicals.date_end REGEXP '^[0-9]{4}$' THEN MAKEDATE(record_physicals.date_end, 365)
-                WHEN record_physicals.date_format = 'M' AND record_physicals.date_end REGEXP '^[0-9]{4}/[0-9]{1,2}$' THEN STR_TO_DATE(CONCAT(REPLACE(record_physicals.date_end, '/', '-'), '-01'), '%Y-%m-%d')
-                WHEN record_physicals.date_format = 'D' AND record_physicals.date_end REGEXP '^[0-9]{4}/[0-9]{1,2}/[0-9]{1,2}$' THEN STR_TO_DATE(REPLACE(record_physicals.date_end, '/', '-'), '%Y-%m-%d')
-                ELSE NULL
-            END,
-            record_physicals.date_exact
-        )";
+        $referenceDate = 'COALESCE(records.closing_date, records.end_date, records.date_exact, records.opening_date, records.start_date)';
 
-        $query = RecordPhysical::query()
-            ->join('activities', 'record_physicals.activity_id', '=', 'activities.id')
+        $query = Record::query()
+            ->currentVersion()
+            ->has('activity.retentions', '=', 1)
+            ->join('activities', 'records.activity_id', '=', 'activities.id')
             ->join('retention_activity', 'activities.id', '=', 'retention_activity.activity_id')
             ->join('retentions', 'retention_activity.retention_id', '=', 'retentions.id')
             ->join('sorts', 'retentions.sort_id', '=', 'sorts.id')
             ->where('sorts.code', 'E')
-            ->whereRaw("DATEDIFF(NOW(), {$referenceDate}) > retentions.duration * 365")
+            ->whereRaw("DATE_ADD({$referenceDate}, INTERVAL retentions.duration YEAR) < CURRENT_DATE")
+            ->whereNull('records.destruction_effective_date')
             ->whereDoesntHave('declassementRecords', function ($q) {
                 $q->whereHas('declassementList', function ($listQuery) {
                     $listQuery->where('is_treated', false);
                 });
             })
-            ->select('record_physicals.*')
-            ->with(['activity', 'status', 'level', 'user']);
+            ->select('records.*')
+            ->with(['activity.retentions.sort', 'status', 'level', 'creator']);
 
         if ($activityId) {
-            $query->where('record_physicals.activity_id', $activityId);
+            $query->where('records.activity_id', $activityId);
+        }
+
+        if ($organisationId) {
+            $query->where('records.organisation_id', $organisationId);
         }
 
         return $query;

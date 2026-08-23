@@ -26,7 +26,7 @@
         </table>
 
         @if ($activity->communicability != NULL)
-            <h2>{{ __('Office Retention Period') }}</h2>
+            <h2>Délai de communicabilité</h2>
             <table class="table">
                 <thead>
                     <tr>
@@ -46,11 +46,11 @@
                 </tbody>
             </table>
         @else
-            <p>Aucun délai de conservation dans les bureaux</p>
+            <p>Aucun délai de communicabilité défini.</p>
         @endif
 
         <div class="-ml-3">
-            <a href="{{ route('activities.communicabilities.create', $activity) }}" class="btn btn-secondary">Ajouter un délai avant le transfert</a>
+            <a href="{{ route('activities.communicabilities.create', $activity) }}" class="btn btn-secondary">Définir la communicabilité</a>
         </div>
 
         <h2>Règles de conservation</h2>
@@ -73,40 +73,17 @@
             </tbody>
         </table>
 
-        <h2>Durée de conservation héritée</h2>
-        @php
-            $activity = $activity;
-            $level = 1;
-        @endphp
-        @while ($activity->parent_id != 0)
-            <h3>Hérité du parent  (n+{{ $level }}) : {{ $activity->parent->code }} - {{ $activity->parent->name }}</h3>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Règle de conservation</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($activity->parent->retentions as $retention)
-                        <tr>
-                            <td>{{ $retention->code }} - {{ $retention->duration }} ans, {{ $retention->description ?? 'sans description' }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            @php
-                $activity = $activity->parent;
-                $level++;
-            @endphp
-        @endwhile
+        <div class="alert alert-info">
+            La règle effective doit être définie directement sur la classe utilisée par la notice. Cette règle unique alimente automatiquement l’échéance et le sort final.
+        </div>
 
         <div class="mt-3">
-            <a href="{{ route('activities.index') }}" class="btn btn-secondary">Back</a>
-            <a href="{{ route('activities.edit', $activity->id) }}" class="btn btn-warning">Edit</a>
+            <a href="{{ route('activities.index') }}" class="btn btn-secondary">Retour</a>
+            <a href="{{ route('activities.edit', $activity->id) }}" class="btn btn-warning">Modifier</a>
             <form action="{{ route('activities.destroy', $activity->id) }}" method="POST" class="d-inline">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this activity?')">Delete</button>
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Supprimer cette activité ?')">Supprimer</button>
             </form>
         </div>
 

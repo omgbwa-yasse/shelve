@@ -18,7 +18,7 @@ class RetentionActivityController extends Controller
 
     public function create($activityId)
     {
-        $activity = Activity::findOrFail($activityId);
+        $activity = Activity::with('retentions')->findOrFail($activityId);
         $retentions = Retention::all();
         return view('activities.retentions.create', compact('activity', 'retentions'));
     }
@@ -33,9 +33,11 @@ class RetentionActivityController extends Controller
         ]);
 
         $activity = Activity::findOrFail($activityId);
-        $activity->retentions()->attach($request->input('retention_id'));
+        // Une classe ne peut avoir qu'une règle effective. Remplacer la liaison
+        // évite les sorts finaux contradictoires dans les listes du cycle de vie.
+        $activity->retentions()->sync([$request->integer('retention_id')]);
 
-        return redirect()->route('activities.retentions.index', $activityId)->with('success', 'Retention added successfully.');
+        return redirect()->route('activities.show', $activityId)->with('success', 'Règle de conservation appliquée.');
     }
 
 
@@ -44,7 +46,10 @@ class RetentionActivityController extends Controller
     public function edit($activityId, $retentionActivityId)
     {
         $activity = Activity::findOrFail($activityId);
-        $retentionActivity = RetentionActivity::findOrFail($retentionActivityId);
+        $retentionActivity = RetentionActivity::query()
+            ->where('activity_id', $activityId)
+            ->where('retention_id', $retentionActivityId)
+            ->firstOrFail();
         $retentions = Retention::all();
         return view('activities.retentions.edit', compact('activity', 'retentionActivity', 'retentions'));
     }
@@ -58,21 +63,20 @@ class RetentionActivityController extends Controller
             'retention_id' => 'required|exists:retentions,id',
         ]);
 
-        $retentionActivity = RetentionActivity::findOrFail($retentionActivityId);
-        $retentionActivity->retention_id = $request->input('retention_id');
-        $retentionActivity->save();
+        $activity = Activity::findOrFail($activityId);
+        $activity->retentions()->sync([$request->integer('retention_id')]);
 
-        return redirect()->route('activities.retentions.index', $activityId)->with('success', 'Retention updated successfully.');
+        return redirect()->route('activities.show', $activityId)->with('success', 'Règle de conservation remplacée.');
     }
 
 
 
     public function destroy($activityId, $retentionActivityId)
     {
-        $retentionActivity = RetentionActivity::findOrFail($retentionActivityId);
-        $retentionActivity->delete();
+        $activity = Activity::findOrFail($activityId);
+        $activity->retentions()->detach($retentionActivityId);
 
-        return redirect()->route('activities.retentions.index', $activityId)->with('success', 'Retention deleted successfully.');
+        return redirect()->route('activities.show', $activityId)->with('success', 'Règle de conservation retirée.');
     }
 
 }

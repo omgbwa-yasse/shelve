@@ -7,7 +7,7 @@ use App\Models\DeclassementComment;
 use App\Models\DeclassementList;
 use App\Models\DeclassementRecord;
 use App\Models\DeclassementStatus;
-use App\Models\RecordPhysical;
+use App\Models\Record;
 use App\Models\RecordStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -67,7 +67,8 @@ class DeclassementListController extends Controller
     {
         $activityId = $request->input('activity_id');
 
-        $records = DeclassementList::eligibleRecordsQuery($activityId ? (int) $activityId : null)
+        $organisationId = Auth::user()->isSuperAdmin() ? null : Auth::user()->current_organisation_id;
+        $records = DeclassementList::eligibleRecordsQuery($activityId ? (int) $activityId : null, $organisationId)
             ->paginate(15);
 
         if ($request->wantsJson()) {
@@ -95,7 +96,7 @@ class DeclassementListController extends Controller
             'name' => 'required|max:200',
             'description' => 'nullable',
             'record_ids' => 'nullable|array',
-            'record_ids.*' => 'exists:record_physicals,id',
+            'record_ids.*' => 'exists:records,id',
             'generate_from_query' => 'nullable|boolean',
             'activity_id' => 'nullable|exists:activities,id',
         ]);
@@ -104,6 +105,7 @@ class DeclassementListController extends Controller
             'code' => $request->code,
             'name' => $request->name,
             'description' => $request->description,
+            'organisation_id' => Auth::user()->current_organisation_id,
             'declassement_status_id' => $this->statusByName('Brouillon')->id,
             'creator_id' => Auth::id(),
             'query_criteria' => $request->boolean('generate_from_query')
@@ -116,18 +118,27 @@ class DeclassementListController extends Controller
         if ($request->boolean('generate_from_query')) {
             $recordIds = array_unique(array_merge(
                 $recordIds,
-                DeclassementList::eligibleRecordsQuery($request->input('activity_id'))->pluck('record_physicals.id')->all()
+                DeclassementList::eligibleRecordsQuery(
+                    $request->input('activity_id'),
+                    Auth::user()->isSuperAdmin() ? null : Auth::user()->current_organisation_id
+                )->pluck('records.id')->all()
             ));
         }
 
         foreach ($recordIds as $recordId) {
             DeclassementRecord::firstOrCreate([
                 'declassement_list_id' => $declassementList->id,
-                'record_physical_id' => $recordId,
+                'record_id' => $recordId,
             ], [
                 'added_by' => Auth::id(),
             ]);
         }
+
+        $proposedStatusId = RecordStatus::where('name', "Proposé à l'élimination")->value('id');
+        Record::whereIn('id', $recordIds)->update(array_filter([
+            'status_id' => $proposedStatusId,
+            'archival_status_gvaa' => 'elimination_proposed',
+        ], fn ($value) => $value !== null));
 
         return redirect()->route('declassement-lists.show', $declassementList)
             ->with('success', 'Liste de déclassement créée.');
@@ -211,17 +222,23 @@ class DeclassementListController extends Controller
 
         $request->validate([
             'record_ids' => 'required|array',
-            'record_ids.*' => 'exists:record_physicals,id',
+            'record_ids.*' => 'exists:records,id',
         ]);
 
         foreach ($request->input('record_ids') as $recordId) {
             DeclassementRecord::firstOrCreate([
                 'declassement_list_id' => $declassementList->id,
-                'record_physical_id' => $recordId,
+                'record_id' => $recordId,
             ], [
                 'added_by' => Auth::id(),
             ]);
         }
+
+        $proposedStatusId = RecordStatus::where('name', "Proposé à l'élimination")->value('id');
+        Record::whereIn('id', $request->input('record_ids'))->update(array_filter([
+            'status_id' => $proposedStatusId,
+            'archival_status_gvaa' => 'elimination_proposed',
+        ], fn ($value) => $value !== null));
 
         return redirect()->route('declassement-lists.show', $declassementList)
             ->with('success', 'Dossiers ajoutés à la liste.');
@@ -296,6 +313,11 @@ class DeclassementListController extends Controller
             'declassement_status_id' => $this->statusByName('Approuvé')->id,
         ]);
 
+        Record::whereIn('id', $declassementList->records()->pluck('record_id'))->update([
+            'destruction_approved_date' => now()->toDateString(),
+            'archival_status_gvaa' => 'elimination_approved',
+        ]);
+
         return redirect()->route('declassement-lists.show', $declassementList)
             ->with('success', 'Liste approuvée.');
     }
@@ -331,7 +353,11 @@ class DeclassementListController extends Controller
 
         foreach ($declassementList->records()->with('record')->get() as $declassementRecord) {
             if ($declassementRecord->record && $eliminatedStatus) {
-                $declassementRecord->record->update(['status_id' => $eliminatedStatus->id]);
+                $declassementRecord->record->update([
+                    'status_id' => $eliminatedStatus->id,
+                    'destruction_effective_date' => now()->toDateString(),
+                    'archival_status_gvaa' => 'eliminated',
+                ]);
             }
         }
 
@@ -361,6 +387,17 @@ class DeclassementListController extends Controller
             'rejection_reason' => $request->input('reason'),
             'declassement_status_id' => $this->statusByName('Rejeté')->id,
         ]);
+
+        $changes = [
+            'destruction_approved_date' => null,
+            'archival_status_gvaa' => 'elimination_rejected',
+        ];
+
+        if ($archivedStatusId = RecordStatus::where('name', 'Archivé')->value('id')) {
+            $changes['status_id'] = $archivedStatusId;
+        }
+
+        Record::whereIn('id', $declassementList->records()->pluck('record_id'))->update($changes);
 
         DeclassementComment::create([
             'declassement_list_id' => $declassementList->id,
