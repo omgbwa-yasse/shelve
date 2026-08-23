@@ -66,3 +66,10 @@ Thumbs.db
 # Sub-projects
 /opac/node_modules
 /mcp/node_modules
+
+# Arborescence de la branche evolution
+# Ces dossiers peuvent rester sur le disque apres un changement de branche.
+# Ils ne font pas partie de la structure Laravel historique de main.
+/laravel/
+/backend/
+/web/
