@@ -251,12 +251,11 @@ class QueryExecutorService
             case 'mails':
                 return DB::table('mails')
                     ->leftJoin('mail_priorities', 'mails.priority_id', '=', 'mail_priorities.id')
-                    ->leftJoin('mail_types', 'mails.mail_type_id', '=', 'mail_types.id')
-                    ->leftJoin('mail_typologies', 'mails.mail_typology_id', '=', 'mail_typologies.id')
+                    ->leftJoin('mail_typologies', 'mails.typology_id', '=', 'mail_typologies.id')
                     ->select(
                         'mails.*',
                         'mail_priorities.name as priority_name',
-                        'mail_types.name as mail_type_name',
+                        'mails.mail_type as mail_type_name',
                         'mail_typologies.name as typology_name'
                     );
 
@@ -272,7 +271,7 @@ class QueryExecutorService
 
             case 'slips':
                 return DB::table('slips')
-                    ->leftJoin('slip_statuses', 'slips.status_id', '=', 'slip_statuses.id')
+                    ->leftJoin('slip_statuses', 'slips.slip_status_id', '=', 'slip_statuses.id')
                     ->leftJoin('users as officers', 'slips.officer_id', '=', 'officers.id')
                     ->leftJoin('users as slip_users', 'slips.user_id', '=', 'slip_users.id')
                     ->select(
@@ -389,7 +388,7 @@ class QueryExecutorService
 
                 case 'mail_type':
                     if ($table === 'mails') {
-                        $query->where('mail_types.name', 'LIKE', "%{$value}%");
+                        $query->where('mails.mail_type', 'LIKE', "%{$value}%");
                     }
                     break;
 
