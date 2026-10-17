@@ -95,4 +95,8 @@ public class WorkplaceConversation {
   public Instant getUpdatedAt() {
     return this.updatedAt;
   }
+
+  public void setUpdatedAt(Instant v) {
+    this.updatedAt = v;
+  }
 }

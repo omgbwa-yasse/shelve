@@ -40,7 +40,7 @@ export default function WorkplaceSettingsPage() {
     <div className="flex flex-col gap-4">
       <header className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Paramètres : {workplace.name}</h3>
-        <Link href={wPath} className="rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted">
+        <Link href={wPath} className="rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
           <Icon name="arrowRightSquare" className="mr-1 inline h-4 w-4 rotate-180" />
           Retour
         </Link>
@@ -48,9 +48,9 @@ export default function WorkplaceSettingsPage() {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <nav className="flex flex-col gap-1 text-sm md:col-span-1">
-          <a href="#general" className="rounded border border-primary bg-primary/10 px-3 py-2 font-medium text-primary">Général</a>
-          <a href="#members" className="rounded border border-border px-3 py-2 text-muted-foreground hover:bg-muted">Membres</a>
-          <a href="#danger" className="rounded border border-border px-3 py-2 text-danger hover:bg-danger/5">Zone de danger</a>
+          <a href="#general" className="rounded border border-primary bg-primary/10 px-3 py-2 font-medium text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Général</a>
+          <a href="#members" className="rounded border border-border px-3 py-2 text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Membres</a>
+          <a href="#danger" className="rounded border border-border px-3 py-2 text-danger hover:bg-danger/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Zone de danger</a>
         </nav>
 
         <div className="flex flex-col gap-4 md:col-span-3">
@@ -59,7 +59,7 @@ export default function WorkplaceSettingsPage() {
             <p className="mt-3 text-sm text-muted-foreground">
               Modifiez le nom, le code (adresse de l'espace), la description et les paramètres de visibilité de votre espace de travail.
             </p>
-            <Link href={`${wPath}/edit`} className="mt-3 inline-flex items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">
+            <Link href={`${wPath}/edit`} className="mt-3 inline-flex items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
               <Icon name="save" className="h-4 w-4" />
               Modifier les informations
             </Link>
@@ -70,7 +70,7 @@ export default function WorkplaceSettingsPage() {
             <p className="mt-3 text-sm text-muted-foreground">Gérez les membres, les invitations et les rôles au sein de cet espace de travail.</p>
             <div className="mt-3 flex items-center justify-between">
               <strong className="text-sm">{workplace.members_count} membre(s) actuel(s)</strong>
-              <Link href={`${wPath}/members`} className="inline-flex items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">
+              <Link href={`${wPath}/members`} className="inline-flex items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 <Icon name="users" className="h-4 w-4" />
                 Gérer les membres
               </Link>
@@ -92,7 +92,7 @@ export default function WorkplaceSettingsPage() {
                   onClick={() => {
                     if (window.confirm('Êtes-vous sûr de vouloir archiver cet espace de travail ?')) archive.mutate();
                   }}
-                  className="mt-2 inline-flex items-center gap-1.5 rounded border border-amber-500 bg-amber-100 px-3 py-1.5 text-sm text-amber-700 hover:bg-amber-200 disabled:opacity-60"
+                  className="mt-2 inline-flex items-center gap-1.5 rounded border border-amber-500 bg-amber-100 px-3 py-1.5 text-sm text-amber-700 hover:bg-amber-200 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <Icon name="archive" className="h-4 w-4" />
                   Archiver
@@ -111,7 +111,7 @@ export default function WorkplaceSettingsPage() {
                 onClick={() => {
                   if (window.confirm('Supprimer DÉFINITIVEMENT cet espace de travail ? Cette action est irréversible.')) destroy.mutate();
                 }}
-                className="mt-2 inline-flex items-center gap-1.5 rounded border border-danger bg-danger px-3 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-60"
+                className="mt-2 inline-flex items-center gap-1.5 rounded border border-danger bg-danger px-3 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <Icon name="trash" className="h-4 w-4" />
                 Supprimer définitivement

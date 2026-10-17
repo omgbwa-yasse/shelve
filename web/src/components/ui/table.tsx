@@ -40,7 +40,7 @@ export function DataTable<T extends object>({
                 key={col.key}
                 onClick={col.sortable && col.onSort ? () => col.onSort?.(col.key) : undefined}
                 className={cn(
-                  'px-3 py-2 font-medium text-muted-foreground',
+                  'px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground',
                   col.className,
                   col.sortable && col.onSort ? 'cursor-pointer select-none hover:text-foreground' : '',
                 )}
@@ -60,7 +60,7 @@ export function DataTable<T extends object>({
             <tr><td colSpan={columns.length + (actions ? 1 : 0)} className="px-3 py-8 text-center text-danger">Erreur de chargement</td></tr>
           )}
           {!loading && !error && rows.map((row, index) => (
-            <tr key={String((row as { id?: string | number }).id ?? index)} className="border-t border-border/60 hover:bg-muted">
+            <tr key={String((row as { id?: string | number }).id ?? index)} className="border-t border-border hover:bg-muted">
               {columns.map((col) => (
                 <td key={col.key} className={cn('px-3 py-2', col.className)}>
                   {col.render ? col.render(row) : String((row as Record<string, unknown>)[col.key] ?? '—')}
@@ -86,9 +86,9 @@ export function Pagination({ page, totalPages, total, onChange }: { page: number
     <div className="flex items-center justify-between text-sm">
       {total !== undefined && <span className="text-muted-foreground">{total} résultat(s)</span>}
       <div className="flex gap-2">
-        <button type="button" disabled={page <= 1} onClick={() => onChange(page - 1)} className="rounded border border-border px-2 py-1 disabled:opacity-40">Précédent</button>
+        <button type="button" aria-label="Page précédente" disabled={page <= 1} onClick={() => onChange(page - 1)} className="rounded border border-border px-2 py-1 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Précédent</button>
         <span className="px-2 py-1">Page {page} / {totalPages}</span>
-        <button type="button" disabled={page >= totalPages} onClick={() => onChange(page + 1)} className="rounded border border-border px-2 py-1 disabled:opacity-40">Suivant</button>
+        <button type="button" aria-label="Page suivante" disabled={page >= totalPages} onClick={() => onChange(page + 1)} className="rounded border border-border px-2 py-1 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Suivant</button>
       </div>
     </div>
   );

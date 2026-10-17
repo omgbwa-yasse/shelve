@@ -42,6 +42,7 @@ export type WorkplaceConversation = {
   created_by?: number | null;
   created_at?: string | null;
   updated_at?: string | null;
+  workplace?: { id: number; code?: string; name: string } | null;
   participants?: WorkplaceConversationParticipant[];
   messages?: WorkplaceMessage[];
 };
@@ -60,6 +61,9 @@ export type WorkplaceMessage = {
   conversation_id: number;
   user_id: number;
   content: string;
+  attachment_name?: string | null;
+  attachment_mime?: string | null;
+  attachment_size?: number | null;
   created_at?: string | null;
   updated_at?: string | null;
   user?: { id: number; name: string; email?: string } | null;
@@ -96,6 +100,7 @@ export type Workplace = {
   color?: string | null;
   settings?: Record<string, unknown> | null;
   is_public: boolean;
+  visibility?: 'public' | 'moderated' | 'private';
   allow_external_sharing: boolean;
   max_members?: number | null;
   max_storage_mb?: number | null;
@@ -121,4 +126,106 @@ export type Workplace = {
   owner?: { id: number; name: string; email?: string } | null;
   members?: WorkplaceMember[] | null;
   activities?: WorkplaceActivity[] | null;
+};
+
+/** Demande d'adhésion à un workplace (mode moderated). */
+export type WorkplaceMembershipRequest = {
+  id: number;
+  workplace_id: number;
+  user_id: number;
+  message?: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  reviewed_by?: number | null;
+  reviewed_at?: string | null;
+  created_at?: string | null;
+  user?: { id: number; name: string; email?: string } | null;
+};
+
+/** Sujet de discussion d'un workplace. */
+export type WorkplaceTopic = {
+  id: number;
+  workplace_id: number;
+  user_id: number;
+  title: string;
+  body: string;
+  is_pinned: boolean;
+  is_locked: boolean;
+  posts_count?: number | null;
+  created_by?: number | null;
+  updated_by?: number | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  user?: { id: number; name: string } | null;
+};
+
+/** Réponse dans une discussion de workplace. */
+export type WorkplaceTopicPost = {
+  id: number;
+  workplace_id: number;
+  topic_id: number;
+  user_id: number;
+  body: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+  user?: { id: number; name: string } | null;
+};
+
+/** Billet de blog d'un workplace. */
+export type WorkplaceBlogPost = {
+  id: number;
+  workplace_id: number;
+  user_id: number;
+  title: string;
+  body: string;
+  status: 'draft' | 'published';
+  published_at?: string | null;
+  created_by?: number | null;
+  updated_by?: number | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  user?: { id: number; name: string } | null;
+};
+
+/** Permission par nœud (ACL dossier/document) dans un workplace. */
+export type WorkplaceNodePermission = {
+  id: number;
+  workplace_id: number;
+  record_id: number;
+  grantee_type: 'user' | 'member_role';
+  grantee_id?: number | null;
+  can_view: boolean;
+  can_edit: boolean;
+  can_delete: boolean;
+  can_share: boolean;
+  granted_by?: number | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  record?: { id: number; name: string; is_folder: boolean } | null;
+};
+
+/** Tâche rattachée à un workplace (site task). */
+export type WorkplaceTask = {
+  id: number;
+  title: string;
+  description?: string | null;
+  status: string;
+  priority: string;
+  assigned_to?: number | null;
+  due_date?: string | null;
+  created_at?: string | null;
+  assignee?: { id: number; name: string } | null;
+};
+
+/** Règle de dossier (déclencheur) rattachée à un workplace. */
+export type WorkplaceTrigger = {
+  id: number;
+  name: string;
+  description?: string | null;
+  event_type: string;
+  condition_mode: string;
+  action_type: string;
+  is_enabled: boolean;
+  run_count: number;
+  last_run_at?: string | null;
+  sort_order: number;
 };

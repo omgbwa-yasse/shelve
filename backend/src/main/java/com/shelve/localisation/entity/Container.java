@@ -21,16 +21,22 @@ public class Container {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(nullable = false, unique = true, length = 20)
+  @Column(nullable = false, unique = true, length = 50)
   private String code;
 
-  @Column(name = "shelve_id", nullable = false)
+  @Column(length = 100)
+  private String name;
+
+  @Column(nullable = false, length = 20)
+  private String usage = "records";
+
+  @Column(name = "shelve_id")
   private Long shelveId;
 
-  @Column(name = "status_id", nullable = false)
+  @Column(name = "status_id")
   private Long statusId;
 
-  @Column(name = "property_id", nullable = false)
+  @Column(name = "property_id")
   private Long propertyId;
 
   @Column(name = "capacity_cm", precision = 10, scale = 2)
@@ -75,6 +81,22 @@ public class Container {
 
   public void setCode(String code) {
     this.code = code;
+  }
+
+  public String getName() {
+    return this.name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String getUsage() {
+    return this.usage;
+  }
+
+  public void setUsage(String usage) {
+    this.usage = usage;
   }
 
   public Long getShelveId() {

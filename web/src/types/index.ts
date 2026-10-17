@@ -29,4 +29,11 @@ export type NavItem = {
   icon: string;
   /** Titre de section (reproduit les en-têtes repliables du sous-menu Blade). */
   group?: string;
+  /**
+   * Action spéciale du sous-menu au lieu d'une navigation. `pick-record-type`
+   * ouvre la modale de choix de typologie (dossier/document) SUR la vue
+   * courante — aucune vue en arrière-plan n'est chargée. Le `kind` à choisir
+   * est encodé dans l'URL (ex. `/records/create?kind=folder`).
+   */
+  action?: 'pick-record-type';
 };

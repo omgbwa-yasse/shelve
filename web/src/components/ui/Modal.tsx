@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import clsx from 'clsx';
 import { Icon } from '@/components/icons';
+import { Input } from '@/components/ui/input';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'full';
 
@@ -44,7 +45,7 @@ const SIZE_CLASSES: Record<ModalSize, string> = {
   sm: 'max-w-md',
   md: 'max-w-2xl',
   lg: 'max-w-4xl',
-  // 'full' couvre la page : c'est le format utilisé par `SelectionModal` pour
+  // 'full' couvre la page : c'est le format utilisé par `UniversalModal` pour
   // parcourir/sélectionner dans un grand volume de données (voir PHILOSOPHY.md).
   // Même marge fixe de 25px que l'overlay (MODAL_MARGIN_PX) sur les 4 côtés.
   full: 'inset-[25px] max-w-none',
@@ -81,7 +82,7 @@ export function Modal({ open, onClose, title, size = 'md', children, footer, col
       className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ padding: `${MODAL_MARGIN_PX}px` }}
     >
-      <div className="absolute inset-0 bg-foreground/40" onClick={onClose} aria-hidden="true" />
+      <div className="absolute inset-0 bg-foreground/30" onClick={onClose} aria-hidden="true" />
 
       <div
         role="dialog"
@@ -91,7 +92,7 @@ export function Modal({ open, onClose, title, size = 'md', children, footer, col
           // flex-col + min-h-0 : sans min-h-0, un enfant flex avec overflow-y-auto
           // grandit à la taille de son contenu au lieu de s'y limiter — c'est ce qui
           // faisait "exploser" la modale plein écran hors de ses limites.
-          'relative flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-background shadow-xl',
+          'relative flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-background shadow-[0_1px_2px_rgba(42,36,29,0.25)]',
           // Marge fixe de 30px garantie sur les 4 côtés : `full` la porte via
           // `inset-[30px]` (positionnement absolu) ; les autres tailles héritent
           // du padding de l'overlay ci-dessus + ce plafond de hauteur.
@@ -105,19 +106,19 @@ export function Modal({ open, onClose, title, size = 'md', children, footer, col
           <h2 className="shrink-0 text-base font-semibold">{title}</h2>
           <div className="flex flex-1 items-center justify-end gap-3">
             {search && (
-              <input
+              <Input
                 type="search"
                 value={search.value}
                 onChange={(e) => search.onChange(e.target.value)}
                 placeholder={search.placeholder ?? 'Rechercher…'}
-                className="w-full max-w-xs rounded border border-border bg-background px-3 py-1.5 text-sm"
+                className="w-full max-w-xs"
               />
             )}
             <button
               type="button"
               onClick={onClose}
               aria-label="Fermer"
-              className="shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               <Icon name="close" className="h-5 w-5" />
             </button>

@@ -12,6 +12,7 @@ import { PageHeader } from '@/components/ui/page';
 import * as api from './services/mail.service';
 import { ParapheurActions } from './components/parapheur-actions';
 import { MailAdvancedSearch, MailDateSelect } from './components/mail-search';
+import { MailContainersTabs } from './components/mail-containers-tabs';
 import { emailRoutes } from './email.pages';
 import type { FeatureRoute } from '@/lib/routing';
 
@@ -37,14 +38,14 @@ function makeMailList(columns: TableColumn<Entity>[], o: { title: string; desc?:
             {o.desc && <p className="mt-1 text-sm text-muted-foreground">{o.desc}</p>}
           </div>
           <div className="flex gap-2">
-            <input type="search" placeholder="Rechercher…" onChange={(e) => { setD(e.target.value); setPage(1); }} className="w-56 rounded border border-border bg-surface px-3 py-1.5 text-sm" />
-            <a href={`/api/proxy/api/v1/mails?export=1`} className="rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted">Exporter</a>
-            {o.create && <Link href={o.create} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">+ Nouveau</Link>}
+            <input type="search" placeholder="Rechercher…" onChange={(e) => { setD(e.target.value); setPage(1); }} className="w-56 rounded border border-border bg-surface px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
+            <a href={`/api/proxy/api/v1/mails?export=1`} className="rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Exporter</a>
+            {o.create && <Link href={o.create} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">+ Nouveau</Link>}
           </div>
         </header>
         <DataTable columns={columns} rows={rows} loading={isLoading} error={isError} emptyLabel="Aucun courrier."
           actions={o.del ? (row) => (
-            <button type="button" onClick={() => { if (window.confirm('Supprimer ce courrier ?')) destroy.mutate(row.id); }} className="rounded border border-border px-2 py-1 text-xs text-danger">Supprimer</button>
+            <button type="button" onClick={() => { if (window.confirm('Supprimer ce courrier ?')) destroy.mutate(row.id); }} className="rounded border border-border px-2 py-1 text-xs text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Supprimer</button>
           ) : undefined} />
         <Pagination page={page} totalPages={m?.last_page ?? 1} total={m?.total} onChange={setPage} />
       </div>
@@ -54,7 +55,7 @@ function makeMailList(columns: TableColumn<Entity>[], o: { title: string; desc?:
 
 const MAIL_COLUMNS: TableColumn<Entity>[] = [
   { key: 'code', label: 'Code', render: (r) => <span className="font-mono text-xs">{String(r.code ?? '')}</span> },
-  { key: 'name', label: 'Nom', render: (r) => <Link href={`/mails/${r.id}`} className="hover:underline">{String(r.name ?? '')}</Link> },
+  { key: 'name', label: 'Nom', render: (r) => <Link href={`/mails/${r.id}`} className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{String(r.name ?? '')}</Link> },
   { key: 'date', label: 'Date', render: (r) => (r.date ? new Date(String(r.date)).toLocaleDateString('fr-FR') : '—') },
   { key: 'mail_type', label: 'Type', render: (r) => String(r.mail_type ?? '') },
   { key: 'status', label: 'Statut', render: (r) => String(r.status ?? '') },
@@ -77,8 +78,8 @@ function MailDetail({ id }: { id: string }) {
           <h1 className="text-xl font-semibold">{String(m.name ?? '')}</h1>
         </div>
         <div className="flex gap-2">
-          <Link href={`/mails/${id}/edit`} className="rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted">Modifier</Link>
-          <button type="button" onClick={() => { if (window.confirm('Supprimer ?')) { destroy.mutate(id); router.push('/mails'); } }} className="rounded border border-danger/40 bg-danger/10 px-3 py-1.5 text-sm text-danger">Supprimer</button>
+          <Link href={`/mails/${id}/edit`} className="rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Modifier</Link>
+          <button type="button" onClick={() => { if (window.confirm('Supprimer ?')) { destroy.mutate(id); router.push('/mails'); } }} className="rounded border border-danger/40 bg-danger/10 px-3 py-1.5 text-sm text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Supprimer</button>
         </div>
       </header>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -114,22 +115,39 @@ function MailForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
   const { data } = useResource(api.mailsApi, 'mails', id);
   const create = useCreate(api.mailsApi, 'mails');
   const update = useUpdate(api.mailsApi, 'mails');
+  const archive = useCreate(api.mailArchivesApi, 'mail-archives');
   const [v, setV] = useState<Record<string, string>>({});
+  // Localisation : Room → Shelf → Container (contenants courrier, usage=mail).
+  const [roomId, setRoomId] = useState('');
+  const [shelfId, setShelfId] = useState('');
+  const [containerId, setContainerId] = useState('');
+  const { data: roomsData } = useResourceList(api.roomsApi, 'rooms', { 'page.size': 200 } as never);
+  const { data: shelvesData } = useResourceList(api.shelvesApi, 'shelves', { 'filter[room_id]': roomId, 'page.size': 200 } as never, roomId !== '');
+  const { data: containersData } = useResourceList(api.containersApi, 'containers', { 'filter[usage]': 'mail', 'filter[shelve_id]': shelfId, 'page.size': 200 } as never, shelfId !== '');
   if (mode === 'edit' && data?.data && Object.keys(v).length === 0) {
     const e = data.data;
     setV({ code: String(e.code ?? ''), name: String(e.name ?? ''), description: String(e.description ?? ''), mail_type: String(e.mail_type ?? 'internal'), status: String(e.status ?? 'draft') });
   }
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (mode === 'edit' && id) await update.mutateAsync({ id, payload: v });
-    else await create.mutateAsync(v);
+    let mailId = id;
+    if (mode === 'edit' && id) {
+      await update.mutateAsync({ id, payload: v });
+    } else {
+      const created = await create.mutateAsync(v);
+      mailId = String(created?.data?.id ?? '');
+    }
+    // Archivage dans la boîte choisie (room → shelf → container).
+    if (mailId && containerId) {
+      await archive.mutateAsync({ container_id: containerId, mail_id: mailId, document_type: 'original' });
+    }
     router.push('/mails');
   }
   return (
     <form onSubmit={submit} className="flex w-full flex-col gap-4">
       <header className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{mode === 'edit' ? 'Modifier — courrier' : 'Créer — courrier'}</h1>
-        <button type="button" onClick={() => router.push('/mails')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>
+        <h1 className="text-xl font-semibold">{mode === 'edit' ? 'Modifier : courrier' : 'Créer : courrier'}</h1>
+        <button type="button" onClick={() => router.push('/mails')} className="rounded border border-border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Annuler</button>
       </header>
       <div className="grid grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-3">
         <Field label="Code" value={v.code} onChange={(x) => setV((p) => ({ ...p, code: x }))} />
@@ -140,8 +158,40 @@ function MailForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
         <Field label="Type" select={[['internal', 'Interne'], ['incoming', 'Entrant'], ['outgoing', 'Sortant']]} value={v.mail_type} onChange={(x) => setV((p) => ({ ...p, mail_type: x }))} />
         <Field label="Statut" select={[['draft', 'Brouillon'], ['transmitted', 'Transmis'], ['completed', 'Terminé']]} value={v.status} onChange={(x) => setV((p) => ({ ...p, status: x }))} />
       </div>
+
+      <div className="grid grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-3">
+        <label className="flex flex-col gap-1 text-sm">
+          <span>Salle</span>
+          <select value={roomId} onChange={(e) => { setRoomId(e.target.value); setShelfId(''); setContainerId(''); }} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+            <option value="">—</option>
+            {((roomsData?.data ?? []) as Entity[]).map((r) => (
+              <option key={String(r.id)} value={String(r.id)}>{String(r.code ?? '')} — {String(r.name ?? '')}</option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          <span>Rayonnage</span>
+          <select value={shelfId} disabled={!roomId} onChange={(e) => { setShelfId(e.target.value); setContainerId(''); }} className="rounded border border-border bg-background px-2 py-1.5 text-sm disabled:opacity-40 focus:outline-none focus:ring-1 focus:ring-primary">
+            <option value="">—</option>
+            {((shelvesData?.data ?? []) as Entity[]).map((s) => (
+              <option key={String(s.id)} value={String(s.id)}>{String(s.code ?? '')}</option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          <span>Boîte (contenant courrier)</span>
+          <select value={containerId} disabled={!shelfId} onChange={(e) => setContainerId(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm disabled:opacity-40 focus:outline-none focus:ring-1 focus:ring-primary">
+            <option value="">—</option>
+            {((containersData?.data ?? []) as Entity[]).map((c) => (
+              <option key={String(c.id)} value={String(c.id)}>{String(c.code ?? '')} {c.name ? `— ${String(c.name)}` : ''}</option>
+            ))}
+          </select>
+        </label>
+        <p className="text-xs text-muted-foreground md:col-span-3">Laissez vide pour créer le courrier sans l'archiver. La boîte choisie archive le courrier (document original).</p>
+      </div>
+
       <footer className="flex justify-end">
-        <button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">Enregistrer</button>
+        <button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Enregistrer</button>
       </footer>
     </form>
   );
@@ -152,11 +202,11 @@ function Field({ label, value, onChange, type = 'text', select, required }: { la
     <label className="flex flex-col gap-1 text-sm">
       <span>{label} {required && <span className="text-danger">*</span>}</span>
       {select ? (
-        <select value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm">
+        <select value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
           {select.map(([val, lab]) => <option key={val} value={val}>{lab}</option>)}
         </select>
       ) : (
-        <input type={type} value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
+        <input type={type} value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
       )}
     </label>
   );
@@ -179,10 +229,10 @@ function makeRefList(r: ResourceApi, key: string, title: string, createPath: str
       <div className="flex h-full flex-col gap-4">
         <header className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">{title}</h1>
-          <Link href={createPath} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">+ Nouveau</Link>
+          <Link href={createPath} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">+ Nouveau</Link>
         </header>
         <DataTable columns={REF_COLUMNS} rows={rows} loading={isLoading} error={isError}
-          actions={(row) => <button type="button" onClick={() => { if (window.confirm('Supprimer ?')) destroy.mutate(row.id); }} className="rounded border border-border px-2 py-1 text-xs text-danger">Supprimer</button>} />
+          actions={(row) => <button type="button" onClick={() => { if (window.confirm('Supprimer ?')) destroy.mutate(row.id); }} className="rounded border border-border px-2 py-1 text-xs text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Supprimer</button>} />
       </div>
     );
   };
@@ -202,7 +252,7 @@ export const routes: FeatureRoute[] = [
   { path: '/mails/archived', List: makeMailList(MAIL_COLUMNS, { title: 'Courriers archivés', preset: { is_archived: '1' }, del: true }), Detail: MailDetail },
 
   { path: '/mails/batches', List: makeRefList(api.batchesApi, 'batches', 'Parapheurs', '/mails/batches/create'), Form: () => <FormForRef title="Créer un parapheur" back="/mails/batches" onSave={(p) => api.batchesApi.create(p)} fields={[{ name: 'code', label: 'Code' }, { name: 'name', label: 'Nom' }]} /> },
-  { path: '/mails/containers', List: makeRefList(api.mailContainersApi, 'mail-containers', "Boîtes de courrier", '/mails/containers/create'), Form: () => <FormForRef title="Créer une boîte" back="/mails/containers" onSave={(p) => api.mailContainersApi.create(p)} fields={[{ name: 'code', label: 'Code' }, { name: 'name', label: 'Nom' }]} /> },
+  { path: '/mails/containers', List: MailContainersTabs },
   { path: '/mails/typologies', aliases: ['/settings/mail-typologies'], List: makeRefList(api.mailTypologiesApi, 'mail-typologies', 'Typologies de courrier', '/mails/typologies/create'), Form: () => <FormForRef title="Créer une typologie" back="/mails/typologies" onSave={(p) => api.mailTypologiesApi.create(p)} fields={[{ name: 'code', label: 'Code' }, { name: 'name', label: 'Nom' }]} /> },
   { path: '/settings/mail-actions', List: makeRefList(api.mailActionsApi, 'mail-actions', 'Actions de courrier', '/settings/mail-actions/create'), Form: () => <FormForRef title="Créer une action" back="/settings/mail-actions" onSave={(p) => api.mailActionsApi.create(p)} fields={[{ name: 'code', label: 'Code' }, { name: 'name', label: 'Nom' }]} /> },
   { path: '/settings/mail-priorities', List: makeRefList(api.mailPrioritiesApi, 'mail-priorities', 'Priorités de courrier', '/settings/mail-priorities/create'), Form: () => <FormForRef title="Créer une priorité" back="/settings/mail-priorities" onSave={(p) => api.mailPrioritiesApi.create(p)} fields={[{ name: 'code', label: 'Code' }, { name: 'name', label: 'Nom' }]} /> },
@@ -233,13 +283,13 @@ function FormForRef({ title, back, onSave, fields }: { title: string; back: stri
     <form onSubmit={submit} className="flex w-full flex-col gap-4">
       <header className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{title}</h1>
-        <button type="button" onClick={() => router.push(back)} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>
+        <button type="button" onClick={() => router.push(back)} className="rounded border border-border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Annuler</button>
       </header>
       <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-3">
         {fields.map((f) => <Field key={f.name} label={f.label} value={v[f.name] ?? ''} onChange={(x) => setV((p) => ({ ...p, [f.name]: x }))} />)}
       </div>
       <footer className="flex justify-end">
-        <button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">Enregistrer</button>
+        <button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Enregistrer</button>
       </footer>
     </form>
   );

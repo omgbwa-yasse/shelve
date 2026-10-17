@@ -11,10 +11,17 @@ import type { ItemEnvelope, ListEnvelope, PaginatedEnvelope } from '@/lib/api/ty
 import type {
   Workplace,
   WorkplaceActivity,
+  WorkplaceBlogPost,
   WorkplaceConversation,
   WorkplaceDocument,
   WorkplaceMember,
+  WorkplaceMembershipRequest,
   WorkplaceMessage,
+  WorkplaceNodePermission,
+  WorkplaceTask,
+  WorkplaceTopic,
+  WorkplaceTopicPost,
+  WorkplaceTrigger,
 } from '../types';
 
 export const workplacesApi = createResourceApi<Workplace>('workplaces');
@@ -259,5 +266,142 @@ export function sendMessage(
   return apiFetch<ItemEnvelope<WorkplaceMessage>>(
     `/api/v1/workplace-conversations/${conversationId}/messages`,
     { method: 'POST', body: { content } },
+  );
+}
+
+
+/** ---------- Visibilité / demandes d'adhésion ---------- */
+
+export function submitMembershipRequest(
+  code: string,
+  message?: string,
+): Promise<ItemEnvelope<WorkplaceMembershipRequest>> {
+  return apiFetch<ItemEnvelope<WorkplaceMembershipRequest>>(
+    `/api/v1/workplaces/${encodeURIComponent(code)}/membership-requests`,
+    { method: 'POST', body: message ? { message } : {} },
+  );
+}
+
+export function listMembershipRequests(code: string): Promise<ListEnvelope<WorkplaceMembershipRequest>> {
+  return apiFetch<ListEnvelope<WorkplaceMembershipRequest>>(
+    `/api/v1/workplaces/${encodeURIComponent(code)}/membership-requests`,
+  );
+}
+
+export function reviewMembershipRequest(
+  code: string,
+  requestId: number,
+  action: 'approve' | 'reject',
+): Promise<ItemEnvelope<WorkplaceMembershipRequest>> {
+  return apiFetch<ItemEnvelope<WorkplaceMembershipRequest>>(
+    `/api/v1/workplaces/${encodeURIComponent(code)}/membership-requests/${requestId}/${action}`,
+    { method: 'POST' },
+  );
+}
+
+/** ---------- Tâches du workplace ---------- */
+
+export function listWorkplaceTasks(
+  code: string,
+  params: { status?: string; assigned_to?: string } = {},
+): Promise<ListEnvelope<WorkplaceTask>> {
+  const qs = new URLSearchParams();
+  if (params.status) qs.set('status', params.status);
+  if (params.assigned_to) qs.set('assigned_to', params.assigned_to);
+  const suffix = qs.toString() ? `?${qs}` : '';
+  return apiFetch<ListEnvelope<WorkplaceTask>>(
+    `/api/v1/workplaces/${encodeURIComponent(code)}/tasks${suffix}`,
+  );
+}
+
+/** ---------- Discussions / forums ---------- */
+
+export function listTopics(code: string, search?: string): Promise<ListEnvelope<WorkplaceTopic>> {
+  const qs = search ? `?search=${encodeURIComponent(search)}` : '';
+  return apiFetch<ListEnvelope<WorkplaceTopic>>(`/api/v1/workplaces/${encodeURIComponent(code)}/topics${qs}`);
+}
+
+export function createTopic(
+  code: string,
+  payload: { title: string; body: string; is_pinned?: boolean; is_locked?: boolean },
+): Promise<ItemEnvelope<WorkplaceTopic>> {
+  return apiFetch<ItemEnvelope<WorkplaceTopic>>(`/api/v1/workplaces/${encodeURIComponent(code)}/topics`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export function listTopicPosts(code: string, topicId: number): Promise<ListEnvelope<WorkplaceTopicPost>> {
+  return apiFetch<ListEnvelope<WorkplaceTopicPost>>(
+    `/api/v1/workplaces/${encodeURIComponent(code)}/topics/${topicId}/posts`,
+  );
+}
+
+export function createTopicPost(code: string, topicId: number, body: string): Promise<ItemEnvelope<WorkplaceTopicPost>> {
+  return apiFetch<ItemEnvelope<WorkplaceTopicPost>>(
+    `/api/v1/workplaces/${encodeURIComponent(code)}/topics/${topicId}/posts`,
+    { method: 'POST', body: { body } },
+  );
+}
+
+/** ---------- Blog ---------- */
+
+export function listBlogPosts(code: string): Promise<ListEnvelope<WorkplaceBlogPost>> {
+  return apiFetch<ListEnvelope<WorkplaceBlogPost>>(
+    `/api/v1/workplaces/${encodeURIComponent(code)}/blog-posts`,
+  );
+}
+
+export function createBlogPost(
+  code: string,
+  payload: { title: string; body: string; status?: 'draft' | 'published' },
+): Promise<ItemEnvelope<WorkplaceBlogPost>> {
+  return apiFetch<ItemEnvelope<WorkplaceBlogPost>>(`/api/v1/workplaces/${encodeURIComponent(code)}/blog-posts`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export function destroyBlogPost(code: string, postId: number): Promise<unknown> {
+  return apiFetch<unknown>(`/api/v1/workplaces/${encodeURIComponent(code)}/blog-posts/${postId}`, {
+    method: 'DELETE',
+  });
+}
+
+/** ---------- Permissions par nœud (ACL) ---------- */
+
+export function listNodePermissions(
+  code: string,
+  recordId?: number,
+): Promise<ListEnvelope<WorkplaceNodePermission>> {
+  const qs = recordId ? `?record_id=${recordId}` : '';
+  return apiFetch<ListEnvelope<WorkplaceNodePermission>>(
+    `/api/v1/workplaces/${encodeURIComponent(code)}/node-permissions${qs}`,
+  );
+}
+
+export function createNodePermission(
+  code: string,
+  payload: {
+    record_id: number;
+    grantee_type: 'user' | 'member_role';
+    grantee_id?: number;
+    can_view?: boolean;
+    can_edit?: boolean;
+    can_delete?: boolean;
+    can_share?: boolean;
+  },
+): Promise<ItemEnvelope<WorkplaceNodePermission>> {
+  return apiFetch<ItemEnvelope<WorkplaceNodePermission>>(
+    `/api/v1/workplaces/${encodeURIComponent(code)}/node-permissions`,
+    { method: 'POST', body: payload },
+  );
+}
+
+/** ---------- Règles de dossier (triggers) du workplace ---------- */
+
+export function listWorkplaceTriggers(code: string): Promise<ListEnvelope<WorkplaceTrigger>> {
+  return apiFetch<ListEnvelope<WorkplaceTrigger>>(
+    `/api/v1/workplaces/${encodeURIComponent(code)}/triggers`,
   );
 }

@@ -38,7 +38,7 @@ export function AiAssistantPanel() {
           <Icon name="sparkles" className="h-4 w-4 text-primary" />
           Assistant IA
         </div>
-        <button type="button" onClick={close} className="rounded p-1 hover:bg-muted" aria-label="Fermer">
+        <button type="button" onClick={close} className="rounded p-1 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Fermer">
           <Icon name="close" className="h-4 w-4" />
         </button>
       </header>
@@ -50,7 +50,7 @@ export function AiAssistantPanel() {
             type="button"
             onClick={() => setTab(t.key)}
             className={clsx(
-              'flex-1 border-b-2 px-3 py-2 font-medium transition-colors',
+              'flex-1 border-b-2 px-3 py-2 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
               tab === t.key ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground',
             )}
           >

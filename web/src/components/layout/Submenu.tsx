@@ -2,12 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
 import { Icon, type IconKey } from '@/components/icons';
 import { findActiveDomain } from '@/lib/navigation';
 import { apiFetch } from '@/lib/api/client';
+import { getMailExternalCapabilities } from '@/features/mails/services/mail.service';
+import { useModal } from '@/context/ModalProvider';
+import { UniversalModal } from '@/components/ui/UniversalModal';
+import { recordTypesApi } from '@/features/records/services/record.service';
+import type { Entity } from '@/lib/api/types';
 import type { NavItem } from '@/types';
 
 /**
@@ -28,6 +33,8 @@ const COLLAPSED_BY_DEFAULT: Record<string, boolean> = {
  */
 export function Submenu() {
   const pathname = usePathname();
+  const router = useRouter();
+  const modal = useModal();
   const activeDomain = findActiveDomain(pathname);
 
   // Section "Email" du domaine Mails : masquée tant qu'un administrateur ne
@@ -41,8 +48,23 @@ export function Submenu() {
   });
   const emailModuleEnabled = emailModuleData?.data.enabled ?? false;
 
+  // Boutons courrier externe (consultation "Envoyer/Recevoir (externe)" ET
+  // création "Sortant/Entrant (externe)") : masqués selon les capacités de
+  // l'organisation courante (`mail_external_send_enabled` / `mail_external_receive_enabled`).
+  const { data: mailCapsData } = useQuery({
+    queryKey: ['mail-external-capabilities'],
+    queryFn: getMailExternalCapabilities,
+    staleTime: 60_000,
+    enabled: activeDomain?.key === 'mails',
+  });
+  const externalSendEnabled = mailCapsData?.data.external_send_enabled ?? false;
+  const externalReceiveEnabled = mailCapsData?.data.external_receive_enabled ?? false;
+
   const visibleItems = (activeDomain?.items ?? []).filter(
-    (item) => item.group !== 'Email' || emailModuleEnabled,
+    (item) =>
+      (item.group !== 'Email' || emailModuleEnabled) &&
+      ((item.key !== 'mails-ext-send' && item.key !== 'mails-create-ext-out') || externalSendEnabled) &&
+      ((item.key !== 'mails-ext-receive' && item.key !== 'mails-create-ext-in') || externalReceiveEnabled),
   );
   const groups = groupByHeading(visibleItems);
 
@@ -74,6 +96,44 @@ export function Submenu() {
 
   const effectivelyAllCollapsed = allCollapsed === true || (allCollapsed === null && collapsible && groups.every((_, i) => i > 0));
 
+  /**
+   * Items à action (ex. `pick-record-type`) : ouvre la modale de choix de
+   * typologie SUR la vue courante — aucune navigation ni vue en arrière-plan.
+   * La navigation vers le formulaire ne se fait qu'après la sélection du type.
+   */
+  function handleItemAction(item: NavItem) {
+    const kind = new URL(item.href, 'http://localhost').searchParams.get('kind');
+    if (item.action === 'pick-record-type' && (kind === 'folder' || kind === 'document')) {
+      modal.open((close) => (
+        <UniversalModal<Entity>
+          open
+          onClose={close}
+          title={kind === 'folder' ? 'Choisir une typologie de dossier' : 'Choisir une typologie de document'}
+          queryKey={['record-types-picker', kind]}
+          queryFn={() => recordTypesApi.list({ 'page.size': 200, 'filter[is_container][eq]': kind === 'folder' ? '1' : '0' } as never)}
+          rowKey={(t) => String(t.id)}
+          cardTitleField="name"
+          cardSubtitleField="description"
+          searchMinChars={3}
+          alphabet
+          pageSize={24}
+          emptyLabel={`Aucune typologie ${kind === 'folder' ? 'de dossier' : 'de document'} configurée.`}
+          onSelect={(sel) => {
+            close();
+            const typeId = sel[0]?.id;
+            if (typeId) router.push(`/records/create?kind=${kind}&type_id=${typeId}`);
+          }}
+        />
+      ));
+    }
+  }
+
+  // Domaines sans sous-menu (ex. Notices : écran à onglets) → pas de bandeau.
+  // Placé après tous les hooks (règle des hooks de React).
+  if (visibleItems.length === 0) {
+    return null;
+  }
+
   return (
     <aside
       aria-label="Sous-menu"
@@ -88,7 +148,7 @@ export function Submenu() {
             type="button"
             onClick={toggleAll}
             title={effectivelyAllCollapsed ? 'Tout afficher' : 'Tout masquer'}
-            className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Icon name={effectivelyAllCollapsed ? 'chevronDown' : 'chevronUp'} className="h-3.5 w-3.5" />
             {effectivelyAllCollapsed ? 'Tout afficher' : 'Tout masquer'}
@@ -105,7 +165,7 @@ export function Submenu() {
               <button
                 type="button"
                 onClick={() => toggleGroup(group, index)}
-                className="flex w-full items-center justify-between rounded px-2 py-1 text-left text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70 hover:bg-muted hover:text-foreground"
+                className="flex w-full items-center justify-between rounded px-2 py-1 text-left text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 title={collapsed ? 'Afficher' : 'Masquer'}
               >
                 <span>{group}</span>
@@ -120,14 +180,30 @@ export function Submenu() {
                 {items.map((item) => {
                   const active = pathname === item.href;
 
+                  const cls = clsx(
+                    'flex items-center gap-2 rounded px-2 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                    active ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted',
+                  );
+
+                  if (item.action) {
+                    return (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() => handleItemAction(item)}
+                        className={cls + ' w-full text-left'}
+                      >
+                        <Icon name={item.icon as IconKey} className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{item.label}</span>
+                      </button>
+                    );
+                  }
+
                   return (
                     <Link
                       key={item.key}
                       href={item.href as never}
-                      className={clsx(
-                        'flex items-center gap-2 rounded px-2 py-1.5 text-sm font-medium transition-colors',
-                        active ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted',
-                      )}
+                      className={cls}
                     >
                       <Icon name={item.icon as IconKey} className="h-4 w-4 shrink-0" />
                       <span className="truncate">{item.label}</span>

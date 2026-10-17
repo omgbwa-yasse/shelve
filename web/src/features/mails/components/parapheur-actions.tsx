@@ -32,7 +32,7 @@ export function ParapheurActions({ action }: { action: 'sign' | 'send' | 'receiv
             {batches.map((b) => (
               <li key={b.id} className="flex items-center justify-between py-2">
                 <span>{b.code ?? ''} — {b.name ?? ''}</span>
-                <button type="button" className="rounded border border-border px-2 py-1 text-xs hover:bg-muted">
+                <button type="button" className="rounded border border-border px-2 py-1 text-xs hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                   {labels[action]}
                 </button>
               </li>

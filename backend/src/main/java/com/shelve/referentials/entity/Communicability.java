@@ -17,8 +17,14 @@ public class Communicability {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(nullable = false)
+  @Column(nullable = false, unique = true, length = 10)
+  private String code;
+
+  @Column(nullable = false, length = 100)
   private String name;
+
+  @Column(nullable = false)
+  private Integer duration;
 
   @Column(columnDefinition = "text")
   private String description;
@@ -31,35 +37,16 @@ public class Communicability {
   @Column(name = "updated_at")
   private Instant updatedAt;
 
-  public Long getId() {
-    return this.id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getName() {
-    return this.name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getDescription() {
-    return this.description;
-  }
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  public Instant getCreatedAt() {
-    return this.createdAt;
-  }
-
-  public Instant getUpdatedAt() {
-    return this.updatedAt;
-  }
+  public Long getId() { return this.id; }
+  public void setId(Long id) { this.id = id; }
+  public String getCode() { return this.code; }
+  public void setCode(String code) { this.code = code; }
+  public String getName() { return this.name; }
+  public void setName(String name) { this.name = name; }
+  public Integer getDuration() { return this.duration; }
+  public void setDuration(Integer duration) { this.duration = duration; }
+  public String getDescription() { return this.description; }
+  public void setDescription(String description) { this.description = description; }
+  public Instant getCreatedAt() { return this.createdAt; }
+  public Instant getUpdatedAt() { return this.updatedAt; }
 }

@@ -94,7 +94,7 @@ export default function WorkplaceCalendarPage() {
           <button
             type="button"
             onClick={prevMonth}
-            className="rounded border border-border bg-surface px-2.5 py-1.5 text-sm hover:bg-muted"
+            className="rounded border border-border bg-surface px-2.5 py-1.5 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Mois précédent"
           >
             ‹
@@ -103,7 +103,7 @@ export default function WorkplaceCalendarPage() {
           <button
             type="button"
             onClick={nextMonth}
-            className="rounded border border-border bg-surface px-2.5 py-1.5 text-sm hover:bg-muted"
+            className="rounded border border-border bg-surface px-2.5 py-1.5 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Mois suivant"
           >
             ›
@@ -111,7 +111,7 @@ export default function WorkplaceCalendarPage() {
           <button
             type="button"
             onClick={goToday}
-            className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:opacity-90"
+            className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             Aujourd'hui
           </button>
@@ -165,7 +165,7 @@ export default function WorkplaceCalendarPage() {
                         key={`${ev.date}-${i}`}
                         href={ev.project_id ? `/projects/${ev.project_id}` : '#'}
                         title={`${TYPE_LABELS[ev.type]} — ${ev.title}`}
-                        className="truncate rounded px-1.5 py-0.5 text-[10px] font-medium text-white hover:opacity-85"
+                        className="truncate rounded px-1.5 py-0.5 text-[10px] font-medium text-white hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                         style={{ background: ev.color ?? DEFAULT_COLOR }}
                       >
                         {ev.title}
@@ -205,7 +205,7 @@ export default function WorkplaceCalendarPage() {
                     {TYPE_LABELS[ev.type]}
                   </span>
                   {ev.project_id && (
-                    <Link href={`/projects/${ev.project_id}`} className="shrink-0 rounded border border-border px-2 py-1 text-xs hover:bg-muted">
+                    <Link href={`/projects/${ev.project_id}`} className="shrink-0 rounded border border-border px-2 py-1 text-xs hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                       Ouvrir
                     </Link>
                   )}

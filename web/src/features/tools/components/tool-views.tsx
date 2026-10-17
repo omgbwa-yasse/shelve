@@ -26,7 +26,7 @@ export function ThesaurusViews({ view }: { view: 'hierarchy' | 'search' | 'expor
       ) : (
         <div className="rounded border border-border bg-surface p-4">
           {view === 'search' && (
-            <input type="search" placeholder="Rechercher un terme…" className="mb-3 w-64 rounded border border-border bg-background px-3 py-1.5 text-sm" />
+            <input type="search" placeholder="Rechercher un terme…" className="mb-3 w-64 rounded border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
           )}
           <ul className="divide-y divide-border text-sm">
             {concepts.slice(0, 100).map((c) => (

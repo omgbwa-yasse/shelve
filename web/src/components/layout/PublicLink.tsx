@@ -20,7 +20,7 @@ export function PublicLink() {
     <Link
       href="/public"
       className={clsx(
-        'flex items-center gap-2 rounded border border-border px-3 py-1.5 text-sm hover:bg-muted',
+        'flex items-center gap-2 rounded border border-border px-3 py-1.5 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
         active && 'border-primary text-primary',
       )}
     >

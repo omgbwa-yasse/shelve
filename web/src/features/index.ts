@@ -14,6 +14,8 @@ import { routes as contactsRoutes } from './contacts/pages';
 import { routes as publicRoutes } from './public/pages';
 import { routes as aiRoutes } from './ai/pages';
 import { routes as settingsRoutes } from './settings/pages';
+import { routes as triggersRoutes } from './triggers/pages';
+import { routes as opacBuilderRoutes } from './opac-builder/pages';
 
 /**
  * Toutes les routes déclarées par les features. Chaque feature possède SES
@@ -35,6 +37,8 @@ export const featureRoutes: FeatureRoute[] = [
   ...publicRoutes,
   ...aiRoutes,
   ...settingsRoutes,
+  ...triggersRoutes,
+  ...opacBuilderRoutes,
 ];
 
 /**

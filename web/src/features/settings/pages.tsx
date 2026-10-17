@@ -9,7 +9,7 @@ import type { TableColumn } from '@/components/ui/table';
 import { useResourceList, useDestroy, useCreate } from '@/lib/api/hooks';
 import { DataTable, Pagination } from '@/components/ui/table';
 import * as api from './services/setting.service';
-import { Account, RolePermissions, SystemUpdates, Ldap } from './components/setting-views';
+import { Account, RolePermissions, SystemUpdates, Ldap, Modules } from './components/setting-views';
 import type { FeatureRoute } from '@/lib/routing';
 
 /** `/settings` → `/settings/account` (l'accueil du domaine est le compte). */
@@ -34,10 +34,10 @@ function makeList(r: ResourceApi, key: string, columns: TableColumn<Entity>[], o
       <div className="flex h-full flex-col gap-4">
         <header className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">{o.title}</h1>
-          {o.create && <Link href={o.create} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">+ Nouveau</Link>}
+          {o.create && <Link href={o.create} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">+ Nouveau</Link>}
         </header>
         <DataTable columns={columns} rows={rows} loading={isLoading} error={isError}
-          actions={(row) => <button type="button" onClick={() => { if (window.confirm('Supprimer ?')) destroy.mutate(row.id); }} className="rounded border border-border px-2 py-1 text-xs text-danger">Supprimer</button>} />
+          actions={(row) => <button type="button" onClick={() => { if (window.confirm('Supprimer ?')) destroy.mutate(row.id); }} className="rounded border border-border px-2 py-1 text-xs text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Supprimer</button>} />
         <Pagination page={page} totalPages={data?.meta?.last_page ?? 1} total={data?.meta?.total} onChange={setPage} />
       </div>
     );
@@ -58,17 +58,17 @@ function makeForm(r: ResourceApi, key: string, o: { title: string; back: string;
       <form onSubmit={submit} className="flex w-full flex-col gap-4">
         <header className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">{o.title}</h1>
-          <button type="button" onClick={() => router.push(o.back)} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>
+          <button type="button" onClick={() => router.push(o.back)} className="rounded border border-border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Annuler</button>
         </header>
         <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-3">
           {o.fields.map((f) => (
             <label key={f.name} className="flex flex-col gap-1 text-sm">
               <span>{f.label} {f.required && <span className="text-danger">*</span>}</span>
-              <input value={v[f.name] ?? ''} onChange={(e) => setV((p) => ({ ...p, [f.name]: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
+              <input value={v[f.name] ?? ''} onChange={(e) => setV((p) => ({ ...p, [f.name]: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
             </label>
           ))}
         </div>
-        <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">Enregistrer</button></footer>
+        <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Enregistrer</button></footer>
       </form>
     );
   };
@@ -78,7 +78,7 @@ const NAME_COLS: TableColumn<Entity>[] = [{ key: 'name', label: 'Nom' }, { key: 
 
 export const routes: FeatureRoute[] = [
   { path: '/settings', List: SettingsRedirect },
-  { path: '/settings/definitions', List: makeList(api.settingsApi, 'settings', [{ key: 'key', label: 'Clé', render: (r) => <span className="font-mono text-xs">{String(r.key ?? '')}</span> }, { key: 'name', label: 'Nom' }, { key: 'value', label: 'Valeur' }], { title: 'Paramètres', create: '/settings/definitions/create' }), Form: makeForm(api.settingsApi, 'settings', { title: 'Paramètre', back: '/settings/definitions', fields: [{ name: 'key', label: 'Clé', required: true }, { name: 'name', label: 'Nom', required: true }, { name: 'value', label: 'Valeur' }] }) },
+  { path: '/settings/definitions', List: makeList(api.settingsApi, 'settings', [{ key: 'name', label: 'Clé', render: (r) => <span className="font-mono text-xs">{String(r.name ?? '')}</span> }, { key: 'description', label: 'Description' }, { key: 'effective_value', label: 'Valeur', render: (r) => <span>{String(r.effective_value ?? '')}</span> }], { title: 'Paramètres', create: '/settings/definitions/create' }), Form: makeForm(api.settingsApi, 'settings', { title: 'Paramètre', back: '/settings/definitions', fields: [{ name: 'name', label: 'Clé', required: true }, { name: 'description', label: 'Description' }, { name: 'value', label: 'Valeur' }] }) },
   { path: '/settings/categories', List: makeList(api.settingCategoriesApi, 'setting-categories', [{ key: 'name', label: 'Nom' }], { title: 'Catégories de paramètres', create: '/settings/categories/create' }), Form: makeForm(api.settingCategoriesApi, 'setting-categories', { title: 'Catégorie', back: '/settings/categories', fields: [{ name: 'name', label: 'Nom', required: true }] }) },
   { path: '/settings/users', List: makeList(api.usersApi, 'users', NAME_COLS, { title: 'Utilisateurs', create: '/settings/users/create' }), Form: makeForm(api.usersApi, 'users', { title: 'Utilisateur', back: '/settings/users', fields: [{ name: 'name', label: 'Nom', required: true }, { name: 'email', label: 'Email', required: true }] }) },
   { path: '/settings/roles', List: makeList(api.rolesApi, 'roles', [{ key: 'name', label: 'Nom' }, { key: 'description', label: 'Description' }], { title: 'Rôles', create: '/settings/roles/create' }), Form: makeForm(api.rolesApi, 'roles', { title: 'Rôle', back: '/settings/roles', fields: [{ name: 'name', label: 'Nom', required: true }, { name: 'description', label: 'Description' }] }) },
@@ -89,6 +89,7 @@ export const routes: FeatureRoute[] = [
   { path: '/settings/backup-plannings', List: makeList(api.backupPlanningsApi, 'backup-plannings', [{ key: 'name', label: 'Nom' }, { key: 'frequency', label: 'Fréquence' }], { title: 'Planifications de sauvegarde', create: '/settings/backup-plannings/create' }), Form: makeForm(api.backupPlanningsApi, 'backup-plannings', { title: 'Planification', back: '/settings/backup-plannings', fields: [{ name: 'name', label: 'Nom', required: true }, { name: 'frequency', label: 'Fréquence' }] }) },
 
   { path: '/settings/account', List: Account },
+  { path: '/settings/modules', List: Modules },
   { path: '/settings/role-permissions', List: RolePermissions },
   { path: '/settings/system-updates', List: SystemUpdates },
   { path: '/settings/ldap', List: Ldap },

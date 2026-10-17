@@ -46,7 +46,7 @@ public final class Filters {
 
     private static <T> Predicate predicate(Root<T> root, CriteriaBuilder cb,
                                            String field, String operator, Object raw) {
-        Path<Object> path = root.get(field);
+        Path<Object> path = root.get(toAttribute(field));
         String value = String.valueOf(raw);
 
         return switch (operator) {
@@ -79,6 +79,19 @@ public final class Filters {
         return cb.lower(path.as(String.class));
     }
 
+    /** Convertit une clé de filtre snake_case en nom d'attribut JPA camelCase. */
+    private static String toAttribute(String field) {
+        if (!field.contains("_")) return field;
+        StringBuilder sb = new StringBuilder();
+        String[] parts = field.split("_");
+        sb.append(parts[0]);
+        for (int i = 1; i < parts.length; i++) {
+            if (parts[i].isEmpty()) continue;
+            sb.append(Character.toUpperCase(parts[i].charAt(0))).append(parts[i].substring(1));
+        }
+        return sb.toString();
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static jakarta.persistence.criteria.Expression<String> toComparable(
             CriteriaBuilder cb, Path<?> path, String value) {
@@ -91,7 +104,12 @@ public final class Filters {
         try {
             if (type == Long.class || type == long.class) return Long.parseLong(value);
             if (type == Integer.class || type == int.class) return Integer.parseInt(value);
-            if (type == Boolean.class || type == boolean.class) return Boolean.parseBoolean(value);
+            if (type == Boolean.class || type == boolean.class) {
+                String v = value.trim().toLowerCase();
+                if (v.equals("1") || v.equals("true") || v.equals("yes")) return Boolean.TRUE;
+                if (v.equals("0") || v.equals("false") || v.equals("no")) return Boolean.FALSE;
+                return Boolean.parseBoolean(value);
+            }
             if (type == java.math.BigDecimal.class) return new java.math.BigDecimal(value);
             if (type == java.time.Instant.class) return java.time.Instant.parse(value);
             if (type.isEnum()) {

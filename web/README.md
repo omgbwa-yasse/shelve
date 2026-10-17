@@ -21,7 +21,7 @@ src/
 │   └── (opac)/                # portail public, RSC
 ├── components/
 │   ├── layout/                # Sidebar, Submenu, Topbar, switchers
-│   ├── ui/                    # Modal, SelectionModal, Button, …
+│   ├── ui/                    # Modal, UniversalModal, Button, …
 │   └── icons/                 # registre central des icônes lucide-react
 ├── context/                   # ModalProvider (registre central des modales)
 ├── hooks/
@@ -40,4 +40,4 @@ src/
 
 1. Aucune URL de backend en dur hors `lib/api/client.ts`.
 2. Aucune couleur/espacement en dur dans un composant — toujours une variable de `styles/tokens.css` via Tailwind.
-3. Toute modale passe par `components/ui/Modal.tsx` (ou `SelectionModal.tsx` pour les gros volumes), jamais un `<div>` ad hoc.
+3. Toute modale passe par `components/ui/Modal.tsx` (ou `UniversalModal.tsx` pour tout choix à sélectionner), jamais un `<div>` ad hoc.

@@ -6,12 +6,14 @@ import clsx from 'clsx';
 import { useWorkplace } from '@/features/workplaces/context';
 import { Icon } from '@/components/icons';
 
-type TabKey = 'dashboard' | 'messages' | 'members' | 'activities' | 'calendar' | 'documents';
+type TabKey = 'dashboard' | 'messages' | 'members' | 'activities' | 'calendar' | 'documents' | 'blog' | 'tasks';
 
-const TABS: { key: TabKey; label: string; icon: 'dashboard' | 'messageCircle' | 'users' | 'history' | 'calendar' | 'folderOpen' }[] = [
+const TABS: { key: TabKey; label: string; icon: 'dashboard' | 'messageCircle' | 'users' | 'history' | 'calendar' | 'folderOpen' | 'newspaper' | 'listCheck' }[] = [
   { key: 'dashboard', label: 'Tableau de bord', icon: 'dashboard' },
   { key: 'documents', label: 'Documents', icon: 'folderOpen' },
   { key: 'messages', label: 'Messages', icon: 'messageCircle' },
+  { key: 'blog', label: 'Blog', icon: 'newspaper' },
+  { key: 'tasks', label: 'Tâches', icon: 'listCheck' },
   { key: 'members', label: 'Membres', icon: 'users' },
   { key: 'activities', label: 'Activités', icon: 'history' },
   { key: 'calendar', label: 'Calendrier', icon: 'calendar' },
@@ -39,7 +41,7 @@ export function WorkplaceShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-screen flex-col items-center justify-center gap-3">
         <Icon name="briefcase" className="h-10 w-10 text-muted-foreground/40" />
         <p className="text-sm text-muted-foreground">Cet espace de travail est introuvable.</p>
-        <Link href="/workplaces" className="rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted">
+        <Link href="/workplaces" className="rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
           Retour aux workplaces
         </Link>
       </div>
@@ -56,6 +58,9 @@ export function WorkplaceShell({ children }: { children: React.ReactNode }) {
     if (pathname?.startsWith(`${wPath}/messages`)) return 'messages';
     if (pathname?.startsWith(`${wPath}/calendar`)) return 'calendar';
     if (pathname?.startsWith(`${wPath}/documents`)) return 'documents';
+    if (pathname?.startsWith(`${wPath}/topics`)) return 'messages';
+    if (pathname?.startsWith(`${wPath}/blog`)) return 'blog';
+    if (pathname?.startsWith(`${wPath}/tasks`)) return 'tasks';
     return 'dashboard';
   })();
 
@@ -84,8 +89,8 @@ export function WorkplaceShell({ children }: { children: React.ReactNode }) {
                 {workplace.code}
               </span>
               <span className="flex items-center gap-1 rounded-full bg-black/20 px-2 py-0.5 text-xs">
-                <Icon name={workplace.is_public ? 'globe' : 'shieldLock'} className="h-3 w-3" />
-                {workplace.is_public ? 'Public' : 'Privé'}
+                <Icon name={workplace.visibility === 'moderated' ? 'personCheck' : workplace.is_public ? 'globe' : 'shieldLock'} className="h-3 w-3" />
+                {workplace.visibility === 'moderated' ? 'Modéré' : workplace.is_public ? 'Public' : 'Privé'}
               </span>
               {workplace.status === 'archived' && (
                 <span className="flex items-center gap-1 rounded-full bg-black/25 px-2 py-0.5 text-xs">
@@ -100,16 +105,16 @@ export function WorkplaceShell({ children }: { children: React.ReactNode }) {
           <Link
             href="/workplaces"
             title="Retour à la liste des workplaces"
-            className="rounded border border-white/30 bg-white/15 px-3 py-1.5 text-sm hover:bg-white/25"
+            className="rounded border border-white/30 bg-white/15 px-3 py-1.5 text-sm hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
           >
             <Icon name="arrowRightSquare" className="mr-1 inline h-4 w-4 rotate-180" />
             Retour
           </Link>
-          <Link href={`${wPath}/edit`} className="rounded border border-white/30 bg-white/15 px-3 py-1.5 text-sm hover:bg-white/25">
+          <Link href={`${wPath}/edit`} className="rounded border border-white/30 bg-white/15 px-3 py-1.5 text-sm hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70">
             <Icon name="save" className="mr-1 inline h-4 w-4" />
             Modifier
           </Link>
-          <Link href={`${wPath}/settings`} className="rounded border border-white/30 bg-white/15 px-3 py-1.5 text-sm hover:bg-white/25">
+          <Link href={`${wPath}/settings`} className="rounded border border-white/30 bg-white/15 px-3 py-1.5 text-sm hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70">
             <Icon name="settings" className="mr-1 inline h-4 w-4" />
             Paramètres
           </Link>
@@ -127,7 +132,7 @@ export function WorkplaceShell({ children }: { children: React.ReactNode }) {
               key={tab.key}
               href={tab.key === 'dashboard' ? wPath : `${wPath}/${tab.key}`}
               className={clsx(
-                'flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition-colors',
+                'flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 active
                   ? 'border-primary text-primary'
                   : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground',

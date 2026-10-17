@@ -18,7 +18,7 @@ export function OrganisationSwitcher({ organisations = [] }: { organisations?: O
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 rounded border border-border px-3 py-1.5 text-sm hover:bg-muted"
+        className="flex items-center gap-2 rounded border border-border px-3 py-1.5 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         aria-haspopup="listbox"
         aria-expanded={open}
       >
@@ -34,7 +34,7 @@ export function OrganisationSwitcher({ organisations = [] }: { organisations?: O
             <li key={org.id}>
               <button
                 type="button"
-                className="block w-full px-3 py-2 text-left text-sm hover:bg-muted"
+                className="block w-full px-3 py-2 text-left text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 onClick={() => setOpen(false)}
               >
                 {org.name}

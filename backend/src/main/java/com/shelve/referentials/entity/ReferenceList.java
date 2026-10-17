@@ -30,6 +30,9 @@ public class ReferenceList {
   @Column(columnDefinition = "text")
   private String description;
 
+  @Column(name = "is_system", nullable = false)
+  private Boolean isSystem = false;
+
   @Column(name = "linked_schema_id")
   private Long linkedSchemaId;
 
@@ -83,6 +86,14 @@ public class ReferenceList {
 
   public void setDescription(String description) {
     this.description = description;
+  }
+
+  public Boolean getIsSystem() {
+    return this.isSystem;
+  }
+
+  public void setIsSystem(Boolean isSystem) {
+    this.isSystem = isSystem;
   }
 
   public Long getLinkedSchemaId() {

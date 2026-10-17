@@ -80,7 +80,7 @@ export default function WorkplaceEditPage() {
         <button
           type="button"
           onClick={() => router.push(`/workplace/${encodeURIComponent(code)}`)}
-          className="rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted"
+          className="rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           Annuler
         </button>
@@ -91,7 +91,7 @@ export default function WorkplaceEditPage() {
         <Field label="Nom *" value={v.name} onChange={(x) => setV({ ...v, name: x })} required />
         <label className="flex flex-col gap-1 text-sm">
           <span>Description</span>
-          <textarea value={v.description} onChange={(e) => setV({ ...v, description: e.target.value })} rows={3} className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
+          <textarea value={v.description} onChange={(e) => setV({ ...v, description: e.target.value })} rows={3} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
         </label>
         <div className="flex flex-wrap gap-6">
           <Checkbox label="Espace de travail public" hint="Visible par tous les membres de l'organisation" checked={v.is_public} onChange={(x) => setV({ ...v, is_public: x })} />
@@ -110,7 +110,7 @@ export default function WorkplaceEditPage() {
       )}
 
       <footer className="flex justify-end">
-        <button type="submit" disabled={update.isPending} className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-60">
+        <button type="submit" disabled={update.isPending} className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
           Enregistrer
         </button>
       </footer>
@@ -143,7 +143,7 @@ function Field({
         value={value}
         required={required}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded border border-border bg-background px-2 py-1.5 text-sm"
+        className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
       />
       {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
     </label>

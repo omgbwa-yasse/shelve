@@ -13,10 +13,10 @@ const ModalContext = createContext<ModalContextValue | null>(null);
 
 /**
  * Registre central des modales : `useModal().open(...)` permet d'ouvrir
- * n'importe quelle modale (confirmation, `SelectionModal`, formulaire) depuis
+ * n'importe quelle modale (confirmation, `UniversalModal`, formulaire) depuis
  * n'importe quel composant, sans que chaque écran ne gère son propre state
  * `isOpen` — un seul point de vérité, une seule modale visible à la fois.
- * `Modal`/`SelectionModal` restent utilisables en mode contrôlé (props
+ * `Modal`/`UniversalModal` restent utilisables en mode contrôlé (props
  * `open`/`onClose`) quand un écran a besoin de piloter finement le cycle de vie.
  */
 export function ModalProvider({ children }: { children: React.ReactNode }) {

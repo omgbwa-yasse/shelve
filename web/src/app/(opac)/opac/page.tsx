@@ -1,7 +1,12 @@
+'use client';
+
+import { OpacHome } from '@/features/opac-builder/render/OpacHome';
+
+/**
+ * Accueil OPAC — rendu de la page construite avec le constructeur de pages
+ * (version publiée de la page `home`). Repli sur un état « en construction »
+ * tant qu'aucune version n'est publiée.
+ */
 export default function OpacHomePage() {
-  return (
-    <div className="mx-auto max-w-4xl px-6 py-12">
-      <h1 className="text-2xl font-semibold">Portail public — placeholder</h1>
-    </div>
-  );
+  return <OpacHome />;
 }

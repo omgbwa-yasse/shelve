@@ -18,6 +18,8 @@ type MetadataField = {
   required: boolean;
   readonly: boolean;
   group?: string | null;
+  reference_list_id?: number | null;
+  default_value?: string | null;
 };
 
 function groupFields(fields: MetadataField[]): [string, MetadataField[]][] {
@@ -32,7 +34,7 @@ function groupFields(fields: MetadataField[]): [string, MetadataField[]][] {
 }
 
 function MetadataInput({ field, value, onChange }: { field: MetadataField; value: string; onChange: (v: string) => void }) {
-  const common = 'rounded border border-border bg-background px-2 py-1.5 text-sm';
+  const common = 'rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary';
 
   if (field.data_type === 'boolean') {
     return <input type="checkbox" checked={value === '1' || value === 'true'} disabled={field.readonly} onChange={(e) => onChange(e.target.checked ? '1' : '0')} className="h-4 w-4" />;

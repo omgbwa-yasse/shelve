@@ -2,8 +2,12 @@
  * Point d'entrée CSS unique de l'application (importé une seule fois, dans
  * `app/layout.tsx`). Le seul choix à faire ici est QUEL template importer —
  * voir `src/styles/themes/`.
+ *
+ * L'@import de police doit précéder tous les autres (règle CSS) : il charge
+ * la typographie du template « church ».
  */
-@import '../styles/themes/default.css';
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import '../styles/themes/church.css';
 
 @tailwind base;
 @tailwind components;
@@ -14,7 +18,47 @@
     @apply border-border;
   }
 
+  html {
+    /* Police de base 17px (106,25 %) : tout étant en rem, l'échelle suit. */
+    font-size: 106.25%;
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Sélection de texte : encre sur indigo, comme la charte. */
+  ::selection {
+    background: hsl(var(--color-primary));
+    color: #ffffff;
+  }
+
+  /* Anneau de focus visible pour toute interaction clavier. */
+  :focus-visible {
+    outline: 2px solid hsl(var(--color-primary));
+    outline-offset: 3px;
+  }
+
+  /* Barres de défilement fines et discrètes. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--color-border)) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: hsl(var(--color-border));
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--color-muted-foreground));
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
   }
 }

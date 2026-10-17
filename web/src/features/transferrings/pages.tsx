@@ -10,6 +10,7 @@ import { useResourceList, useDestroy, useResource, useCreate, useAction } from '
 import { DataTable, Pagination } from '@/components/ui/table';
 import * as api from './services/transferring.service';
 import { SlipsImport, SlipsExport } from './components/slips-import-export';
+import { DeclassementLifecycle } from './components/declassement-lifecycle';
 import type { FeatureRoute } from '@/lib/routing';
 
 function makeList(r: ResourceApi, key: string, columns: TableColumn<Entity>[], o: { title: string; create?: string; actions?: (row: Entity) => React.ReactNode }) {
@@ -22,10 +23,10 @@ function makeList(r: ResourceApi, key: string, columns: TableColumn<Entity>[], o
       <div className="flex h-full flex-col gap-4">
         <header className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">{o.title}</h1>
-          {o.create && <Link href={o.create} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">+ Nouveau</Link>}
+          {o.create && <Link href={o.create} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">+ Nouveau</Link>}
         </header>
         <DataTable columns={columns} rows={rows} loading={isLoading} error={isError}
-          actions={o.actions ?? ((row) => <button type="button" onClick={() => { if (window.confirm('Supprimer ?')) destroy.mutate(row.id); }} className="rounded border border-border px-2 py-1 text-xs text-danger">Supprimer</button>)} />
+          actions={o.actions ?? ((row) => <button type="button" onClick={() => { if (window.confirm('Supprimer ?')) destroy.mutate(row.id); }} className="rounded border border-border px-2 py-1 text-xs text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Supprimer</button>)} />
         <Pagination page={page} totalPages={data?.meta?.last_page ?? 1} total={data?.meta?.total} onChange={setPage} />
       </div>
     );
@@ -46,13 +47,13 @@ function makeForm(r: ResourceApi, key: string, o: { title: string; back: string 
       <form onSubmit={submit} className="flex w-full flex-col gap-4">
         <header className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">{o.title}</h1>
-          <button type="button" onClick={() => router.push(o.back)} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>
+          <button type="button" onClick={() => router.push(o.back)} className="rounded border border-border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Annuler</button>
         </header>
         <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4">
           <Field label="Code" value={v.code} onChange={(x) => setV((p) => ({ ...p, code: x }))} />
           <Field label="Nom *" value={v.name} onChange={(x) => setV((p) => ({ ...p, name: x }))} required />
         </div>
-        <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">Enregistrer</button></footer>
+        <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Enregistrer</button></footer>
       </form>
     );
   };
@@ -62,7 +63,7 @@ function Field({ label, value, onChange, required }: { label: string; value?: st
   return (
     <label className="flex flex-col gap-1 text-sm">
       <span>{label} {required && <span className="text-danger">*</span>}</span>
-      <input value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
+      <input value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
     </label>
   );
 }
@@ -82,7 +83,7 @@ function SlipActions({ id }: { id: string }) {
   return (
     <div className="flex justify-end gap-1">
       {([['receive', 'Recevoir'], ['approve', 'Approuver']] as const).map(([verb, label]) => (
-        <button key={verb} type="button" onClick={() => action.mutate({ id, verb })} className="rounded border border-border px-2 py-1 text-xs hover:bg-muted">{label}</button>
+        <button key={verb} type="button" onClick={() => action.mutate({ id, verb })} className="rounded border border-border px-2 py-1 text-xs hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{label}</button>
       ))}
     </div>
   );
@@ -90,7 +91,7 @@ function SlipActions({ id }: { id: string }) {
 
 export const routes: FeatureRoute[] = [
   { path: '/transferrings', List: makeList(api.slipsApi, 'slips', SLIP_COLS, { title: 'Bordereaux de versement', create: '/transferrings/create', actions: (row) => <SlipActions id={String(row.id)} /> }), Form: makeForm(api.slipsApi, 'slips', { title: 'Bordereau', back: '/transferrings' }) },
-  { path: '/transferrings/declassement-lists', List: makeList(api.declassementListsApi, 'declassement-lists', SLIP_COLS, { title: 'Listes de déclassement', create: '/transferrings/declassement-lists/create' }), Form: makeForm(api.declassementListsApi, 'declassement-lists', { title: 'Liste de déclassement', back: '/transferrings/declassement-lists' }) },
+  { path: '/transferrings/declassement-lists', List: DeclassementLifecycle },
   { path: '/transferrings/reactivations', List: makeList(api.declassementListsApi, 'reactivations', [{ key: 'record_id', label: 'Notice' }, { key: 'status', label: 'Statut' }], { title: 'Réactivations' }) },
   { path: '/tools/retentions', List: makeList(api.retentionsApi, 'retentions', REF_COLS, { title: 'Durées de conservation', create: '/tools/retentions/create' }), Form: makeForm(api.retentionsApi, 'retentions', { title: 'Règle de conservation', back: '/tools/retentions' }) },
   { path: '/settings/transferring-status', List: makeList(api.slipStatusesApi, 'slip-statuses', REF_COLS, { title: 'Statuts de transfert', create: '/settings/transferring-status/create' }), Form: makeForm(api.slipStatusesApi, 'slip-statuses', { title: 'Statut de transfert', back: '/settings/transferring-status' }) },

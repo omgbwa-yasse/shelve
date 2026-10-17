@@ -27,7 +27,7 @@ const COLS: TableColumn<Entity>[] = [
     key: 'name',
     label: 'Nom',
     render: (r) => (
-      <Link href={workplacePath(r.code ?? r.id)} className="hover:underline">
+      <Link href={workplacePath(r.code ?? r.id)} className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
         {String(r.name ?? '')}
       </Link>
     ),
@@ -45,7 +45,7 @@ export function WorkplaceList() {
     <div className="flex h-full flex-col gap-4">
       <header className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Espaces de travail</h1>
-        <Link href="/workplaces/create" className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">+ Nouveau</Link>
+        <Link href="/workplaces/create" className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">+ Nouveau</Link>
       </header>
       <DataTable columns={COLS} rows={rows} loading={isLoading} error={isError}
         actions={(row) => (
@@ -54,7 +54,7 @@ export function WorkplaceList() {
             onClick={() => {
               if (window.confirm('Supprimer ?')) destroy.mutate(row.id);
             }}
-            className="rounded border border-border px-2 py-1 text-xs text-danger"
+            className="rounded border border-border px-2 py-1 text-xs text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             Supprimer
           </button>
@@ -89,8 +89,8 @@ export function WorkplaceForm({ mode, id }: { mode: 'create' | 'edit'; id?: stri
   return (
     <form onSubmit={submit} className="flex w-full flex-col gap-4">
       <header className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{mode === 'edit' ? 'Modifier — workplace' : 'Créer — workplace'}</h1>
-        <button type="button" onClick={() => router.push('/workplaces')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>
+        <h1 className="text-xl font-semibold">{mode === 'edit' ? 'Modifier : workplace' : 'Créer : workplace'}</h1>
+        <button type="button" onClick={() => router.push('/workplaces')} className="rounded border border-border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Annuler</button>
       </header>
       <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4">
         <Field
@@ -104,7 +104,7 @@ export function WorkplaceForm({ mode, id }: { mode: 'create' | 'edit'; id?: stri
         <Field label="Description" value={v.description} onChange={(x) => setV((p) => ({ ...p, description: x }))} />
       </div>
       <footer className="flex justify-end">
-        <button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">Enregistrer</button>
+        <button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Enregistrer</button>
       </footer>
     </form>
   );
@@ -126,7 +126,7 @@ function Field({
   return (
     <label className="flex flex-col gap-1 text-sm">
       <span>{label} {required && <span className="text-danger">*</span>}</span>
-      <input value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
+      <input value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
       {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
     </label>
   );

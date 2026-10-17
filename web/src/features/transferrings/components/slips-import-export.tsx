@@ -12,7 +12,7 @@ export function SlipsImport() {
         <input type="file" className="rounded border border-border bg-background px-3 py-2 text-sm" />
         <p className="text-xs text-muted-foreground">Formats acceptés : .xlsx, .xls, .xml (EAD/SEDA). L'import est asynchrone.</p>
         <div>
-          <button type="submit" className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">Importer</button>
+          <button type="submit" className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Importer</button>
         </div>
       </form>
     </div>
@@ -26,7 +26,7 @@ export function SlipsExport() {
       <PageHeader title="Export de bordereaux" description="Export SEDA / EAD / Excel des bordereaux." />
       <div className="grid w-full grid-cols-1 gap-3">
         {['Export Excel (.xlsx)', 'Export SEDA 2.1 (.xml)', 'Export EAD (.xml)'].map((f) => (
-          <button key={f} type="button" className="rounded border border-border bg-surface px-4 py-3 text-left text-sm hover:bg-muted">
+          <button key={f} type="button" className="rounded border border-border bg-surface px-4 py-3 text-left text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
             {f}
           </button>
         ))}

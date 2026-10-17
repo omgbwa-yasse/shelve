@@ -111,7 +111,7 @@ export default function WorkplaceDocumentsPage() {
           <button
             type="button"
             onClick={() => setShowFolderForm((v) => !v)}
-            className="flex items-center gap-1.5 rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted"
+            className="flex items-center gap-1.5 rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Icon name="folderPlus" className="h-4 w-4" />
             Nouveau dossier
@@ -119,7 +119,7 @@ export default function WorkplaceDocumentsPage() {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:opacity-90"
+            className="flex items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Icon name="upload" className="h-4 w-4" />
             Uploader un fichier
@@ -144,7 +144,7 @@ export default function WorkplaceDocumentsPage() {
             {index === path.length - 1 ? (
               <span className="font-semibold">{crumb.name}</span>
             ) : (
-              <button type="button" onClick={() => goTo(index)} className="text-primary hover:underline">
+              <button type="button" onClick={() => goTo(index)} className="text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 {crumb.name}
               </button>
             )}
@@ -167,12 +167,12 @@ export default function WorkplaceDocumentsPage() {
             onChange={(e) => setFolderName(e.target.value)}
             placeholder="Nom du dossier"
             required
-            className="flex-1 rounded border border-border bg-background px-2 py-1.5 text-sm"
+            className="flex-1 rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
           />
-          <button type="submit" disabled={createFolder.isPending} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60">
+          <button type="submit" disabled={createFolder.isPending} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
             Créer
           </button>
-          <button type="button" onClick={() => setShowFolderForm(false)} className="rounded border border-border px-3 py-1.5 text-sm hover:bg-muted">
+          <button type="button" onClick={() => setShowFolderForm(false)} className="rounded border border-border px-3 py-1.5 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
             Annuler
           </button>
         </form>
@@ -199,7 +199,7 @@ export default function WorkplaceDocumentsPage() {
                 </span>
                 <div className="min-w-0 flex-1">
                   {doc.is_folder ? (
-                    <button type="button" onClick={() => navigateTo(doc)} className="truncate text-sm font-medium hover:underline">
+                    <button type="button" onClick={() => navigateTo(doc)} className="truncate text-sm font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                       {doc.name}
                     </button>
                   ) : (
@@ -223,7 +223,7 @@ export default function WorkplaceDocumentsPage() {
                     <a
                       href={downloadWorkplaceDocumentUrl(code, doc.id)}
                       title="Télécharger"
-                      className="rounded border border-border px-2 py-1 text-xs hover:bg-muted"
+                      className="rounded border border-border px-2 py-1 text-xs hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <Icon name="download" className="h-3.5 w-3.5" />
                     </a>
@@ -232,7 +232,7 @@ export default function WorkplaceDocumentsPage() {
                     type="button"
                     title={doc.is_shared ? 'Ne plus partager (module Records)' : 'Partager vers le module Records'}
                     onClick={() => share.mutate(doc)}
-                    className={`rounded border px-2 py-1 text-xs hover:bg-muted ${
+                    className={`rounded border px-2 py-1 text-xs hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                       doc.is_shared ? 'border-emerald-400 text-emerald-700' : 'border-border text-muted-foreground'
                     }`}
                   >
@@ -242,7 +242,7 @@ export default function WorkplaceDocumentsPage() {
                     type="button"
                     title="Transférer vers le module Records"
                     onClick={() => setTransferTarget(doc)}
-                    className="rounded border border-primary/40 px-2 py-1 text-xs text-primary hover:bg-primary/10"
+                    className="rounded border border-primary/40 px-2 py-1 text-xs text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <Icon name="arrowRightSquare" className="h-3.5 w-3.5" />
                   </button>
@@ -252,7 +252,7 @@ export default function WorkplaceDocumentsPage() {
                     onClick={() => {
                       if (window.confirm(`Supprimer « ${doc.name} » ?`)) remove.mutate(doc.id);
                     }}
-                    className="rounded border border-danger/40 px-2 py-1 text-xs text-danger hover:bg-danger/10"
+                    className="rounded border border-danger/40 px-2 py-1 text-xs text-danger hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <Icon name="trash" className="h-3.5 w-3.5" />
                   </button>
@@ -318,7 +318,7 @@ function TransferModal({
               « {document.name} » quittera cet espace et ne sera accessible que via le module Records.
             </p>
           </div>
-          <button type="button" onClick={onClose} className="rounded p-1 text-muted-foreground hover:bg-muted" aria-label="Fermer">
+          <button type="button" onClick={onClose} className="rounded p-1 text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Fermer">
             <Icon name="close" className="h-4 w-4" />
           </button>
         </header>
@@ -336,7 +336,7 @@ function TransferModal({
               value={selected}
               onChange={(e) => setSelected(e.target.value)}
               required
-              className="max-h-64 rounded border border-border bg-background px-2 py-1.5 text-sm"
+              className="max-h-64 rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               size={Math.min(options.length || 1, 8)}
             >
               {isLoading ? (
@@ -356,13 +356,13 @@ function TransferModal({
             Le transfert affecte le document à la classe choisie : il devient une notice du module Records.
           </p>
           <footer className="flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="rounded border border-border px-3 py-1.5 text-sm hover:bg-muted">
+            <button type="button" onClick={onClose} className="rounded border border-border px-3 py-1.5 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
               Annuler
             </button>
             <button
               type="submit"
               disabled={pending || !selected || options.length === 0}
-              className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60"
+              className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {pending ? 'Transfert…' : 'Transférer'}
             </button>

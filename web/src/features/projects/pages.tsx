@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api/client';
 import type { ResourceApi } from '@/lib/api/resources';
@@ -14,6 +14,7 @@ import { PageHeader, InfoPanel, StatCard } from '@/components/ui/page';
 import type { FeatureRoute } from '@/lib/routing';
 import * as api from './services/project.service';
 import { ATTACHABLE_LABELS, RESOURCE_TYPE_LABELS, type AttachableAlias } from './services/project.service';
+import { tasksApi } from '@/features/workflow/services/workflow.service';
 import { GlobalMilestonesList, GlobalDeliverablesList, GlobalAlertsList, GlobalResourcesList, GlobalRisksList, KanbanBoard, GanttChart } from './components/overview';
 import { workplacesApi } from '@/features/workplaces/services/workplace.service';
 import { organisationsApi } from '@/features/tools/services/tool.service';
@@ -43,13 +44,13 @@ function AttachableField({ value, onChange }: { value: { type: string; id: strin
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
           <span>Type de périmètre</span>
-          <select value={type} onChange={(e) => onChange({ type: e.target.value, id: '' })} className="rounded border border-border bg-background px-2 py-1.5 text-sm">
+          <select value={type} onChange={(e) => onChange({ type: e.target.value, id: '' })} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
             {Object.entries(ATTACHABLE_LABELS).map(([t, l]) => <option key={t} value={t}>{l}</option>)}
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm">
           <span>Élément rattaché</span>
-          <select value={value.id} onChange={(e) => onChange({ type, id: e.target.value })} className="rounded border border-border bg-background px-2 py-1.5 text-sm">
+          <select value={value.id} onChange={(e) => onChange({ type, id: e.target.value })} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
             <option value="">— Choisir —</option>
             {(data ?? []).map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
           </select>
@@ -67,7 +68,7 @@ function ProjectField({ value, onChange }: { value?: string; onChange: (v: strin
   return (
     <label className="flex flex-col gap-1 text-sm">
       <span>Projet rattaché</span>
-      <select value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm">
+      <select value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
         <option value="">— Aucun (OKR global) —</option>
         {projects.map((p) => <option key={String(p.id)} value={String(p.id)}>{String(p.code ?? '')} — {String(p.name ?? '')}</option>)}
       </select>
@@ -90,7 +91,7 @@ function makeList(r: ResourceApi, key: string, columns: TableColumn<Entity>[], o
       <div className="flex h-full flex-col gap-4">
         <PageHeader
           title={o.title}
-          actions={o.create ? <Link href={o.create} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">+ Nouveau</Link> : undefined}
+          actions={o.create ? <Link href={o.create} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">+ Nouveau</Link> : undefined}
         />
         <DataTable
           columns={columns}
@@ -98,7 +99,7 @@ function makeList(r: ResourceApi, key: string, columns: TableColumn<Entity>[], o
           loading={isLoading}
           error={isError}
           actions={o.del ? (row) => (
-            <button type="button" onClick={() => { if (window.confirm('Supprimer ?')) destroy.mutate(row.id); }} className="rounded border border-border px-2 py-1 text-xs text-danger">
+            <button type="button" onClick={() => { if (window.confirm('Supprimer ?')) destroy.mutate(row.id); }} className="rounded border border-border px-2 py-1 text-xs text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
               Supprimer
             </button>
           ) : undefined}
@@ -116,12 +117,12 @@ function Field({ label, value, onChange, required, type = 'text', options, place
     <label className="flex flex-col gap-1 text-sm">
       <span>{label} {required && <span className="text-danger">*</span>}</span>
       {options ? (
-        <select value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm">
+        <select value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
           <option value="">—</option>
           {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       ) : (
-        <input type={type} placeholder={placeholder} value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
+        <input type={type} placeholder={placeholder} value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
       )}
     </label>
   );
@@ -168,7 +169,7 @@ function progressBar(progress: unknown): React.ReactNode {
 
 const PROJECT_COLS: TableColumn<Entity>[] = [
   { key: 'code', label: 'Code', render: (r) => <span className="font-mono text-xs">{String(r.code ?? '')}</span> },
-  { key: 'name', label: 'Nom', render: (r) => <Link href={`/projects/${r.id}`} className="hover:underline">{String(r.name ?? '')}</Link> },
+  { key: 'name', label: 'Nom', render: (r) => <Link href={`/projects/${r.id}`} className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{String(r.name ?? '')}</Link> },
   { key: 'status', label: 'Statut' },
   { key: 'attachable', label: 'Rattaché à', render: attachableLabel },
 ];
@@ -201,9 +202,9 @@ function ProjectForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
   return (
     <form onSubmit={submit} className="flex w-full flex-col gap-4">
       <PageHeader
-        title={mode === 'edit' ? 'Modifier — projet' : 'Nouveau projet'}
+        title={mode === 'edit' ? 'Modifier : projet' : 'Nouveau projet'}
         description="Un projet : un chantier suivi avec objectifs (OKR), KPI, jalons, livrables, ressources et rapports d'étape."
-        actions={<button type="button" onClick={() => router.push('/projects')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>}
+        actions={<button type="button" onClick={() => router.push('/projects')} className="rounded border border-border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Annuler</button>}
       />
       <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-3">
         <Field label="Code" value={v.code} onChange={(x) => setV((p) => ({ ...p, code: x }))} required={mode === 'create'} />
@@ -213,7 +214,7 @@ function ProjectForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
           options={[{ value: 'draft', label: 'Brouillon' }, { value: 'active', label: 'En cours' }, { value: 'on_hold', label: 'En pause' }, { value: 'completed', label: 'Terminé' }, { value: 'archived', label: 'Archivé' }]} />
         <AttachableField value={{ type: v.attachable_type ?? 'workplace', id: v.attachable_id ?? '' }} onChange={(a) => setV((p) => ({ ...p, attachable_type: a.type, attachable_id: a.id }))} />
       </div>
-      <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">Enregistrer</button></footer>
+      <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Enregistrer</button></footer>
     </form>
   );
 }
@@ -286,7 +287,7 @@ function MilestonesPanel({ projectId }: { projectId: string }) {
                   {m.due_date ? new Date(String(m.due_date)).toLocaleDateString('fr-FR') : '—'} · {MILESTONE_STATUS_LABELS[String(m.status)] ?? String(m.status)}
                 </span>
                 {m.status === 'pending' && (
-                  <button type="button" onClick={() => reach(String(m.id))} className="rounded border border-border px-2 py-0.5 text-xs hover:bg-muted">Atteint</button>
+                  <button type="button" onClick={() => reach(String(m.id))} className="rounded border border-border px-2 py-0.5 text-xs hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Atteint</button>
                 )}
               </span>
             </li>
@@ -294,9 +295,9 @@ function MilestonesPanel({ projectId }: { projectId: string }) {
         </ul>
       )}
       <form onSubmit={submit} className="mt-3 flex flex-wrap items-end gap-2 border-t border-border pt-3 text-sm">
-        <label className="flex flex-col gap-1"><span>Nom</span><input value={v.name} onChange={(e) => setV((p) => ({ ...p, name: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5" /></label>
-        <label className="flex flex-col gap-1"><span>Échéance</span><input type="date" value={v.due_date} onChange={(e) => setV((p) => ({ ...p, due_date: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5" /></label>
-        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Ajouter un jalon</button>
+        <label className="flex flex-col gap-1"><span>Nom</span><input value={v.name} onChange={(e) => setV((p) => ({ ...p, name: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" /></label>
+        <label className="flex flex-col gap-1"><span>Échéance</span><input type="date" value={v.due_date} onChange={(e) => setV((p) => ({ ...p, due_date: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" /></label>
+        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Ajouter un jalon</button>
       </form>
     </div>
   );
@@ -338,12 +339,12 @@ function DeliverablesPanel({ projectId }: { projectId: string }) {
               <span className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">{DELIVERABLE_STATUS_LABELS[String(d.status)] ?? String(d.status)}</span>
                 {d.status === 'draft' && (
-                  <button type="button" onClick={() => act(api.submitProjectDeliverable, String(d.id))} className="rounded border border-border px-2 py-0.5 text-xs hover:bg-muted">Soumettre</button>
+                  <button type="button" onClick={() => act(api.submitProjectDeliverable, String(d.id))} className="rounded border border-border px-2 py-0.5 text-xs hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Soumettre</button>
                 )}
                 {d.status === 'submitted' && (
                   <>
-                    <button type="button" onClick={() => act(api.approveProjectDeliverable, String(d.id))} className="rounded border border-border px-2 py-0.5 text-xs hover:bg-muted">Approuver</button>
-                    <button type="button" onClick={() => act(api.rejectProjectDeliverable, String(d.id))} className="rounded border border-border px-2 py-0.5 text-xs text-danger hover:bg-muted">Rejeter</button>
+                    <button type="button" onClick={() => act(api.approveProjectDeliverable, String(d.id))} className="rounded border border-border px-2 py-0.5 text-xs hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Approuver</button>
+                    <button type="button" onClick={() => act(api.rejectProjectDeliverable, String(d.id))} className="rounded border border-border px-2 py-0.5 text-xs text-danger hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Rejeter</button>
                   </>
                 )}
               </span>
@@ -352,9 +353,9 @@ function DeliverablesPanel({ projectId }: { projectId: string }) {
         </ul>
       )}
       <form onSubmit={submit} className="mt-3 flex flex-wrap items-end gap-2 border-t border-border pt-3 text-sm">
-        <label className="flex flex-col gap-1"><span>Nom</span><input value={v.name} onChange={(e) => setV((p) => ({ ...p, name: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5" /></label>
-        <label className="flex flex-col gap-1"><span>Échéance</span><input type="date" value={v.due_date} onChange={(e) => setV((p) => ({ ...p, due_date: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5" /></label>
-        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Ajouter un livrable</button>
+        <label className="flex flex-col gap-1"><span>Nom</span><input value={v.name} onChange={(e) => setV((p) => ({ ...p, name: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" /></label>
+        <label className="flex flex-col gap-1"><span>Échéance</span><input type="date" value={v.due_date} onChange={(e) => setV((p) => ({ ...p, due_date: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" /></label>
+        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Ajouter un livrable</button>
       </form>
     </div>
   );
@@ -400,14 +401,14 @@ function ResourcesPanel({ projectId }: { projectId: string }) {
       <form onSubmit={submit} className="mt-3 flex flex-wrap items-end gap-2 border-t border-border pt-3 text-sm">
         <label className="flex flex-col gap-1">
           <span>Type</span>
-          <select value={v.type} onChange={(e) => setV((p) => ({ ...p, type: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5">
+          <select value={v.type} onChange={(e) => setV((p) => ({ ...p, type: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary">
             {Object.entries(RESOURCE_TYPE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </label>
-        <label className="flex flex-col gap-1"><span>Nom</span><input value={v.name} onChange={(e) => setV((p) => ({ ...p, name: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5" /></label>
-        <label className="flex flex-col gap-1"><span>Planifié</span><input type="number" value={v.planned_amount} onChange={(e) => setV((p) => ({ ...p, planned_amount: e.target.value }))} className="w-24 rounded border border-border bg-background px-2 py-1.5" /></label>
-        <label className="flex flex-col gap-1"><span>Réel</span><input type="number" value={v.actual_amount} onChange={(e) => setV((p) => ({ ...p, actual_amount: e.target.value }))} className="w-24 rounded border border-border bg-background px-2 py-1.5" /></label>
-        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Ajouter une ressource</button>
+        <label className="flex flex-col gap-1"><span>Nom</span><input value={v.name} onChange={(e) => setV((p) => ({ ...p, name: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" /></label>
+        <label className="flex flex-col gap-1"><span>Planifié</span><input type="number" value={v.planned_amount} onChange={(e) => setV((p) => ({ ...p, planned_amount: e.target.value }))} className="w-24 rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" /></label>
+        <label className="flex flex-col gap-1"><span>Réel</span><input type="number" value={v.actual_amount} onChange={(e) => setV((p) => ({ ...p, actual_amount: e.target.value }))} className="w-24 rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" /></label>
+        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Ajouter une ressource</button>
       </form>
     </div>
   );
@@ -445,9 +446,9 @@ function StatusReportsPanel({ projectId }: { projectId: string }) {
         </ul>
       )}
       <form onSubmit={submit} className="mt-3 flex flex-wrap items-end gap-2 border-t border-border pt-3 text-sm">
-        <label className="flex flex-col gap-1"><span>Avancement (%)</span><input type="number" min={0} max={100} value={v.percent_complete} onChange={(e) => setV((p) => ({ ...p, percent_complete: e.target.value }))} required className="w-24 rounded border border-border bg-background px-2 py-1.5" /></label>
-        <label className="flex flex-1 flex-col gap-1"><span>Résumé</span><input value={v.summary} onChange={(e) => setV((p) => ({ ...p, summary: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5" /></label>
-        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Ajouter un rapport</button>
+        <label className="flex flex-col gap-1"><span>Avancement (%)</span><input type="number" min={0} max={100} value={v.percent_complete} onChange={(e) => setV((p) => ({ ...p, percent_complete: e.target.value }))} required className="w-24 rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" /></label>
+        <label className="flex flex-1 flex-col gap-1"><span>Résumé</span><input value={v.summary} onChange={(e) => setV((p) => ({ ...p, summary: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" /></label>
+        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Ajouter un rapport</button>
       </form>
     </div>
   );
@@ -519,13 +520,13 @@ function RisksPanel({ projectId }: { projectId: string }) {
                 </span>
                 {r.status === 'open' && (
                   <span className="flex shrink-0 gap-1">
-                    <button type="button" onClick={() => mitigate(String(r.id))} className="rounded border border-border px-2 py-0.5 hover:bg-muted">Atténuer</button>
-                    <button type="button" onClick={() => occur(String(r.id))} className="rounded border border-border px-2 py-0.5 hover:bg-muted">Survenu</button>
-                    <button type="button" onClick={() => close(String(r.id))} className="rounded border border-border px-2 py-0.5 hover:bg-muted">Clôturer</button>
+                    <button type="button" onClick={() => mitigate(String(r.id))} className="rounded border border-border px-2 py-0.5 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Atténuer</button>
+                    <button type="button" onClick={() => occur(String(r.id))} className="rounded border border-border px-2 py-0.5 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Survenu</button>
+                    <button type="button" onClick={() => close(String(r.id))} className="rounded border border-border px-2 py-0.5 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Clôturer</button>
                   </span>
                 )}
                 {r.status === 'mitigated' && (
-                  <button type="button" onClick={() => close(String(r.id))} className="shrink-0 rounded border border-border px-2 py-0.5 hover:bg-muted">Clôturer</button>
+                  <button type="button" onClick={() => close(String(r.id))} className="shrink-0 rounded border border-border px-2 py-0.5 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Clôturer</button>
                 )}
               </div>
               {r.mitigation_plan ? <p className="mt-1 text-xs italic text-muted-foreground">Plan : {String(r.mitigation_plan)}</p> : null}
@@ -534,26 +535,26 @@ function RisksPanel({ projectId }: { projectId: string }) {
         </ul>
       )}
       <form onSubmit={submit} className="mt-3 flex flex-wrap items-end gap-2 border-t border-border pt-3 text-sm">
-        <label className="flex flex-1 flex-col gap-1"><span>Titre</span><input value={v.title} onChange={(e) => setV((p) => ({ ...p, title: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5" /></label>
+        <label className="flex flex-1 flex-col gap-1"><span>Titre</span><input value={v.title} onChange={(e) => setV((p) => ({ ...p, title: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" /></label>
         <label className="flex flex-col gap-1">
           <span>Catégorie</span>
-          <select value={v.category} onChange={(e) => setV((p) => ({ ...p, category: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5">
+          <select value={v.category} onChange={(e) => setV((p) => ({ ...p, category: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary">
             {Object.entries(api.RISK_CATEGORY_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </label>
         <label className="flex flex-col gap-1">
           <span>Probabilité</span>
-          <select value={v.probability} onChange={(e) => setV((p) => ({ ...p, probability: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5">
+          <select value={v.probability} onChange={(e) => setV((p) => ({ ...p, probability: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary">
             {Object.entries(api.RISK_LEVEL_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </label>
         <label className="flex flex-col gap-1">
           <span>Impact</span>
-          <select value={v.impact} onChange={(e) => setV((p) => ({ ...p, impact: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5">
+          <select value={v.impact} onChange={(e) => setV((p) => ({ ...p, impact: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary">
             {Object.entries(api.RISK_LEVEL_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </label>
-        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Ajouter un risque</button>
+        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Ajouter un risque</button>
       </form>
     </div>
   );
@@ -629,9 +630,9 @@ function TaskOkrKpiPanel({ projectId }: { projectId: string }) {
       <form onSubmit={createTask} className="flex flex-wrap items-end gap-2 text-sm">
         <label className="flex flex-1 flex-col gap-1">
           <span>Titre de la tâche *</span>
-          <input value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} required className="rounded border border-border bg-background px-2 py-1.5" />
+          <input value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} required className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" />
         </label>
-        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Créer la tâche</button>
+        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Créer la tâche</button>
       </form>
 
       {createdTaskId && (
@@ -640,27 +641,27 @@ function TaskOkrKpiPanel({ projectId }: { projectId: string }) {
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <form onSubmit={addOkr} className="flex flex-col gap-2 rounded border border-border bg-background p-3 text-sm">
               <span className="text-xs font-semibold">Ajouter un OKR</span>
-              <input placeholder="Titre de l'objectif *" value={okrTitle} onChange={(e) => setOkrTitle(e.target.value)} required className="rounded border border-border bg-background px-2 py-1.5" />
-              <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Ajouter l'OKR</button>
+              <input placeholder="Titre de l'objectif *" value={okrTitle} onChange={(e) => setOkrTitle(e.target.value)} required className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" />
+              <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Ajouter l'OKR</button>
             </form>
             <form onSubmit={addKpi} className="flex flex-col gap-2 rounded border border-border bg-background p-3 text-sm">
               <span className="text-xs font-semibold">Ajouter un KPI</span>
-              <input placeholder="Nom de l'indicateur *" value={kpiName} onChange={(e) => setKpiName(e.target.value)} required className="rounded border border-border bg-background px-2 py-1.5" />
-              <input placeholder="Code *" value={kpiCode} onChange={(e) => setKpiCode(e.target.value)} required className="rounded border border-border bg-background px-2 py-1.5" />
-              <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Ajouter le KPI</button>
+              <input placeholder="Nom de l'indicateur *" value={kpiName} onChange={(e) => setKpiName(e.target.value)} required className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" />
+              <input placeholder="Code *" value={kpiCode} onChange={(e) => setKpiCode(e.target.value)} required className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" />
+              <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Ajouter le KPI</button>
             </form>
             <form onSubmit={addRisk} className="flex flex-col gap-2 rounded border border-border bg-background p-3 text-sm">
               <span className="text-xs font-semibold">Ajouter un risque</span>
-              <input placeholder="Titre du risque *" value={riskTitle} onChange={(e) => setRiskTitle(e.target.value)} required className="rounded border border-border bg-background px-2 py-1.5" />
+              <input placeholder="Titre du risque *" value={riskTitle} onChange={(e) => setRiskTitle(e.target.value)} required className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" />
               <div className="flex gap-2">
-                <select value={riskProbability} onChange={(e) => setRiskProbability(e.target.value)} className="w-1/2 rounded border border-border bg-background px-2 py-1.5">
+                <select value={riskProbability} onChange={(e) => setRiskProbability(e.target.value)} className="w-1/2 rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary">
                   {Object.entries(api.RISK_LEVEL_LABELS).map(([value, label]) => <option key={value} value={value}>Prob. {label}</option>)}
                 </select>
-                <select value={riskImpact} onChange={(e) => setRiskImpact(e.target.value)} className="w-1/2 rounded border border-border bg-background px-2 py-1.5">
+                <select value={riskImpact} onChange={(e) => setRiskImpact(e.target.value)} className="w-1/2 rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary">
                   {Object.entries(api.RISK_LEVEL_LABELS).map(([value, label]) => <option key={value} value={value}>Impact {label}</option>)}
                 </select>
               </div>
-              <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Ajouter le risque</button>
+              <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Ajouter le risque</button>
             </form>
           </div>
         </div>
@@ -682,7 +683,7 @@ function ProjectDetail({ id }: { id: string }) {
       <PageHeader
         title={project ? String(project.name) : 'Projet'}
         description={project ? String(project.description ?? '') : undefined}
-        actions={<Link href={`/projects/${id}/edit`} className="rounded border border-border px-3 py-1.5 text-sm">Modifier</Link>}
+        actions={<Link href={`/projects/${id}/edit`} className="rounded border border-border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Modifier</Link>}
       />
       <TaskOkrKpiPanel projectId={id} />
       {project && (
@@ -703,7 +704,7 @@ function ProjectDetail({ id }: { id: string }) {
             <ul className="divide-y divide-border text-sm">
               {objectives.map((o) => (
                 <li key={String(o.id)} className="py-2">
-                  <Link href={`/objectives/${o.id}`} className="hover:underline">{String(o.title)}</Link>
+                  <Link href={`/objectives/${o.id}`} className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{String(o.title)}</Link>
                   <span className="ml-2 text-xs text-muted-foreground">{String(o.status)}</span>
                 </li>
               ))}
@@ -741,10 +742,10 @@ function ProjectDetail({ id }: { id: string }) {
 // ---------------------------------------------------------------------------
 
 const OBJECTIVE_COLS: TableColumn<Entity>[] = [
-  { key: 'title', label: 'Titre', render: (r) => <Link href={`/objectives/${r.id}`} className="hover:underline">{String(r.title ?? '')}</Link> },
+  { key: 'title', label: 'Titre', render: (r) => <Link href={`/objectives/${r.id}`} className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{String(r.title ?? '')}</Link> },
   { key: 'status', label: 'Statut', render: (r) => statusBadge(r.status) },
   { key: 'progress', label: 'Progression', render: (r) => progressBar(r.progress) },
-  { key: 'project', label: 'Projet', render: (r) => (r.project_id ? <Link href={`/projects/${r.project_id}`} className="hover:underline text-primary">{String((r.project as { name?: string })?.name ?? `Projet #${r.project_id}`)}</Link> : <span className="text-muted-foreground">OKR global</span>) },
+  { key: 'project', label: 'Projet', render: (r) => (r.project_id ? <Link href={`/projects/${r.project_id}`} className="hover:underline text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{String((r.project as { name?: string })?.name ?? `Projet #${r.project_id}`)}</Link> : <span className="text-muted-foreground">OKR global</span>) },
   { key: 'period', label: 'Période', render: (r) => {
     const s = r.period_start ? new Date(String(r.period_start)).toLocaleDateString('fr-FR') : '—';
     const e = r.period_end ? new Date(String(r.period_end)).toLocaleDateString('fr-FR') : '—';
@@ -783,9 +784,9 @@ function ObjectiveForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
   return (
     <form onSubmit={submit} className="flex w-full flex-col gap-4">
       <PageHeader
-        title={mode === 'edit' ? 'Modifier — objectif (OKR)' : 'Nouvel objectif (OKR)'}
+        title={mode === 'edit' ? 'Modifier : objectif (OKR)' : 'Nouvel objectif (OKR)'}
         description="Un objectif (OKR) : un résultat visé, suivi par des résultats clés. Rattachez-le à un projet pour un OKR de projet, ou laissez-le global."
-        actions={<button type="button" onClick={() => router.push('/objectives')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>}
+        actions={<button type="button" onClick={() => router.push('/objectives')} className="rounded border border-border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Annuler</button>}
       />
       <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-3">
         <Field label="Titre de l'objectif *" value={v.title} onChange={(x) => setV((p) => ({ ...p, title: x }))} required />
@@ -798,7 +799,7 @@ function ObjectiveForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
         <AttachableField value={{ type: v.attachable_type ?? 'workplace', id: v.attachable_id ?? '' }} onChange={(a) => setV((p) => ({ ...p, attachable_type: a.type, attachable_id: a.id }))} />
       </div>
       <p className="text-xs text-muted-foreground">Les résultats clés (avec cibles et progression) s'ajoutent depuis la fiche de l'objectif, une fois créé.</p>
-      <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">Enregistrer</button></footer>
+      <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Enregistrer</button></footer>
     </form>
   );
 }
@@ -827,8 +828,8 @@ function KeyResultRow({ objectiveId, kr }: { objectiveId: string; kr: Entity }) 
         <span className="text-muted-foreground">
           {String(kr.start_value)} → {String(kr.target_value)} {String(kr.unit ?? '')}
         </span>
-        <input value={value} onChange={(e) => setValue(e.target.value)} className="w-24 rounded border border-border bg-background px-2 py-1" />
-        <button type="button" onClick={save} className="rounded border border-border px-2 py-1 hover:bg-muted">Mettre à jour</button>
+        <input value={value} onChange={(e) => setValue(e.target.value)} className="w-24 rounded border border-border bg-background px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary" />
+        <button type="button" onClick={save} className="rounded border border-border px-2 py-1 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Mettre à jour</button>
       </div>
     </li>
   );
@@ -845,10 +846,10 @@ function AddKeyResultForm({ objectiveId }: { objectiveId: string }) {
   }
   return (
     <form onSubmit={submit} className="mt-3 flex flex-wrap items-end gap-2 border-t border-border pt-3 text-sm">
-      <label className="flex flex-col gap-1"><span>Titre</span><input value={v.title} onChange={(e) => setV((p) => ({ ...p, title: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5" /></label>
-      <label className="flex flex-col gap-1"><span>Cible</span><input type="number" value={v.target_value} onChange={(e) => setV((p) => ({ ...p, target_value: e.target.value }))} required className="w-28 rounded border border-border bg-background px-2 py-1.5" /></label>
-      <label className="flex flex-col gap-1"><span>Unité</span><input value={v.unit} onChange={(e) => setV((p) => ({ ...p, unit: e.target.value }))} className="w-24 rounded border border-border bg-background px-2 py-1.5" /></label>
-      <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Ajouter un résultat clé</button>
+      <label className="flex flex-col gap-1"><span>Titre</span><input value={v.title} onChange={(e) => setV((p) => ({ ...p, title: e.target.value }))} required className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" /></label>
+      <label className="flex flex-col gap-1"><span>Cible</span><input type="number" value={v.target_value} onChange={(e) => setV((p) => ({ ...p, target_value: e.target.value }))} required className="w-28 rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" /></label>
+      <label className="flex flex-col gap-1"><span>Unité</span><input value={v.unit} onChange={(e) => setV((p) => ({ ...p, unit: e.target.value }))} className="w-24 rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" /></label>
+      <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Ajouter un résultat clé</button>
     </form>
   );
 }
@@ -868,7 +869,7 @@ function ObjectiveDetail({ id }: { id: string }) {
       <PageHeader
         title={objective ? String(objective.title) : 'Objectif'}
         description={objective ? String(objective.description ?? '') : undefined}
-        actions={<Link href={`/objectives/${id}/edit`} className="rounded border border-border px-3 py-1.5 text-sm">Modifier</Link>}
+        actions={<Link href={`/objectives/${id}/edit`} className="rounded border border-border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Modifier</Link>}
       />
       {objective && (
         <>
@@ -882,7 +883,7 @@ function ObjectiveDetail({ id }: { id: string }) {
               <div className="mt-1 text-xs text-muted-foreground">Statut</div>
             </div>
             <div className="rounded border border-border bg-surface p-4 text-center">
-              <div className="text-sm">{objective.project_id ? <Link href={`/projects/${objective.project_id}`} className="text-primary hover:underline">{String((objective.project as { name?: string })?.name ?? `Projet #${objective.project_id}`)}</Link> : 'OKR global'}</div>
+              <div className="text-sm">{objective.project_id ? <Link href={`/projects/${objective.project_id}`} className="text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{String((objective.project as { name?: string })?.name ?? `Projet #${objective.project_id}`)}</Link> : 'OKR global'}</div>
               <div className="mt-1 text-xs text-muted-foreground">Projet rattaché</div>
             </div>
             <div className="rounded border border-border bg-surface p-4 text-center">
@@ -917,7 +918,7 @@ function ObjectiveDetail({ id }: { id: string }) {
 
 const KPI_COLS: TableColumn<Entity>[] = [
   { key: 'code', label: 'Code', render: (r) => <span className="font-mono text-xs">{String(r.code ?? '')}</span> },
-  { key: 'name', label: 'Nom', render: (r) => <Link href={`/kpis/${r.id}`} className="hover:underline">{String(r.name ?? '')}</Link> },
+  { key: 'name', label: 'Nom', render: (r) => <Link href={`/kpis/${r.id}`} className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{String(r.name ?? '')}</Link> },
   { key: 'target_value', label: 'Cible', render: (r) => (r.target_value !== null && r.target_value !== undefined ? `${r.target_value} ${r.unit ?? ''}` : '—') },
   { key: 'direction', label: 'Objectif', render: (r) => <span className="rounded bg-muted px-1.5 py-0.5 text-xs">{r.direction === 'lower_is_better' ? 'Plus bas = mieux' : 'Plus haut = mieux'}</span> },
   { key: 'frequency', label: 'Fréquence' },
@@ -955,9 +956,9 @@ function KpiForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
   return (
     <form onSubmit={submit} className="flex w-full flex-col gap-4">
       <PageHeader
-        title={mode === 'edit' ? 'Modifier — KPI' : 'Nouveau KPI'}
+        title={mode === 'edit' ? 'Modifier : KPI' : 'Nouveau KPI'}
         description="Un indicateur clé de performance : une mesure chiffrée suivie régulièrement (valeur cible, fréquence, sens du « mieux »)."
-        actions={<button type="button" onClick={() => router.push('/kpis')} className="rounded border border-border px-3 py-1.5 text-sm">Annuler</button>}
+        actions={<button type="button" onClick={() => router.push('/kpis')} className="rounded border border-border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Annuler</button>}
       />
       <div className="grid w-full grid-cols-1 gap-4 rounded border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-3">
         <Field label="Code *" value={v.code} onChange={(x) => setV((p) => ({ ...p, code: x }))} required={mode === 'create'} />
@@ -972,7 +973,7 @@ function KpiForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
         <AttachableField value={{ type: v.attachable_type ?? 'workplace', id: v.attachable_id ?? '' }} onChange={(a) => setV((p) => ({ ...p, attachable_type: a.type, attachable_id: a.id }))} />
       </div>
       <p className="text-xs text-muted-foreground">Les mesures (valeurs saisies périodiquement) se saisissent depuis la fiche du KPI.</p>
-      <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">Enregistrer</button></footer>
+      <footer className="flex justify-end"><button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Enregistrer</button></footer>
     </form>
   );
 }
@@ -987,8 +988,8 @@ function AddMeasurementForm({ kpiId, onAdded }: { kpiId: string; onAdded: () => 
   }
   return (
     <form onSubmit={submit} className="flex items-end gap-2 border-t border-border pt-3 text-sm">
-      <label className="flex flex-col gap-1"><span>Nouvelle mesure</span><input type="number" step="any" value={value} onChange={(e) => setValue(e.target.value)} required className="w-32 rounded border border-border bg-background px-2 py-1.5" /></label>
-      <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Enregistrer</button>
+      <label className="flex flex-col gap-1"><span>Nouvelle mesure</span><input type="number" step="any" value={value} onChange={(e) => setValue(e.target.value)} required className="w-32 rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary" /></label>
+      <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Enregistrer</button>
     </form>
   );
 }
@@ -1011,7 +1012,7 @@ function KpiDetail({ id }: { id: string }) {
       <PageHeader
         title={kpi ? String(kpi.name) : 'KPI'}
         description={kpi ? String(kpi.description ?? '') : undefined}
-        actions={<Link href={`/kpis/${id}/edit`} className="rounded border border-border px-3 py-1.5 text-sm">Modifier</Link>}
+        actions={<Link href={`/kpis/${id}/edit`} className="rounded border border-border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Modifier</Link>}
       />
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <StatCard label="Dernière mesure" value={latest ? `${latest.value} ${kpi?.unit ?? ''}` : '—'} />
@@ -1041,8 +1042,148 @@ function KpiDetail({ id }: { id: string }) {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Tâches de TOUS les projets (vue transversale). Lit les filtres de l'URL :
+ *   `/projects/tasks`                         → toutes les tâches de projets
+ *   `/projects/tasks?status=pending`          → en attente
+ *   `/projects/tasks?status=in_progress`      → en cours
+ *   `/projects/tasks?assigned_to=me`          → mes tâches (assignées à moi)
+ * Le filtre `assigned_to=me` est résolu via `/api/v1/auth/me` (id de l'agent).
+ */
+const TASK_STATUS_LABELS: Record<string, string> = {
+  pending: 'En attente',
+  in_progress: 'En cours',
+  completed: 'Terminée',
+  cancelled: 'Annulée',
+};
+
+function GlobalTasksList() {
+  const router = useRouter();
+  const sp = useSearchParams();
+  const status = sp.get('status') ?? '';
+  const assignedTo = sp.get('assigned_to') ?? '';
+  const [page, setPage] = useState(1);
+
+  // Résout `assigned_to=me` → id de l'agent connecté.
+  const { data: me } = useQuery({
+    queryKey: ['auth-me'],
+    queryFn: async () => {
+      const res = await apiFetch<{ data: { user: { id: number } } }>('/api/v1/auth/me');
+      return res.data.user.id;
+    },
+    enabled: assignedTo === 'me',
+  });
+
+  const params: Record<string, string | number> = {
+    page,
+    'page.size': 20,
+    'filter[taskable_type]': 'App\\Models\\Project',
+    include: 'taskable,assignedUser',
+  };
+  if (status) params['filter[status]'] = status;
+  if (assignedTo === 'me' && me) params['filter[assigned_to]'] = me;
+  else if (assignedTo && assignedTo !== 'me') params['filter[assigned_to]'] = assignedTo;
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['project-tasks-global', status, assignedTo, me, page],
+    queryFn: () => tasksApi.list(params as never),
+    enabled: assignedTo !== 'me' || me !== undefined,
+  });
+
+  const rows = (data?.data ?? []) as Entity[];
+  const m = data?.meta;
+
+  const title = status === 'pending' ? 'Tâches en attente' : status === 'in_progress' ? 'Tâches en cours' : assignedTo === 'me' ? 'Mes tâches' : 'Tâches des projets';
+  const subtitle = assignedTo === 'me' ? 'Tâches assignées à vous, sur tous les projets.' : 'Toutes les tâches rattachées à des projets.';
+
+  const columns: TableColumn<Entity>[] = [
+    {
+      key: 'title', label: 'Titre',
+      render: (r) => <Link href={`/workflow/tasks/${r.id}`} className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{String(r.title ?? '—')}</Link>,
+    },
+    {
+      key: 'project', label: 'Projet',
+      render: (r) => {
+        const t = r.taskable as { name?: string; code?: string; id?: number | string } | null | undefined;
+        if (t && (t.name || t.code)) return <span className="text-muted-foreground">{String(t.code ? `${t.code} — ` : '')}{String(t.name ?? '')}</span>;
+        return <span className="text-muted-foreground">—</span>;
+      },
+    },
+    {
+      key: 'status', label: 'Statut',
+      render: (r) => <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{TASK_STATUS_LABELS[String(r.status ?? '')] ?? String(r.status ?? '—')}</span>,
+    },
+    {
+      key: 'assigned_to', label: 'Assignée à',
+      render: (r) => {
+        const u = r.assignedUser as { name?: string } | null | undefined;
+        return <span className="text-muted-foreground">{u?.name ?? '—'}</span>;
+      },
+    },
+    {
+      key: 'due_date', label: 'Échéance',
+      render: (r) => (r.due_date ? new Date(String(r.due_date)).toLocaleDateString('fr-FR') : '—'),
+    },
+  ];
+
+  return (
+    <div className="flex h-full flex-col gap-4">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold">{title}</h1>
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
+        </div>
+      </header>
+
+      <div className="flex flex-wrap gap-1">
+        {([
+          ['', 'Toutes'],
+          ['pending', 'En attente'],
+          ['in_progress', 'En cours'],
+          ['completed', 'Terminées'],
+        ] as const).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => {
+              const s = new URLSearchParams(sp.toString());
+              if (value) s.set('status', value);
+              else s.delete('status');
+              s.delete('assigned_to');
+              s.delete('page');
+              router.push(`/projects/tasks${s.toString() ? `?${s.toString()}` : ''}`);
+            }}
+            className={`rounded px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${status === value && assignedTo !== 'me' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/70'}`}
+          >
+            {label}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => {
+            const s = new URLSearchParams(sp.toString());
+            s.set('assigned_to', 'me');
+            s.delete('status');
+            s.delete('page');
+            router.push(`/projects/tasks?${s.toString()}`);
+          }}
+          className={`rounded px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${assignedTo === 'me' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/70'}`}
+        >
+          Mes tâches
+        </button>
+      </div>
+
+      <DataTable columns={columns} rows={rows} loading={isLoading} error={isError} />
+      <Pagination page={page} totalPages={m?.last_page ?? 1} total={m?.total} onChange={setPage} />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+
 export const routes: FeatureRoute[] = [
   { path: '/projects', List: makeList(api.projectsApi, 'projects', PROJECT_COLS, { title: 'Projets', create: '/projects/create', del: true }), Detail: ProjectDetail, Form: ProjectForm },
+  { path: '/projects/tasks', List: GlobalTasksList },
   { path: '/objectives', List: makeList(api.objectivesApi, 'objectives', OBJECTIVE_COLS, { title: 'Objectifs (OKR)', create: '/objectives/create', del: true }), Detail: ObjectiveDetail, Form: ObjectiveForm },
   { path: '/kpis', List: makeList(api.kpisApi, 'kpis', KPI_COLS, { title: 'KPI', create: '/kpis/create', del: true }), Detail: KpiDetail, Form: KpiForm },
 

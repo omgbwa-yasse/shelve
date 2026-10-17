@@ -107,7 +107,7 @@ export default function WorkplaceDashboardPage() {
                   {workplace.members_count}
                 </span>
               </span>
-              <Link href={`${wPath}/members`} className="text-xs font-normal text-muted-foreground hover:text-foreground">
+              <Link href={`${wPath}/members`} className="text-xs font-normal text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 Gérer
               </Link>
             </header>
@@ -139,11 +139,11 @@ export default function WorkplaceDashboardPage() {
               Actions rapides
             </h3>
             <div className="flex flex-col gap-2">
-              <Link href={`${wPath}/members`} className="rounded-lg border border-border px-3 py-2 text-left text-sm hover:bg-muted">
+              <Link href={`${wPath}/members`} className="rounded-lg border border-border px-3 py-2 text-left text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 <Icon name="personPlus" className="mr-2 inline h-4 w-4 text-primary" />
                 Inviter un membre
               </Link>
-              <Link href={`${wPath}/edit`} className="rounded-lg border border-border px-3 py-2 text-left text-sm hover:bg-muted">
+              <Link href={`${wPath}/edit`} className="rounded-lg border border-border px-3 py-2 text-left text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 <Icon name="save" className="mr-2 inline h-4 w-4" />
                 Modifier l'espace
               </Link>
@@ -156,7 +156,7 @@ export default function WorkplaceDashboardPage() {
                 <Icon name="history" className="h-4 w-4 text-green-600" />
                 Activité récente
               </span>
-              <Link href={`${wPath}/activities`} className="text-xs font-normal text-muted-foreground hover:text-foreground">
+              <Link href={`${wPath}/activities`} className="text-xs font-normal text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 Historique
               </Link>
             </header>

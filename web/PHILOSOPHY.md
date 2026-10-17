@@ -41,30 +41,40 @@ Deux composants, un seul système :
 - **`Modal`** est la primitive : croix de fermeture en haut à droite,
   fermeture au clavier (Échap) et au clic sur l'overlay, toujours. Aucun
   écran ne réinvente sa propre boîte de dialogue.
-- **`SelectionModal`** est construite sur `Modal` en taille `full` (elle
-  couvre la page) : c'est le composant à utiliser chaque fois qu'un
-  utilisateur doit **choisir un élément dans un grand volume de données** —
-  rattacher une notice à un contenant parmi des milliers, choisir un contact
-  parmi les organisations partenaires, sélectionner des mots-clés dans un
-  thésaurus de plusieurs centaines d'entrées. Elle impose par construction
-  une recherche et une pagination côté serveur : il ne doit **jamais** être
-  possible de charger toute la liste côté client pour la filtrer en local.
+- **`UniversalModal`** est la modale **universelle de sélection**, construite
+  sur `Modal` en taille `full` (elle couvre la page) : c'est LE composant à
+  utiliser chaque fois qu'un utilisateur doit **choisir un ou plusieurs
+  éléments** — typologie de dossier/document, niveau, statut, auteur parent,
+  contenant parmi des milliers, contact parmi les organisations partenaires,
+  mots-clés dans un thésaurus de plusieurs centaines d'entrées. Un seul
+  composant couvre toutes les éventualités d'un choix :
+  - **source de données** : liste déjà chargée (`rows`) ou chargée par requête
+    serveur (`queryKey` + `queryFn`, via React Query) ;
+  - **affichage** : grille de cartes (`display="cards"`), tableau typé
+    (`display="table"`, colonnes libres) ou liste simple (`display="list"`) ;
+  - **sélection** : simple ou multiple (`multiple`), immédiate au clic ou
+    confirmée via le bouton « Valider la sélection » (`confirm`) ;
+  - **recherche** : filtre client (seuil `searchMinChars`) et/ou recherche
+    serveur (`onSearch`) — il ne doit **jamais** être possible de charger toute
+    la liste côté client pour la filtrer en local sur les gros volumes ;
+  - **navigation** : bandeau alphabétique A-Z (`alphabet`) et pagination
+    (client `pageSize` ou serveur `page`/`totalPages`/`onPageChange`),
+    indépendamment l'un de l'autre selon la nature du jeu de données.
 
-**Au-delà de 26 résultats**, `SelectionModal` ajoute une aide à la navigation
-— le seuil n'est pas arbitraire, c'est le nombre de lettres de l'alphabet.
-L'écran appelant choisit laquelle selon la nature du jeu de données (jamais
-les deux composants ne décident seuls) :
+**Au-delà d'un certain volume**, `UniversalModal` ajoute une aide à la
+navigation. L'écran appelant choisit laquelle selon la nature du jeu de
+données (jamais le composant ne décide seul) :
 
 - un jeu **trié par libellé** (auteurs, mots-clés, contacts) reçoit la prop
-  `alphabet` → bandeau A-Z en haut, chaque lettre filtre côté serveur ;
+  `alphabet` → bandeau A-Z en haut, chaque lettre filtre ;
 - un jeu **non alphabétique** (dates, statuts, notices récentes) reçoit
   `page`/`totalPages`/`onPageChange` → pagination numérique 1..X ;
 - les deux peuvent être fournis en même temps (ex. lettre choisie, puis
   pagination à l'intérieur de cette lettre) — rien n'empêche de les combiner,
   mais rien ne les rend obligatoires ensemble.
 
-En dessous de 26 résultats, aucun des deux ne s'affiche : la liste tient sur
-un écran, ajouter une navigation serait du bruit.
+En dessous du seuil, aucun des deux ne s'affiche : la liste tient sur un
+écran, ajouter une navigation serait du bruit.
 
 Le `ModalProvider` (dans `src/context/`) offre en plus une façon d'ouvrir
 n'importe quelle modale de façon impérative (`useModal().open(...)`) depuis

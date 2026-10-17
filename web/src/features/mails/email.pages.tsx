@@ -9,6 +9,7 @@ import type { TableColumn } from '@/components/ui/table';
 import { useResourceList, useResource, useCreate, useUpdate, useDestroy } from '@/lib/api/hooks';
 import { apiFetch } from '@/lib/api/client';
 import { DataTable, Pagination } from '@/components/ui/table';
+import { Icon } from '@/components/icons';
 import * as api from './services/email.service';
 import { EMAIL_ENCRYPTION_LABELS } from './services/email.service';
 import type { FeatureRoute } from '@/lib/routing';
@@ -117,8 +118,8 @@ function makeMessageList(folder: 'INBOX' | 'Sent', navFolder: 'inbox' | 'sent', 
               key: 'subject', label: 'Sujet', render: (r) => (
                 <span className={!r.is_read ? 'font-semibold' : ''}>
                   {String(r.subject || '(Sans sujet)')}
-                  {r.is_flagged ? ' ⭐' : ''}
-                  {r.has_attachments ? ' 📎' : ''}
+                  {Boolean(r.is_flagged) && <Icon name="star" className="ml-1 inline h-3.5 w-3.5 shrink-0 text-warning" />}
+                  {Boolean(r.has_attachments) && <Icon name="paperclip" className="ml-1 inline h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
                 </span>
               ),
             },
@@ -178,8 +179,9 @@ function EmailMessageDetail({ id }: { id: string }) {
         <h1 className="text-lg font-semibold">{String(message.subject || '(Sans sujet)')}</h1>
         <div className="flex gap-2">
           <Link href={`/mails/email/compose?reply_to=${id}`} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">Répondre</Link>
-          <button type="button" onClick={toggleFlag} className="rounded border border-border px-3 py-1.5 text-sm hover:bg-muted">
-            {message.is_flagged ? '★ Favori' : '☆ Favori'}
+          <button type="button" onClick={toggleFlag} className="flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-sm hover:bg-muted">
+            <Icon name="star" className={message.is_flagged ? 'h-4 w-4 text-warning' : 'h-4 w-4 text-muted-foreground'} />
+            Favori
           </button>
           <Link href={message.folder === 'Sent' ? '/mails/email/sent' : '/mails/email'} className="rounded border border-border px-3 py-1.5 text-sm hover:bg-muted">Retour</Link>
         </div>

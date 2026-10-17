@@ -1,0 +1,13 @@
+{
+  "detector": {
+    "ignoreValues": [
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": ["web/src/features/opac/components/opac-shell.tsx"],
+        "createdAt": "2026-08-10T00:00:00Z",
+        "reason": "Choix délibérés de la coquille OPAC, sur éléments pleine largeur non arrondis : soulignement de l'onglet actif de la nav (border-b-2) et bande d'accent au-dessus du footer (border-t-4). Ni l'un ni l'autre ne pose une bordure d'accent sur une carte arrondie."
+      }
+    ]
+  }
+}

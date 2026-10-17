@@ -19,7 +19,7 @@ export function LanguageSwitcher({ locale = 'fr' }: { locale?: 'fr' | 'en' }) {
         <button
           key={l.code}
           type="button"
-          className={l.code === locale ? 'font-semibold text-primary' : 'text-muted-foreground hover:text-foreground'}
+          className={l.code === locale ? 'font-semibold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary' : 'text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'}
         >
           {l.label}
         </button>

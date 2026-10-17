@@ -29,11 +29,35 @@ public class RecordType {
   @Column(name = "is_container", nullable = false)
   private Boolean isContainer = false;
 
+  @Column(name = "reference_list_id")
+  private Long referenceListId;
+
   @Column(name = "code_prefix", length = 191)
   private String codePrefix;
 
   @Column(name = "code_pattern", length = 191)
   private String codePattern;
+
+  @Column(name = "is_active", nullable = false)
+  private Boolean isActive = true;
+
+  @Column(name = "display_order", nullable = false)
+  private Integer displayOrder = 0;
+
+  @Column(name = "requires_versioning", nullable = false)
+  private Boolean requiresVersioning = false;
+
+  @Column(name = "requires_approval", nullable = false)
+  private Boolean requiresApproval = false;
+
+  @Column(name = "default_access_level", nullable = false, length = 20)
+  private String defaultAccessLevel = "internal";
+
+  @Column(name = "created_by")
+  private Long createdBy;
+
+  @Column(name = "updated_by")
+  private Long updatedBy;
 
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
@@ -87,6 +111,14 @@ public class RecordType {
     this.isContainer = v;
   }
 
+  public Long getReferenceListId() {
+    return this.referenceListId;
+  }
+
+  public void setReferenceListId(Long v) {
+    this.referenceListId = v;
+  }
+
   public String getCodePrefix() {
     return this.codePrefix;
   }
@@ -101,6 +133,62 @@ public class RecordType {
 
   public void setCodePattern(String v) {
     this.codePattern = v;
+  }
+
+  public Boolean getIsActive() {
+    return this.isActive;
+  }
+
+  public void setIsActive(Boolean v) {
+    this.isActive = v;
+  }
+
+  public Integer getDisplayOrder() {
+    return this.displayOrder;
+  }
+
+  public void setDisplayOrder(Integer v) {
+    this.displayOrder = v;
+  }
+
+  public Boolean getRequiresVersioning() {
+    return this.requiresVersioning;
+  }
+
+  public void setRequiresVersioning(Boolean v) {
+    this.requiresVersioning = v;
+  }
+
+  public Boolean getRequiresApproval() {
+    return this.requiresApproval;
+  }
+
+  public void setRequiresApproval(Boolean v) {
+    this.requiresApproval = v;
+  }
+
+  public String getDefaultAccessLevel() {
+    return this.defaultAccessLevel;
+  }
+
+  public void setDefaultAccessLevel(String v) {
+    this.defaultAccessLevel = v;
+  }
+
+  public Long getCreatedBy() {
+    return this.createdBy;
+  }
+
+  public void setCreatedBy(Long v) {
+    this.createdBy = v;
+  }
+
+  public Long getUpdatedBy() {
+    return this.updatedBy;
+  }
+
+  public void setUpdatedBy(Long v) {
+    this.updatedBy = v;
   }
 
   public Instant getCreatedAt() {

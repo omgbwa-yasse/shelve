@@ -100,6 +100,12 @@ public class ReferenceListController {
     list.setName(name);
     list.setCode(code);
     list.setDescription(ReferenceListController.str(body.get("description")));
+    if (body.containsKey("is_system")) {
+      list.setIsSystem(ReferenceListController.bool(body.get("is_system")));
+    }
+    if (body.containsKey("linked_schema_id")) {
+      list.setLinkedSchemaId(ReferenceListController.longOf(body.get("linked_schema_id")));
+    }
     if (body.containsKey("active")) {
       list.setActive(ReferenceListController.bool(body.get("active")));
     }
@@ -125,6 +131,12 @@ public class ReferenceListController {
     }
     if (body.containsKey("description")) {
       list.setDescription(ReferenceListController.str(body.get("description")));
+    }
+    if (body.containsKey("is_system")) {
+      list.setIsSystem(ReferenceListController.bool(body.get("is_system")));
+    }
+    if (body.containsKey("linked_schema_id")) {
+      list.setLinkedSchemaId(ReferenceListController.longOf(body.get("linked_schema_id")));
     }
     if (body.containsKey("active")) {
       list.setActive(ReferenceListController.bool(body.get("active")));
@@ -278,6 +290,8 @@ public class ReferenceListController {
     map.put("name", list.getName());
     map.put("code", list.getCode());
     map.put("description", list.getDescription());
+    map.put("is_system", list.getIsSystem() != null && list.getIsSystem() != false);
+    map.put("linked_schema_id", list.getLinkedSchemaId());
     map.put("active", list.getActive() != null && list.getActive() != false);
     map.put("created_by", list.getCreatedBy());
     map.put("updated_by", list.getUpdatedBy());
@@ -305,6 +319,13 @@ public class ReferenceListController {
 
   private static String str(Object value) {
     return value != null ? String.valueOf(value) : null;
+  }
+
+  private static Long longOf(Object value) {
+    if (value == null) return null;
+    try { return ((Number) value).longValue(); } catch (ClassCastException e) {
+      try { return Long.parseLong(String.valueOf(value)); } catch (NumberFormatException e2) { return null; }
+    }
   }
 
   private static boolean bool(Object value) {

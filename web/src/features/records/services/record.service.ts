@@ -7,10 +7,8 @@ import type { Entity, ItemEnvelope, ListEnvelope, PaginatedEnvelope } from '@/li
 
 export const recordsApi = createResourceApi('records');
 export const recordStatusesApi = createResourceApi('record-statuses');
-export const recordSupportsApi = createResourceApi('record-supports');
 export const recordTypesApi = createResourceApi('record-types');
 export const metadataDefinitionsApi = createResourceApi('metadata-definitions');
-export const recordReactivationsApi = createResourceApi('record-reactivations');
 export const authorsApi = createResourceApi('authors');
 export const authorContactsApi = createResourceApi('author-contacts');
 
@@ -19,12 +17,6 @@ export const ACCESS_LEVEL_LABELS: Record<string, string> = {
   internal: 'Interne',
   public: 'Public',
   restricted: 'Restreint',
-};
-
-export const DATE_FORMAT_LABELS: Record<string, string> = {
-  Y: 'Année',
-  M: 'Mois',
-  D: 'Jour',
 };
 
 // --- Notice : recherche par libellé, corbeille, métadonnées ------------------
@@ -37,7 +29,7 @@ export function getRecords(params: Record<string, unknown> = {}) {
 
 /** GET /api/v1/records/{id}?include=... — fiche complète avec libellés résolus. */
 export function getRecord(id: string | number) {
-  const include = 'type,level,status,activity,parent,organisation,creator,assignedUser,approver,confidentiality,accessLimit,mediums,authors,keywords,attachments';
+  const include = 'type,level,status,activity,parent,organisation,creator,assignedUser,approver,confidentiality,accessLimit,mediums,authors,keywords,attachments,communications';
   return apiFetch<ItemEnvelope<Entity>>(`/api/v1/records/${id}?include=${include}`);
 }
 
@@ -153,4 +145,14 @@ export async function uploadRecordAttachment(recordId: string | number, file: Fi
 
 export function deleteRecordAttachment(recordId: string | number, attachmentId: string | number) {
   return apiFetch<unknown>(`/api/v1/records/${recordId}/attachments/${attachmentId}`, { method: 'DELETE' });
+}
+
+/** URL d'aperçu inline d'une pièce jointe (passe par le proxy Next). */
+export function recordAttachmentPreviewUrl(recordId: string | number, attachmentId: string | number): string {
+  return `/api/proxy/api/v1/records/${recordId}/attachments/${attachmentId}/download`;
+}
+
+/** URL de téléchargement forcé (Content-Disposition: attachment). */
+export function recordAttachmentDownloadUrl(recordId: string | number, attachmentId: string | number): string {
+  return `/api/proxy/api/v1/records/${recordId}/attachments/${attachmentId}/download?download=1`;
 }

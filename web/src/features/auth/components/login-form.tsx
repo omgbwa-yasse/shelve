@@ -52,7 +52,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+        className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >
         {pending ? 'Connexion…' : 'Se connecter'}
       </button>

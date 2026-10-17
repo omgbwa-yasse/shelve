@@ -48,14 +48,14 @@ export function MailAdvancedSearch() {
         <Field label="Objet / Nom" value={criteria.name ?? ''} onChange={(v) => setCriteria((p) => ({ ...p, name: v }))} />
         <label className="flex flex-col gap-1 text-sm">
           Statut
-          <select value={criteria.status ?? ''} onChange={(e) => setCriteria((p) => ({ ...p, status: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5 text-sm">
+          <select value={criteria.status ?? ''} onChange={(e) => setCriteria((p) => ({ ...p, status: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
             <option value="">—</option>
             {STATUS_OPTIONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm">
           Type
-          <select value={criteria.mail_type ?? ''} onChange={(e) => setCriteria((p) => ({ ...p, mail_type: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5 text-sm">
+          <select value={criteria.mail_type ?? ''} onChange={(e) => setCriteria((p) => ({ ...p, mail_type: e.target.value }))} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
             <option value="">—</option>
             <option value="internal">Interne</option>
             <option value="incoming">Entrant</option>
@@ -81,11 +81,11 @@ export function MailAdvancedSearch() {
               }
               setApplied(next);
             }}
-            className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+            className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             Rechercher
           </button>
-          <button type="button" onClick={() => { setCriteria({}); setApplied({}); }} className="rounded border border-border px-4 py-2 text-sm hover:bg-muted">
+          <button type="button" onClick={() => { setCriteria({}); setApplied({}); }} className="rounded border border-border px-4 py-2 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
             Réinitialiser
           </button>
         </div>
@@ -146,15 +146,15 @@ export function MailDateSelect() {
       <PageHeader title="Courriers par date" description="Sélection d'une période pour lister les courriers." />
       <div className="flex w-full flex-wrap items-end gap-3 rounded border border-border bg-surface p-4">
         <label className="flex flex-col gap-1 text-sm">Du
-          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
+          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
         </label>
         <label className="flex flex-col gap-1 text-sm">Au
-          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
+          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
         </label>
         <button
           type="button"
           onClick={() => setApplied({ from, to })}
-          className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+          className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           Lister
         </button>
@@ -193,7 +193,7 @@ function Field({ label, value, onChange, type = 'text' }: { label: string; value
   return (
     <label className="flex flex-col gap-1 text-sm">
       {label}
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
     </label>
   );
 }

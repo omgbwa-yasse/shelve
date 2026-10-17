@@ -36,12 +36,6 @@ public class Record {
   @Column(columnDefinition = "text")
   private String description;
 
-  @Column(name = "opening_date")
-  private LocalDate openingDate;
-
-  @Column(name = "closing_date")
-  private LocalDate closingDate;
-
   @Column(name = "old_record_number", length = 191)
   private String oldRecordNumber;
 
@@ -53,21 +47,6 @@ public class Record {
 
   @Column(name = "is_essential", nullable = false)
   private Boolean isEssential = false;
-
-  @Column(name = "loaned_to")
-  private Long loanedTo;
-
-  @Column(name = "loaned_at")
-  private Instant loanedAt;
-
-  @Column(name = "loan_planned_return_at")
-  private Instant loanPlannedReturnAt;
-
-  @Column(name = "loan_actual_return_at")
-  private Instant loanActualReturnAt;
-
-  @Column(name = "modified_after_loan", nullable = false)
-  private Boolean modifiedAfterLoan = false;
 
   @Column(name = "confidentiality_id")
   private Long confidentialityId;
@@ -141,9 +120,6 @@ public class Record {
   @Column(name = "date_exact")
   private LocalDate dateExact;
 
-  @Column(name = "date_format", length = 1)
-  private String dateFormat;
-
   @Column(name = "version_number", nullable = false)
   private Integer versionNumber = 1;
 
@@ -207,22 +183,6 @@ public class Record {
     this.description = v;
   }
 
-  public LocalDate getOpeningDate() {
-    return this.openingDate;
-  }
-
-  public void setOpeningDate(LocalDate v) {
-    this.openingDate = v;
-  }
-
-  public LocalDate getClosingDate() {
-    return this.closingDate;
-  }
-
-  public void setClosingDate(LocalDate v) {
-    this.closingDate = v;
-  }
-
   public String getOldRecordNumber() {
     return this.oldRecordNumber;
   }
@@ -253,46 +213,6 @@ public class Record {
 
   public void setIsEssential(Boolean v) {
     this.isEssential = v;
-  }
-
-  public Long getLoanedTo() {
-    return this.loanedTo;
-  }
-
-  public void setLoanedTo(Long v) {
-    this.loanedTo = v;
-  }
-
-  public Instant getLoanedAt() {
-    return this.loanedAt;
-  }
-
-  public void setLoanedAt(Instant v) {
-    this.loanedAt = v;
-  }
-
-  public Instant getLoanPlannedReturnAt() {
-    return this.loanPlannedReturnAt;
-  }
-
-  public void setLoanPlannedReturnAt(Instant v) {
-    this.loanPlannedReturnAt = v;
-  }
-
-  public Instant getLoanActualReturnAt() {
-    return this.loanActualReturnAt;
-  }
-
-  public void setLoanActualReturnAt(Instant v) {
-    this.loanActualReturnAt = v;
-  }
-
-  public Boolean getModifiedAfterLoan() {
-    return this.modifiedAfterLoan;
-  }
-
-  public void setModifiedAfterLoan(Boolean v) {
-    this.modifiedAfterLoan = v;
   }
 
   public Long getConfidentialityId() {
@@ -485,14 +405,6 @@ public class Record {
 
   public void setDateExact(LocalDate v) {
     this.dateExact = v;
-  }
-
-  public String getDateFormat() {
-    return this.dateFormat;
-  }
-
-  public void setDateFormat(String v) {
-    this.dateFormat = v;
   }
 
   public Integer getVersionNumber() {

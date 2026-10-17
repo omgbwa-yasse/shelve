@@ -74,6 +74,7 @@ public final class QueryParams {
         }
 
         String pageSize = first(params, "page[size]");
+        if (pageSize == null) pageSize = first(params, "page.size");
         if (pageSize != null) {
             try {
                 int size = Integer.parseInt(pageSize);
@@ -93,8 +94,8 @@ public final class QueryParams {
         String field;
         String operator = "eq";
         if (bracket >= 0) {
-            field = inner.substring(0, bracket);
-            operator = inner.substring(bracket + 1, inner.length() - 1);
+            field = inner.substring(0, bracket - 1);
+            operator = inner.substring(bracket + 1);
         } else {
             field = inner;
         }

@@ -60,7 +60,6 @@ public class RecordController {
           "start_date",
           "end_date",
           "date_exact",
-          "date_format",
           "is_current_version",
           "unavailable",
           "is_essential",
@@ -82,7 +81,6 @@ public class RecordController {
           "start_date",
           "end_date",
           "date_exact",
-          "date_format",
           "created_at",
           "updated_at");
   private static final List<String> INCLUDABLE =
@@ -93,18 +91,24 @@ public class RecordController {
   private final RecordLevelRepository levelRepository;
   private final RecordStatusRepository statusRepository;
   private final ObjectMapper objectMapper;
+  private final com.shelve.referentials.service.MetadataFieldService metadataFieldService;
+  private final com.shelve.organisation.repository.UserRoleRepository userRoleRepository;
 
   public RecordController(
       RecordRepository recordRepository,
       RecordTypeRepository typeRepository,
       RecordLevelRepository levelRepository,
       RecordStatusRepository statusRepository,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      com.shelve.referentials.service.MetadataFieldService metadataFieldService,
+      com.shelve.organisation.repository.UserRoleRepository userRoleRepository) {
     this.recordRepository = recordRepository;
     this.typeRepository = typeRepository;
     this.levelRepository = levelRepository;
     this.statusRepository = statusRepository;
     this.objectMapper = objectMapper;
+    this.metadataFieldService = metadataFieldService;
+    this.userRoleRepository = userRoleRepository;
   }
 
   @GetMapping
@@ -130,6 +134,37 @@ public class RecordController {
     Policy.check(auth, "record_view");
     Record record = this.findInScope(id, auth);
     return Json.of("data", this.mapper(record));
+  }
+
+  /**
+   * GET /api/v1/records/{id}/metadata-fields — champs visibles de la notice avec
+   * les valeurs courantes (y compris métadonnées copiées/calculées résolues et
+   * sécurisation par rôles).
+   */
+  @GetMapping(value = {"/{id}/metadata-fields"})
+  public Map<String, Object> metadataFields(@PathVariable Long id) {
+    AuthenticatedUser auth = CurrentUser.get();
+    Policy.check(auth, "record_view");
+    Record record = this.findInScope(id, auth);
+    java.util.Set<String> roles =
+        auth.isSuperAdmin()
+            ? java.util.Set.of("superadmin")
+            : java.util.Set.copyOf(this.userRoleRepository.findRoleNamesByUserId(auth.user().getId()));
+    @SuppressWarnings("unchecked")
+    Map<String, Object> values =
+        record.getMetadata() == null || record.getMetadata().isBlank()
+            ? Map.of()
+            : (Map<String, Object>) this.parseJson(record.getMetadata());
+    java.util.Map<String, Object> context = new java.util.LinkedHashMap<String, Object>(values);
+    // Références copiées : le code du parent / créateur / type sont disponibles.
+    context.put("parent_code", record.getParentId());
+    context.put("creator_name", record.getCreatorId());
+    context.put("type_code", record.getTypeId());
+    Long typeId = record.getTypeId();
+    if (typeId == null) {
+      return Json.of("data", java.util.List.of());
+    }
+    return Json.of("data", this.metadataFieldService.fieldsForType(typeId, roles, context));
   }
 
   @PostMapping
@@ -161,9 +196,6 @@ public class RecordController {
     record.setStartDate(RecordController.dateOf(body.get("start_date")));
     record.setEndDate(RecordController.dateOf(body.get("end_date")));
     record.setDateExact(RecordController.dateOf(body.get("date_exact")));
-    record.setDateFormat(RecordController.str(body.get("date_format")));
-    record.setOpeningDate(RecordController.dateOf(body.get("opening_date")));
-    record.setClosingDate(RecordController.dateOf(body.get("closing_date")));
     if (body.containsKey("metadata")) {
       record.setMetadata(this.toJson(body.get("metadata")));
     }
@@ -257,15 +289,6 @@ public class RecordController {
     if (body.containsKey("date_exact")) {
       record.setDateExact(RecordController.dateOf(body.get("date_exact")));
     }
-    if (body.containsKey("date_format")) {
-      record.setDateFormat(RecordController.str(body.get("date_format")));
-    }
-    if (body.containsKey("opening_date")) {
-      record.setOpeningDate(RecordController.dateOf(body.get("opening_date")));
-    }
-    if (body.containsKey("closing_date")) {
-      record.setClosingDate(RecordController.dateOf(body.get("closing_date")));
-    }
     if (body.containsKey("metadata")) {
       record.setMetadata(this.toJson(body.get("metadata")));
     }
@@ -342,19 +365,10 @@ public class RecordController {
     map.put("code", r.getCode());
     map.put("name", r.getName());
     map.put("description", r.getDescription());
-    map.put("opening_date", r.getOpeningDate() != null ? r.getOpeningDate().toString() : null);
-    map.put("closing_date", r.getClosingDate() != null ? r.getClosingDate().toString() : null);
     map.put("old_record_number", r.getOldRecordNumber());
     map.put("unavailable", r.getUnavailable() != null && r.getUnavailable() != false);
     map.put("annual_opening", r.getAnnualOpening() != null && r.getAnnualOpening() != false);
     map.put("is_essential", r.getIsEssential() != null && r.getIsEssential() != false);
-    map.put("loaned_to", r.getLoanedTo());
-    map.put("loaned_at", Json.timestamp(r.getLoanedAt()));
-    map.put("loan_planned_return_at", Json.timestamp(r.getLoanPlannedReturnAt()));
-    map.put("loan_actual_return_at", Json.timestamp(r.getLoanActualReturnAt()));
-    map.put(
-        "modified_after_loan",
-        r.getModifiedAfterLoan() != null && r.getModifiedAfterLoan() != false);
     map.put("confidentiality_id", r.getConfidentialityId());
     map.put("access_limit_id", r.getAccessLimitId());
     map.put(
@@ -378,7 +392,6 @@ public class RecordController {
     map.put("start_date", r.getStartDate() != null ? r.getStartDate().toString() : null);
     map.put("end_date", r.getEndDate() != null ? r.getEndDate().toString() : null);
     map.put("date_exact", r.getDateExact() != null ? r.getDateExact().toString() : null);
-    map.put("date_format", r.getDateFormat());
     map.put("version_number", r.getVersionNumber());
     map.put(
         "is_current_version", r.getIsCurrentVersion() != null && r.getIsCurrentVersion() != false);

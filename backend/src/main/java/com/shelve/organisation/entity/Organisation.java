@@ -29,6 +29,12 @@ public class Organisation {
   @Column(name = "email_module_enabled", nullable = false)
   private Boolean emailModuleEnabled = false;
 
+  @Column(name = "mail_external_send_enabled", nullable = false)
+  private Boolean mailExternalSendEnabled = false;
+
+  @Column(name = "mail_external_receive_enabled", nullable = false)
+  private Boolean mailExternalReceiveEnabled = false;
+
   @Column(name = "parent_id")
   private Long parentId;
 
@@ -78,6 +84,22 @@ public class Organisation {
 
   public void setEmailModuleEnabled(Boolean emailModuleEnabled) {
     this.emailModuleEnabled = emailModuleEnabled;
+  }
+
+  public Boolean getMailExternalSendEnabled() {
+    return this.mailExternalSendEnabled;
+  }
+
+  public void setMailExternalSendEnabled(Boolean mailExternalSendEnabled) {
+    this.mailExternalSendEnabled = mailExternalSendEnabled;
+  }
+
+  public Boolean getMailExternalReceiveEnabled() {
+    return this.mailExternalReceiveEnabled;
+  }
+
+  public void setMailExternalReceiveEnabled(Boolean mailExternalReceiveEnabled) {
+    this.mailExternalReceiveEnabled = mailExternalReceiveEnabled;
   }
 
   public Long getParentId() {

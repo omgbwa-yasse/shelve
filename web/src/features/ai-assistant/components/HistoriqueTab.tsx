@@ -49,7 +49,7 @@ export function HistoriqueTab() {
             <button
               type="button"
               onClick={() => openConversation(String(c.id))}
-              className="flex flex-1 items-center gap-2 truncate text-left"
+              className="flex flex-1 items-center gap-2 truncate text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <span className="flex-1 truncate">{String(c.title ?? 'Conversation')}</span>
               <span className="shrink-0 text-xs text-muted-foreground">{Number(c.messages_count ?? 0)} msg</span>
@@ -57,7 +57,7 @@ export function HistoriqueTab() {
             <button
               type="button"
               onClick={(e) => void archive(String(c.id), e)}
-              className="shrink-0 rounded p-1 text-muted-foreground hover:bg-muted-foreground/10"
+              className="shrink-0 rounded p-1 text-muted-foreground hover:bg-muted-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               aria-label="Archiver"
               title="Archiver (jamais supprimée)"
             >

@@ -1,0 +1,83 @@
+/**
+ * Template "church" — reprend l'identité visuelle de Church/web (charte
+ * « Phoenix Security ») : indigo #171061 pour l'action, neutres chauds
+ * (blanc, brume, encre), angles carrés, police Source Sans 3.
+ *
+ * On importe d'abord `tokens.css` (source des noms de variables), puis on
+ * surcharge uniquement les VALEURS : aucun composant n'est modifié. Pour
+ * revenir au template d'origine, `src/app/globals.css` réimporte
+ * `themes/default.css`.
+ *
+ * Les couleurs sont en HSL sans `hsl()` (ex. "245 72% 22%") pour rester
+ * compatibles avec l'opacité Tailwind (`bg-primary/50`). Les valeurs sont
+ * converties depuis les hex d'origine de Church/web (voir son src/index.css).
+ */
+@import '../tokens.css';
+
+:root {
+  /* Surfaces : papier blanc, brume pour les zones en creux, encre chaude. */
+  --color-background: 0 0% 100%; /* #ffffff */
+  --color-foreground: 60 4% 11%; /* #1d1d1b */
+  --color-surface: 60 11% 95%; /* #f3f3f0 — paper-deep */
+  --color-border: 75 10% 84%; /* #d9dbd3 — rule */
+
+  /* Indigo — action, sélection, état actif (remplace le bleu). */
+  --color-primary: 245 72% 22%; /* #171061 — accent */
+  --color-primary-strong: 245 69% 28%; /* #1e1679 — accent-strong */
+  --color-primary-foreground: 0 0% 100%;
+
+  /* Texte secondaire : encre atténuée, hover sur la brume. */
+  --color-muted: 72 9% 90%; /* #e6e7e2 — accent-soft */
+  --color-muted-foreground: 78 6% 33%; /* #55584e — ink-muted */
+
+  /* États (les teintes « ink » de Church servent de couleur de texte). */
+  --color-danger: 3 71% 41%; /* #b3261e */
+  --color-danger-strong: 3 72% 33%; /* #8f1d17 */
+  --color-success: 140 43% 21%; /* #1f4d2e — success-ink */
+  --color-warning: 41 85% 46%; /* #d99a12 */
+  --color-info: 199 53% 24%; /* #1d4a5f — info-ink */
+
+  /* Navigation : la barre latérale de Church est une surface de brume. */
+  --color-rail: 60 11% 95%; /* #f3f3f0 */
+  --color-rail-foreground: 60 4% 11%; /* #1d1d1b */
+  --color-rail-active: 245 72% 22%; /* #171061 */
+
+  /* Forme : la règle Phoenix bannit les rayons (seul `rounded-full` reste). */
+  --radius: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+
+  /* Typographie Church : Source Sans 3 pour le texte, JetBrains Mono pour
+     les chiffres et codes. */
+  --font-sans: 'Source Sans 3', 'Myriad Pro', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', monospace;
+  --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+}
+
+:root[data-theme='dark'] {
+  --color-background: 245 25% 9%;
+  --color-foreground: 60 10% 94%;
+  --color-surface: 245 22% 13%;
+  --color-border: 245 15% 22%;
+
+  --color-primary: 245 70% 62%;
+  --color-primary-strong: 245 70% 70%;
+  --color-primary-foreground: 245 30% 8%;
+
+  --color-muted: 245 18% 18%;
+  --color-muted-foreground: 60 8% 68%;
+
+  --color-danger: 3 65% 60%;
+  --color-danger-strong: 3 65% 52%;
+  --color-success: 140 40% 55%;
+  --color-warning: 41 80% 55%;
+  --color-info: 199 55% 60%;
+
+  --color-rail: 245 25% 7%;
+  --color-rail-foreground: 60 10% 88%;
+  --color-rail-active: 245 70% 62%;
+}

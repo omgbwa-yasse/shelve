@@ -7,10 +7,10 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: 'bg-primary text-primary-foreground hover:opacity-90',
-  secondary: 'border border-border bg-surface hover:bg-muted',
-  danger: 'bg-danger text-primary-foreground hover:opacity-90',
-  ghost: 'hover:bg-muted',
+  primary: 'bg-primary text-primary-foreground hover:bg-primary-strong',
+  secondary: 'border border-border bg-background text-foreground hover:bg-muted',
+  danger: 'bg-danger text-primary-foreground hover:bg-danger-strong',
+  ghost: 'text-muted-foreground hover:bg-muted hover:text-foreground',
 };
 
 /** Bouton de base — toute nouvelle variante se déclare ici, pas dans les écrans. */
@@ -18,7 +18,8 @@ export function Button({ variant = 'primary', className, ...props }: ButtonProps
   return (
     <button
       className={clsx(
-        'rounded px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50',
+        'inline-flex min-h-11 items-center justify-center gap-2 rounded px-4 py-2 text-sm font-semibold transition-colors duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-50',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
         VARIANT_CLASSES[variant],
         className,
       )}

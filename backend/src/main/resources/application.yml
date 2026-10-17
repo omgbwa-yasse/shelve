@@ -49,6 +49,51 @@ app:
   # et par Spring sont interopérables par construction (même table).
   sanctum:
     token-hash-algorithm: SHA-256
+  seed:
+    # Seeder du socle (référentiels + paramètres + compte admin) au démarrage.
+    # Idempotent : ne crée que ce qui manque.
+    enabled: true
+  ai:
+    # Moteur LLM — provider utilisé par défaut (voir app.ai.providers).
+    default-provider: ollama
+    timeout-seconds: 120
+    providers:
+      # Ollama local (API compatible OpenAI). Clé vide, sans authentification.
+      ollama:
+        type: openai
+        base-url: http://127.0.0.1:11434/v1
+        api-key: ""
+        model: gemma4:e2b
+      # OpenAI — surcharger la clé via APP_AI_PROVIDERS_OPENAI_APIKEY.
+      openai:
+        type: openai
+        base-url: https://api.openai.com/v1
+        api-key: ${APP_AI_PROVIDERS_OPENAI_APIKEY:}
+        model: gpt-4o-mini
+      # OpenRouter (accès multi-modèles, ex. anthropic/claude-3.5-sonnet).
+      openrouter:
+        type: openai
+        base-url: https://openrouter.ai/api/v1
+        api-key: ${APP_AI_PROVIDERS_OPENROUTER_APIKEY:}
+        model: anthropic/claude-3.5-sonnet
+      # Anthropic Claude.
+      claude:
+        type: anthropic
+        base-url: https://api.anthropic.com/v1
+        api-key: ${APP_AI_PROVIDERS_CLAUDE_APIKEY:}
+        model: claude-3-5-sonnet-20241022
+      # LM Studio local (serveur OpenAI-compatible sur le port 1234).
+      lmstudio:
+        type: openai
+        base-url: http://127.0.0.1:1234/v1
+        api-key: ""
+        model: local-model
+      # Provider personnalisé (tout serveur OpenAI-compatible).
+      custom:
+        type: openai
+        base-url: ${APP_AI_PROVIDERS_CUSTOM_BASEURL:http://127.0.0.1:8000/v1}
+        api-key: ${APP_AI_PROVIDERS_CUSTOM_APIKEY:}
+        model: ${APP_AI_PROVIDERS_CUSTOM_MODEL:model}
   sandbox:
     # Workspaces Python de l'assistant IA (D14) — même stockage physique que
     # Laravel (storage/app/ai/sandboxes/{folder}). Chemin absolu du storage.

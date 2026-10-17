@@ -37,6 +37,7 @@ export function Sidebar() {
             href={domain.href as never}
             className={clsx(
               'flex flex-col items-center gap-1 rounded px-2 py-3 text-[11px] font-medium text-rail-foreground/80 transition-colors mx-2',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rail-active focus-visible:ring-offset-0',
               active ? 'bg-rail-active/15 text-rail-active' : 'hover:bg-rail-foreground/10',
             )}
           >

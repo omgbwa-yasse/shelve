@@ -85,7 +85,7 @@ export default function WorkplaceActivitiesPage() {
       >
         <label className="flex flex-col gap-1 text-xs font-semibold text-muted-foreground">
           Type d'activité
-          <select value={type} onChange={(e) => setType(e.target.value)} className="rounded border border-border bg-background px-2 py-1 text-sm">
+          <select value={type} onChange={(e) => setType(e.target.value)} className="rounded border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
             <option value="">Toutes les activités</option>
             {Object.entries(ACTIVITY_TYPES).map(([value, label]) => (
               <option key={value} value={value}>{label}</option>
@@ -94,15 +94,15 @@ export default function WorkplaceActivitiesPage() {
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold text-muted-foreground">
           Du
-          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="rounded border border-border bg-background px-2 py-1 text-sm" />
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="rounded border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold text-muted-foreground">
           Au
-          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="rounded border border-border bg-background px-2 py-1 text-sm" />
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="rounded border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold text-muted-foreground">
           Membre
-          <select value={userId} onChange={(e) => setUserId(e.target.value)} className="rounded border border-border bg-background px-2 py-1 text-sm">
+          <select value={userId} onChange={(e) => setUserId(e.target.value)} className="rounded border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
             <option value="">Tous les membres</option>
             {members.map((m) => (
               <option key={m.id} value={m.user_id}>{m.user?.name ?? `#${m.user_id}`}</option>
@@ -110,12 +110,12 @@ export default function WorkplaceActivitiesPage() {
           </select>
         </label>
         <div className="flex gap-2">
-          <button type="submit" className="flex items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground">
+          <button type="submit" className="flex items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
             <Icon name="search" className="h-3.5 w-3.5" />
             Filtrer
           </button>
           {(type || userId || dateFrom || dateTo) && (
-            <button type="button" onClick={resetFilters} className="rounded border border-border px-2.5 py-1.5 text-sm hover:bg-muted">
+            <button type="button" onClick={resetFilters} className="rounded border border-border px-2.5 py-1.5 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Effacer les filtres">
               <Icon name="close" className="h-3.5 w-3.5" />
             </button>
           )}
@@ -157,7 +157,7 @@ export default function WorkplaceActivitiesPage() {
               type="button"
               disabled={!hasPrev}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="rounded border border-border px-2.5 py-1 disabled:opacity-40"
+              className="rounded border border-border px-2.5 py-1 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               Précédent
             </button>
@@ -165,7 +165,7 @@ export default function WorkplaceActivitiesPage() {
               type="button"
               disabled={!hasNext}
               onClick={() => setPage((p) => Math.min(meta.last_page, p + 1))}
-              className="rounded border border-border px-2.5 py-1 disabled:opacity-40"
+              className="rounded border border-border px-2.5 py-1 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               Suivant
             </button>

@@ -60,19 +60,19 @@ export const navigation: NavDomain[] = [
       { key: 'mails-email-tags', group: 'Email', label: 'Étiquettes', href: '/mails/email/tags', icon: 'tags' },
       { key: 'mails-email-accounts', group: 'Email', label: 'Paramètres', href: '/mails/email/accounts', icon: 'settings' },
 
-      { key: 'mails-received', group: 'Consultations — Courrier interne', label: 'Reçus', href: '/mails/received', icon: 'inbox' },
-      { key: 'mails-sent', group: 'Consultations — Courrier interne', label: 'Envoyés', href: '/mails/sent', icon: 'send' },
-      { key: 'mails-returned', group: 'Consultations — Courrier interne', label: 'Retournés', href: '/mails/returned', icon: 'rotateCcw' },
-      { key: 'mails-to-return', group: 'Consultations — Courrier interne', label: 'À retourner', href: '/mails/to-return', icon: 'rotateCcw' },
-      { key: 'mails-batches', group: 'Consultations — Courrier interne', label: 'Parapheurs', href: '/mails/batches', icon: 'bookmark' },
+      { key: 'mails-received', group: 'Courrier', label: 'Reçus', href: '/mails/received', icon: 'inbox' },
+      { key: 'mails-sent', group: 'Courrier', label: 'Envoyés', href: '/mails/sent', icon: 'send' },
+      { key: 'mails-returned', group: 'Courrier', label: 'Retournés', href: '/mails/returned', icon: 'rotateCcw' },
+      { key: 'mails-to-return', group: 'Courrier', label: 'À retourner', href: '/mails/to-return', icon: 'rotateCcw' },
+      { key: 'mails-batches', group: 'Courrier', label: 'Parapheurs', href: '/mails/batches', icon: 'bookmark' },
+      { key: 'mails-ext-send', group: 'Courrier', label: 'Envoyer (externe)', href: '/mails/external/send', icon: 'send' },
+      { key: 'mails-ext-receive', group: 'Courrier', label: 'Recevoir (externe)', href: '/mails/external/receive', icon: 'inbox' },
 
-      { key: 'mails-ext-send', group: 'Consultations — Externe / Archives / Recherche', label: 'Envoyer', href: '/mails/external/send', icon: 'send' },
-      { key: 'mails-ext-receive', group: 'Consultations — Externe / Archives / Recherche', label: 'Recevoir', href: '/mails/external/receive', icon: 'inbox' },
-      { key: 'mails-archived', group: 'Consultations — Externe / Archives / Recherche', label: 'Courrier archivé', href: '/mails/archived', icon: 'archive' },
-      { key: 'mails-containers', group: 'Consultations — Externe / Archives / Recherche', label: 'Boîtes', href: '/mails/containers', icon: 'archive' },
-      { key: 'mails-typologies', group: 'Consultations — Externe / Archives / Recherche', label: 'Typologies', href: '/mails/typologies', icon: 'tags' },
-      { key: 'mails-dates', group: 'Consultations — Externe / Archives / Recherche', label: 'Dates', href: '/mails/select/date', icon: 'calendar' },
-      { key: 'mails-advanced', group: 'Consultations — Externe / Archives / Recherche', label: 'Recherche avancée', href: '/mails/advanced', icon: 'search' },
+      { key: 'mails-archived', group: 'Archives et recherche', label: 'Courrier archivé', href: '/mails/archived', icon: 'archive' },
+      { key: 'mails-containers', group: 'Archives et recherche', label: 'Boîtes', href: '/mails/containers', icon: 'archive' },
+      { key: 'mails-typologies', group: 'Archives et recherche', label: 'Typologies', href: '/mails/typologies', icon: 'tags' },
+      { key: 'mails-dates', group: 'Archives et recherche', label: 'Dates', href: '/mails/select/date', icon: 'calendar' },
+      { key: 'mails-advanced', group: 'Archives et recherche', label: 'Recherche avancée', href: '/mails/advanced', icon: 'search' },
 
       { key: 'mails-create-received', group: 'Création', label: 'Reçus', href: '/mails/received/create', icon: 'plusSquare' },
       { key: 'mails-create-sent', group: 'Création', label: 'Envoyés', href: '/mails/sent/create', icon: 'plusSquare' },
@@ -106,6 +106,9 @@ export const navigation: NavDomain[] = [
       { key: 'workflow-tasks-pending', group: 'Tâches', label: 'En attente', href: '/workflow/tasks?status=pending', icon: 'hourglass' },
       { key: 'workflow-tasks-progress', group: 'Tâches', label: 'En cours', href: '/workflow/tasks?status=in_progress', icon: 'refresh' },
       { key: 'workflow-tasks-mine', group: 'Tâches', label: 'Mes tâches', href: '/workflow/tasks?assigned_to=me', icon: 'personCheck' },
+
+      { key: 'workflow-triggers-all', group: 'Déclencheurs', label: 'Tous les déclencheurs', href: '/workflow/triggers', icon: 'zap' },
+      { key: 'workflow-triggers-create', group: 'Déclencheurs', label: 'Nouveau déclencheur', href: '/workflow/triggers/create', icon: 'plusSquare' },
     ],
   },
 
@@ -131,6 +134,11 @@ export const navigation: NavDomain[] = [
 
       { key: 'projects-board', group: 'Visualisations', label: 'Tableau Kanban', href: '/projects/board', icon: 'columns' },
       { key: 'projects-gantt', group: 'Visualisations', label: 'Diagramme de Gantt', href: '/projects/gantt', icon: 'gantt' },
+
+      { key: 'projects-tasks', group: 'Tâches', label: 'Toutes les tâches', href: '/projects/tasks', icon: 'list' },
+      { key: 'projects-tasks-pending', group: 'Tâches', label: 'En attente', href: '/projects/tasks?status=pending', icon: 'hourglass' },
+      { key: 'projects-tasks-progress', group: 'Tâches', label: 'En cours', href: '/projects/tasks?status=in_progress', icon: 'refresh' },
+      { key: 'projects-tasks-mine', group: 'Tâches', label: 'Mes tâches', href: '/projects/tasks?assigned_to=me', icon: 'personCheck' },
 
       // OKR et KPI : visualisation seule (tous les projets). La création se fait
       // depuis la fiche projet → Créer une tâche → Ajouter un OKR / KPI (rattachés
@@ -162,14 +170,17 @@ export const navigation: NavDomain[] = [
 
       // Chat : section du sous-menu WorkPlaces (ancien domaine racine « Chat »).
       { key: 'chats-all', group: 'Chat', label: 'Tous les chats', href: '/chats', icon: 'messageCircle' },
-      { key: 'chats-private', group: 'Chat', label: 'Messages privés', href: '/chats#privates', icon: 'mails' },
-      { key: 'chats-workplaces', group: 'Chat', label: 'Chats des workplaces', href: '/workplaces', icon: 'workplaces' },
-      { key: 'chats-create', group: 'Chat', label: 'Nouveau message privé', href: '/chats?new=1', icon: 'plusCircle' },
+      { key: 'chats-create', group: 'Chat', label: 'Nouveau message', href: '/chats?new=1', icon: 'plusCircle' },
     ],
   },
 
   // ------------------------------------------------------------------
-  // 5. Records / Notices — submenu/repositories.blade.php
+  // 5. Records / Notices — sous-menu (Recherche, Création, Import). Le
+  //    déclassement vit dans Transferts (groupes Déclassement / Réactivations),
+  //    pas ici. L'écran `/records` reste la page à onglets (Organisations,
+  //    Plan de classement, Dossiers/Documents, Récents, Activités, Auteurs,
+  //    Dates, Mots-clés, Corbeille) ; le sous-menu donne un accès direct aux
+  //    écrans dédiés (arbre, corbeille, création, import/export).
   // ------------------------------------------------------------------
   {
     key: 'records',
@@ -177,13 +188,13 @@ export const navigation: NavDomain[] = [
     href: '/records',
     icon: 'records',
     items: [
-      { key: 'records-mine', group: 'Recherche — Archives', label: 'Mes documents', href: '/records', icon: 'listCheck' },
+      { key: 'records-all', group: 'Recherche', label: 'Toutes les notices', href: '/records', icon: 'records' },
 
-      { key: 'records-dossier', group: 'Enregistrement', label: 'Dossier', href: '/records/create?kind=folder', icon: 'folderOpen' },
-      { key: 'records-document', group: 'Enregistrement', label: 'Document', href: '/records/create?kind=document', icon: 'fileText' },
+      { key: 'records-create-folder', group: 'Création', label: 'Créer un dossier', href: '/records/create?kind=folder', icon: 'folderPlus', action: 'pick-record-type' },
+      { key: 'records-create-document', group: 'Création', label: 'Créer un document', href: '/records/create?kind=document', icon: 'fileText', action: 'pick-record-type' },
 
-      { key: 'records-import', group: 'Import / Export (EAD, Excel, SEDA)', label: 'Importer', href: '/records/import', icon: 'download' },
-      { key: 'records-export', group: 'Import / Export (EAD, Excel, SEDA)', label: 'Exporter', href: '/records/export', icon: 'upload' },
+      { key: 'records-import', group: 'Import / Export', label: 'Import', href: '/records/import', icon: 'download' },
+      { key: 'records-export', group: 'Import / Export', label: 'Export', href: '/records/export', icon: 'upload' },
     ],
   },
 
@@ -222,7 +233,6 @@ export const navigation: NavDomain[] = [
       // elles ne faisaient que relancer la recherche des notices (filtre du
       // cycle de vie) sans écran propre.
       { key: 'declassement-lists', group: 'Déclassement', label: 'Listes de déclassement', href: '/transferrings/declassement-lists', icon: 'listOrdered' },
-      { key: 'declassement-lists-create', group: 'Déclassement', label: 'Nouvelle liste', href: '/transferrings/declassement-lists/create', icon: 'plusCircle' },
       { key: 'record-reactivations', group: 'Déclassement', label: 'Réactivations', href: '/transferrings/reactivations', icon: 'rotateCcw' },
 
       { key: 'transferrings-import', group: 'Import / Export (EAD, Excel, SEDA)', label: 'Import', href: '/transferrings/import', icon: 'download' },
@@ -248,15 +258,16 @@ export const navigation: NavDomain[] = [
 
       // Chariots : section du sous-menu Dépôts (ancien domaine racine « Chariots »,
       // href hors préfixe /deposits — voir findActiveDomain, repli par item.href).
+      // Routes propres par catégorie (remplace les anciens filtres ?categ=…).
       { key: 'dollies-all', group: 'Chariots', label: 'Tous les chariots', href: '/dollies', icon: 'dollies' },
-      { key: 'dollies-mail', group: 'Chariots', label: 'Courrier', href: '/dollies/sort?categ=mail', icon: 'mails' },
-      { key: 'dollies-record', group: 'Chariots', label: 'Archives', href: '/dollies/sort?categ=record', icon: 'archive' },
-      { key: 'dollies-communication', group: 'Chariots', label: 'Communication', href: '/dollies/sort?categ=communication', icon: 'communications' },
-      { key: 'dollies-room', group: 'Chariots', label: 'Salle', href: '/dollies/sort?categ=room', icon: 'home' },
-      { key: 'dollies-shelf', group: 'Chariots', label: 'Étagère', href: '/dollies/sort?categ=shelf', icon: 'library' },
-      { key: 'dollies-container', group: 'Chariots', label: "Boîtes d'archives", href: '/dollies/sort?categ=container', icon: 'package' },
-      { key: 'dollies-slip-record', group: 'Chariots', label: "Transfert d'archives", href: '/dollies/sort?categ=slip_record', icon: 'fileUp' },
-      { key: 'dollies-slip', group: 'Chariots', label: 'Transfert', href: '/dollies/sort?categ=slip', icon: 'transferrings' },
+      { key: 'dollies-mail', group: 'Chariots', label: 'Courrier', href: '/dollies/mail', icon: 'mails' },
+      { key: 'dollies-record', group: 'Chariots', label: 'Archives', href: '/dollies/record', icon: 'archive' },
+      { key: 'dollies-communication', group: 'Chariots', label: 'Communication', href: '/dollies/communication', icon: 'communications' },
+      { key: 'dollies-room', group: 'Chariots', label: 'Salle', href: '/dollies/room', icon: 'home' },
+      { key: 'dollies-shelf', group: 'Chariots', label: 'Étagère', href: '/dollies/shelf', icon: 'library' },
+      { key: 'dollies-container', group: 'Chariots', label: "Boîtes d'archives", href: '/dollies/container', icon: 'package' },
+      { key: 'dollies-slip-record', group: 'Chariots', label: "Transfert d'archives", href: '/dollies/slip-record', icon: 'fileUp' },
+      { key: 'dollies-slip', group: 'Chariots', label: 'Transfert', href: '/dollies/slip', icon: 'transferrings' },
       { key: 'dollies-create', group: 'Chariots', label: 'Nouveau chariot', href: '/dollies/create', icon: 'dollies' },
     ],
   },
@@ -294,10 +305,7 @@ export const navigation: NavDomain[] = [
       { key: 'tools-reference-lists', group: 'Référentiels', label: 'Domaines de valeurs', href: '/tools/reference-lists', icon: 'library' },
       { key: 'tools-record-types', group: 'Référentiels', label: 'Typologies de notices', href: '/tools/record-types', icon: 'tags' },
       { key: 'tools-metadata-definitions', group: 'Référentiels', label: 'Définitions de métadonnées', href: '/tools/metadata-definitions', icon: 'listCheck' },
-      { key: 'tools-folder-types', group: 'Référentiels', label: 'Types de dossiers numériques', href: '/tools/folder-types', icon: 'folderOpen' },
-      { key: 'tools-document-types', group: 'Référentiels', label: 'Types de documents numériques', href: '/tools/document-types', icon: 'fileText' },
       { key: 'tools-record-statuses', group: 'Référentiels', label: 'Statuts des notices', href: '/tools/record-statuses', icon: 'flag' },
-      { key: 'tools-record-supports', group: 'Référentiels', label: 'Supports', href: '/tools/record-supports', icon: 'hardDrive' },
       { key: 'tools-sorts', group: 'Référentiels', label: 'Sorts finaux', href: '/tools/sorts', icon: 'sortAlpha' },
 
       { key: 'tools-barcode', group: 'Boîte à outils', label: 'Code-barres', href: '/tools/barcode/create', icon: 'scan' },
@@ -338,6 +346,7 @@ export const navigation: NavDomain[] = [
 
       { key: 'public-config', group: 'Configuration OPAC', label: 'Configuration générale', href: '/public/configurations', icon: 'sliders' },
       { key: 'public-pages-config', group: 'Configuration OPAC', label: 'Pages OPAC', href: '/public/pages', icon: 'fileText' },
+      { key: 'public-builder-config', group: 'Configuration OPAC', label: 'Constructeur de pages', href: '/settings/opac-builder', icon: 'layoutTemplate' },
       { key: 'public-users-config', group: 'Configuration OPAC', label: 'Utilisateurs OPAC', href: '/public/users', icon: 'contacts' },
       { key: 'public-templates-config', group: 'Configuration OPAC', label: 'Templates OPAC', href: '/public/opac-templates', icon: 'palette' },
       { key: 'public-opac-view', group: 'Configuration OPAC', label: 'Voir le portail OPAC', href: '/opac', icon: 'globe' },
@@ -374,6 +383,7 @@ export const navigation: NavDomain[] = [
 
       { key: 'settings-categories', group: 'Paramètres', label: 'Catégories', href: '/settings/categories', icon: 'records' },
       { key: 'settings-definitions', group: 'Paramètres', label: 'Paramètres', href: '/settings/definitions', icon: 'settings2' },
+      { key: 'settings-modules', group: 'Paramètres', label: 'Modules', href: '/settings/modules', icon: 'boxes' },
 
       { key: 'settings-users', group: 'Autorisations et postes', label: 'Utilisateurs', href: '/settings/users', icon: 'person' },
       { key: 'settings-user-org-role', group: 'Autorisations et postes', label: 'Postes assignés', href: '/settings/user-organisation-role', icon: 'network' },
@@ -387,11 +397,8 @@ export const navigation: NavDomain[] = [
       { key: 'settings-mail-actions', group: 'Courrier', label: 'Actions', href: '/settings/mail-actions', icon: 'playCircle' },
       { key: 'settings-mail-priorities', group: 'Courrier', label: 'Priorités', href: '/settings/mail-priorities', icon: 'flag' },
 
-      { key: 'settings-record-supports', group: 'Répertoire', label: 'Supports', href: '/settings/record-supports', icon: 'hardDrive' },
       { key: 'settings-record-statuses', group: 'Répertoire', label: 'Statuts', href: '/settings/record-statuses', icon: 'flag' },
 
-      { key: 'settings-folder-types', group: 'Notices numériques', label: 'Types de dossiers', href: '/settings/folder-types', icon: 'folderOpen' },
-      { key: 'settings-document-types', group: 'Notices numériques', label: 'Types de documents', href: '/settings/document-types', icon: 'fileText' },
       { key: 'settings-record-types', group: 'Notices numériques', label: 'Typologies de notices', href: '/settings/record-types', icon: 'tags' },
       { key: 'settings-reference-lists', group: 'Notices numériques', label: 'Domaines de valeurs', href: '/settings/reference-lists', icon: 'library' },
       { key: 'settings-metadata-definitions', group: 'Notices numériques', label: 'Définitions de métadonnées', href: '/settings/metadata-definitions', icon: 'listCheck' },

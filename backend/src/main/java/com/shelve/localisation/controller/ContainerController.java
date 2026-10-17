@@ -14,6 +14,7 @@ import com.shelve.localisation.service.OrgScope;
 import com.shelve.localisation.entity.Container;
 import com.shelve.localisation.repository.ContainerRepository;
 import com.shelve.localisation.repository.ShelfRepository;
+import com.shelve.organisation.repository.OrganisationRepository;
 import jakarta.persistence.criteria.Expression;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.Serializable;
@@ -36,10 +37,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = {"/api/v1/containers"})
 public class ContainerController {
+  private static final String USAGE_RECORDS = "records";
+  private static final String USAGE_MAIL = "mail";
+
   private static final List<String> FILTERABLE =
       List.of(
           "id",
           "code",
+          "name",
+          "usage",
           "shelve_id",
           "status_id",
           "property_id",
@@ -47,14 +53,21 @@ public class ContainerController {
           "created_at",
           "updated_at");
   private static final List<String> SORTABLE =
-      List.of("id", "code", "shelve_id", "status_id", "property_id", "created_at", "updated_at");
+      List.of(
+          "id", "code", "name", "usage", "shelve_id", "status_id", "property_id", "created_at",
+          "updated_at");
   private static final List<String> INCLUDABLE = List.of("shelf", "status", "property", "records");
   private final ContainerRepository repository;
   private final ShelfRepository shelfRepository;
+  private final OrganisationRepository organisationRepository;
 
-  public ContainerController(ContainerRepository repository, ShelfRepository shelfRepository) {
+  public ContainerController(
+      ContainerRepository repository,
+      ShelfRepository shelfRepository,
+      OrganisationRepository organisationRepository) {
     this.repository = repository;
     this.shelfRepository = shelfRepository;
+    this.organisationRepository = organisationRepository;
   }
 
   @GetMapping
@@ -87,22 +100,17 @@ public class ContainerController {
     AuthenticatedUser auth = CurrentUser.get();
     Policy.check(auth, "container_create");
     String code = ContainerController.str(body.get("code"));
+    String usage = ContainerController.str(body.get("usage"));
+    if (usage == null || (!USAGE_RECORDS.equals(usage) && !USAGE_MAIL.equals(usage))) {
+      usage = USAGE_RECORDS;
+    }
     Long shelveId = ContainerController.parseId(body.get("shelve_id"));
     Long statusId = ContainerController.parseId(body.get("status_id"));
     Long propertyId = ContainerController.parseId(body.get("property_id"));
     Validator v =
         Validator.begin()
             .require("code", code, "The code field is required.")
-            .max("code", code, 20, "code");
-    if (shelveId == null) {
-      v.add("shelve_id", "The shelve id field is required.");
-    }
-    if (statusId == null) {
-      v.add("status_id", "The status id field is required.");
-    }
-    if (propertyId == null) {
-      v.add("property_id", "The property id field is required.");
-    }
+            .max("code", code, 50, "code");
     v.validate();
     if (shelveId != null
         && !this.shelfInOrganisation(shelveId, auth.user().getCurrentOrganisationId())) {
@@ -110,7 +118,11 @@ public class ContainerController {
           "shelve_id", "Le rayonnage n'appartient pas \u00e0 votre organisation.");
     }
     Container container = new Container();
-    container.setCode(code);
+    container.setCode(this.codeWithOrgPrefix(code, usage, auth));
+    container.setUsage(usage);
+    if (body.containsKey("name")) {
+      container.setName(ContainerController.str(body.get("name")));
+    }
     container.setShelveId(shelveId);
     container.setStatusId(statusId);
     container.setPropertyId(propertyId);
@@ -132,7 +144,16 @@ public class ContainerController {
     Policy.check(auth, "container_update");
     Container container = this.findInOrganisation(id, auth);
     if (body.containsKey("code")) {
-      container.setCode(ContainerController.str(body.get("code")));
+      container.setCode(this.codeWithOrgPrefix(ContainerController.str(body.get("code")), container.getUsage(), auth));
+    }
+    if (body.containsKey("name")) {
+      container.setName(ContainerController.str(body.get("name")));
+    }
+    if (body.containsKey("usage")) {
+      String usage = ContainerController.str(body.get("usage"));
+      if (USAGE_RECORDS.equals(usage) || USAGE_MAIL.equals(usage)) {
+        container.setUsage(usage);
+      }
     }
     if (body.containsKey("shelve_id")) {
       container.setShelveId(ContainerController.parseId(body.get("shelve_id")));
@@ -182,10 +203,31 @@ public class ContainerController {
         .isPresent();
   }
 
+  /**
+   * Préfixe le code d'une boîte de courrier (usage=mail) par le code de l'organisation
+   * courante — ex. org « DG » + saisie « 001 » → « DG-001 ». Idempotent.
+   */
+  private String codeWithOrgPrefix(String code, String usage, AuthenticatedUser auth) {
+    if (!USAGE_MAIL.equals(usage) || code == null) {
+      return code;
+    }
+    Long orgId = auth.user().getCurrentOrganisationId();
+    String orgCode =
+        orgId != null
+            ? this.organisationRepository.findById(orgId).map(org -> org.getCode()).orElse(null)
+            : null;
+    if (orgCode != null && !orgCode.isEmpty() && !code.startsWith(orgCode + "-")) {
+      return orgCode + "-" + code;
+    }
+    return code;
+  }
+
   private Map<String, Object> view(Container c) {
     LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
     map.put("id", c.getId());
     map.put("code", c.getCode());
+    map.put("name", c.getName());
+    map.put("usage", c.getUsage());
     map.put("shelve_id", c.getShelveId());
     map.put("status_id", c.getStatusId());
     map.put("property_id", c.getPropertyId());

@@ -9,6 +9,7 @@ import { getBackendUrl } from '@/lib/api/client';
 export const dynamic = 'force-dynamic';
 
 const TOKEN_COOKIE = 'shelve_token';
+const PUBLIC_TOKEN_COOKIE = 'shelve_public_token';
 
 async function proxy(request: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
   const { path } = await ctx.params;
@@ -19,7 +20,10 @@ async function proxy(request: NextRequest, ctx: { params: Promise<{ path: string
   }
 
   const target = `${backendUrl}/${path.join('/')}${request.nextUrl.search}`;
-  const token = request.cookies.get(TOKEN_COOKIE)?.value;
+  // Deux cookies httpOnly coexistent : `shelve_token` (agents) et
+  // `shelve_public_token` (usagers du portail public). Le proxy renvoie l'un
+  // ou l'autre en `Authorization: Bearer` selon le contexte.
+  const token = request.cookies.get(TOKEN_COOKIE)?.value ?? request.cookies.get(PUBLIC_TOKEN_COOKIE)?.value;
 
   // Préserve le Content-Type entrant (application/json pour les API, ou
   // multipart/form-data avec boundary pour les téléversements de fichier).

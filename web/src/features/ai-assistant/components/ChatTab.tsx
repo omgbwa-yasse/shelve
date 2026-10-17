@@ -140,7 +140,7 @@ export function ChatTab() {
               <select
                 value={mode}
                 onChange={(e) => setMode(e.target.value as AssistantMode)}
-                className="w-[70%] rounded border border-border bg-background px-2 py-1.5 text-xs"
+                className="w-[70%] rounded border border-border bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 {MODES.map((m) => (
                   <option key={m} value={m}>
@@ -154,7 +154,7 @@ export function ChatTab() {
             type="button"
             onClick={() => void send()}
             disabled={sending || draft.trim() === ''}
-            className="flex shrink-0 items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
+            className="flex shrink-0 items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Icon name="send" className="h-4 w-4" />
             Envoyer

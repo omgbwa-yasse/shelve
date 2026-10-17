@@ -2,14 +2,16 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useDestroy } from '@/lib/api/hooks';
 import {
+  referenceListsApi,
   getReferenceList,
   addReferenceValue,
   updateReferenceValue,
   deleteReferenceValue,
 } from '@/features/tools/services/tool.service';
-import { Icon } from '@/components/icons';
 import { formatDate } from '@/utils/format-date';
 import type { Entity } from '@/lib/api/types';
 import type { TableColumn } from '@/components/ui/table';
@@ -30,6 +32,8 @@ type ValueRow = Entity & {
  */
 export function ReferenceListDetail({ id }: { id: string }) {
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const destroy = useDestroy(referenceListsApi, 'reference-lists');
   const [tab, setTab] = useState<'active' | 'inactive'>('active');
   const [form, setForm] = useState<{ code: string; value: string; description: string }>({
     code: '',
@@ -85,9 +89,25 @@ export function ReferenceListDetail({ id }: { id: string }) {
           </p>
         </div>
         <div className="flex gap-2">
-          <Link href="/tools/reference-lists" className="rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted">
+          <Link href="/tools/reference-lists" className="rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
             Retour
           </Link>
+          <Link href={`/tools/reference-lists/${id}/edit`} className="rounded border border-border bg-surface px-3 py-1.5 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+            Modifier
+          </Link>
+          <button
+            type="button"
+            onClick={async () => {
+              if (window.confirm(`Supprimer le domaine « ${String(list.name ?? '')} » ?`)) {
+                await destroy.mutateAsync(id);
+                router.push('/tools/reference-lists');
+              }
+            }}
+            disabled={destroy.isPending}
+            className="rounded border border-danger/40 bg-surface px-3 py-1.5 text-sm text-danger hover:bg-danger/10 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            Supprimer
+          </button>
         </div>
       </header>
 
@@ -96,14 +116,14 @@ export function ReferenceListDetail({ id }: { id: string }) {
         <button
           type="button"
           onClick={() => setTab('active')}
-          className={`rounded-t border-b-2 px-3 py-1.5 ${tab === 'active' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:bg-muted'}`}
+          className={`rounded-t border-b-2 px-3 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${tab === 'active' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:bg-muted'}`}
         >
           Actives ({values.filter((v) => v.active).length})
         </button>
         <button
           type="button"
           onClick={() => setTab('inactive')}
-          className={`rounded-t border-b-2 px-3 py-1.5 ${tab === 'inactive' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:bg-muted'}`}
+          className={`rounded-t border-b-2 px-3 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${tab === 'inactive' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:bg-muted'}`}
         >
           Inactives ({values.filter((v) => !v.active).length})
         </button>
@@ -126,7 +146,7 @@ export function ReferenceListDetail({ id }: { id: string }) {
                   type="button"
                   title={row.active ? 'Désactiver' : 'Activer'}
                   onClick={() => toggle.mutate(row as ValueRow)}
-                  className="rounded border border-border px-2 py-1 text-xs hover:bg-muted"
+                  className="rounded border border-border px-2 py-1 text-xs hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   {row.active ? 'Désactiver' : 'Activer'}
                 </button>
@@ -136,7 +156,7 @@ export function ReferenceListDetail({ id }: { id: string }) {
                   onClick={() => {
                     if (window.confirm(`Supprimer la valeur « ${String(row.value ?? '')} » ?`)) remove.mutate(row as ValueRow);
                   }}
-                  className="rounded border border-danger/40 px-2 py-1 text-xs text-danger hover:bg-danger/10"
+                  className="rounded border border-danger/40 px-2 py-1 text-xs text-danger hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Supprimer
                 </button>
@@ -157,18 +177,18 @@ export function ReferenceListDetail({ id }: { id: string }) {
         >
           <label className="flex flex-col gap-1 text-sm">
             <span>Code <span className="text-danger">*</span></span>
-            <input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} required className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
+            <input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} required className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span>Valeur <span className="text-danger">*</span></span>
-            <input value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} required className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
+            <input value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} required className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span>Description</span>
-            <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="rounded border border-border bg-background px-2 py-1.5 text-sm" />
+            <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
           </label>
           <div className="flex items-end">
-            <button type="submit" disabled={addValue.isPending} className="w-full rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60">
+            <button type="submit" disabled={addValue.isPending} className="w-full rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
               + Ajouter
             </button>
           </div>

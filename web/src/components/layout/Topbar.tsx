@@ -1,6 +1,7 @@
 'use client';
 
 import { Icon } from '@/components/icons';
+import { Input } from '@/components/ui/input';
 import { OrganisationSwitcher } from '@/components/layout/OrganisationSwitcher';
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
 import { PublicLink } from '@/components/layout/PublicLink';
@@ -17,10 +18,11 @@ export function Topbar({ organisations = [] }: { organisations?: Organisation[] 
     <header className="flex h-topbar shrink-0 items-center gap-4 border-b border-border bg-background px-4">
       <div className="relative flex-1 max-w-xl">
         <Icon name="search" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <input
+        <Input
           type="search"
           placeholder="Rechercher une notice, un courrier, un contact…"
-          className="w-full rounded border border-border bg-surface py-2 pl-9 pr-3 text-sm outline-none focus:border-primary"
+          aria-label="Recherche globale"
+          className="py-2 pl-9 pr-3"
         />
       </div>
 

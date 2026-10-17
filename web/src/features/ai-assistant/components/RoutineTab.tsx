@@ -116,7 +116,7 @@ export function RoutineTab() {
                       type="button"
                       onClick={() => run(String(r.id), String(r.name))}
                       disabled={runningId === String(r.id)}
-                      className="rounded border border-border px-2 py-0.5 text-xs hover:bg-muted disabled:opacity-50"
+                      className="rounded border border-border px-2 py-0.5 text-xs hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       {runningId === String(r.id) ? '…' : 'Exécuter'}
                     </button>
@@ -125,7 +125,7 @@ export function RoutineTab() {
                     <button
                       type="button"
                       onClick={() => remove(r.id, String(r.name))}
-                      className="rounded p-1 text-muted-foreground hover:bg-danger/10 hover:text-danger"
+                      className="rounded p-1 text-muted-foreground hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       aria-label="Supprimer"
                     >
                       <Icon name="trash" className="h-3.5 w-3.5" />
@@ -158,7 +158,7 @@ export function RoutineTab() {
             value={form.name}
             onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
             required
-            className="rounded border border-border bg-background px-2 py-1.5"
+            className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </label>
         <label className="flex flex-col gap-1">
@@ -167,7 +167,7 @@ export function RoutineTab() {
             value={form.source}
             onChange={(e) => setForm((p) => ({ ...p, source: e.target.value }))}
             required
-            className="rounded border border-border bg-background px-2 py-1.5"
+            className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="">—</option>
             {promptOptions.map((p) => (
@@ -183,7 +183,7 @@ export function RoutineTab() {
           <select
             value={form.schedule_type}
             onChange={(e) => setForm((p) => ({ ...p, schedule_type: e.target.value }))}
-            className="rounded border border-border bg-background px-2 py-1.5"
+            className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
           >
             {Object.entries(SCHEDULE_LABELS).map(([value, label]) => (
               <option key={value} value={value}>{label}</option>
@@ -197,7 +197,7 @@ export function RoutineTab() {
               type="time"
               value={form.run_time}
               onChange={(e) => setForm((p) => ({ ...p, run_time: e.target.value }))}
-              className="rounded border border-border bg-background px-2 py-1.5"
+              className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </label>
         )}
@@ -207,7 +207,7 @@ export function RoutineTab() {
             <select
               value={form.day_of_week}
               onChange={(e) => setForm((p) => ({ ...p, day_of_week: e.target.value }))}
-              className="rounded border border-border bg-background px-2 py-1.5"
+              className="rounded border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
             >
               {DAYS.map((day, i) => (
                 <option key={day} value={i}>{day}</option>
@@ -215,7 +215,7 @@ export function RoutineTab() {
             </select>
           </label>
         )}
-        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground">Créer la routine</button>
+        <button type="submit" className="rounded bg-primary px-3 py-1.5 text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Créer la routine</button>
       </form>
       ) : (
         <p className="mt-3 border-t border-border pt-3 text-xs text-muted-foreground">

@@ -52,7 +52,7 @@ function GlobalList<T extends Entity>({
       <PageHeader title={title} description={description} />
       <DataTable
         columns={[
-          { key: '__project', label: 'Projet', render: (r) => <Link href={`/projects/${(r as { __project: Entity }).__project.id}`} className="text-primary hover:underline">{projectLabel((r as { __project: Entity }).__project)}</Link> },
+          { key: '__project', label: 'Projet', render: (r) => <Link href={`/projects/${(r as { __project: Entity }).__project.id}`} className="text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{projectLabel((r as { __project: Entity }).__project)}</Link> },
           ...columns,
         ]}
         rows={flat}
@@ -128,7 +128,7 @@ export function GlobalAlertsList() {
         {!isLoading && flat.length === 0 && <p className="text-sm text-muted-foreground">Aucune alerte — tout est sous contrôle.</p>}
         {flat.map((a, i) => (
           <div key={i} className="flex items-center justify-between gap-3 rounded border border-border bg-surface px-3 py-2 text-sm">
-            <Link href={`/projects/${a.__project.id}`} className="shrink-0 text-primary hover:underline">{String(a.__project.name ?? a.__project.code ?? '')}</Link>
+            <Link href={`/projects/${a.__project.id}`} className="shrink-0 text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{String(a.__project.name ?? a.__project.code ?? '')}</Link>
             <span className="min-w-0 flex-1 truncate">{String(a.message ?? '')}</span>
             {status(a.severity)}
           </div>
@@ -148,7 +148,7 @@ export function GlobalResourcesList() {
       <PageHeader title="Ressources de tous les projets" description="Ressources allouées / consommées, projet par projet." />
       <DataTable
         columns={[
-          { key: '__project', label: 'Projet', render: (r) => <Link href={`/projects/${(r as { __project: Entity }).__project.id}`} className="text-primary hover:underline">{String((r as { __project: Entity }).__project.name ?? '')}</Link> },
+          { key: '__project', label: 'Projet', render: (r) => <Link href={`/projects/${(r as { __project: Entity }).__project.id}`} className="text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{String((r as { __project: Entity }).__project.name ?? '')}</Link> },
           { key: 'name', label: 'Ressource', render: (r) => String(r.name ?? '') },
           { key: 'type', label: 'Type', render: (r) => labels[String(r.type)] ?? String(r.type ?? '') },
           { key: 'amount', label: 'Réel / Planifié', render: (r) => `${r.actual_amount ?? '—'} / ${r.planned_amount ?? '—'}` },
@@ -171,7 +171,7 @@ export function GlobalRisksList() {
       <PageHeader title="Tous les risques" description="Registre des risques de tous les projets — triés par criticité." />
       <DataTable
         columns={[
-          { key: '__project', label: 'Projet', render: (r) => <Link href={`/projects/${(r as { __project: Entity }).__project.id}`} className="text-primary hover:underline">{String((r as { __project: Entity }).__project.name ?? '')}</Link> },
+          { key: '__project', label: 'Projet', render: (r) => <Link href={`/projects/${(r as { __project: Entity }).__project.id}`} className="text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{String((r as { __project: Entity }).__project.name ?? '')}</Link> },
           { key: 'title', label: 'Risque', render: (r) => String(r.title ?? '') },
           { key: 'category', label: 'Catégorie', render: (r) => api.RISK_CATEGORY_LABELS[String(r.category)] ?? String(r.category ?? '') },
           { key: 'criticality', label: 'Criticité', render: (r) => status(r.criticality) },
@@ -218,7 +218,7 @@ export function KanbanBoard() {
                 {isLoading && <p className="text-xs text-muted-foreground">Chargement…</p>}
                 {!isLoading && items.length === 0 && <p className="text-xs text-muted-foreground">Aucun projet.</p>}
                 {items.map((p) => (
-                  <Link key={String(p.id)} href={`/projects/${p.id}`} className="rounded border border-border bg-background p-2 text-sm hover:bg-muted">
+                  <Link key={String(p.id)} href={`/projects/${p.id}`} className="rounded border border-border bg-background p-2 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                     <div className="font-medium">{String(p.name ?? '')}</div>
                     <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
                       <span className="font-mono">{String(p.code ?? '')}</span>
@@ -280,7 +280,7 @@ export function GanttChart() {
             const b = bar(p);
             return (
               <div key={String(p.id)} className="contents">
-                <Link href={`/projects/${p.id}`} className="truncate self-center text-sm text-primary hover:underline">{String(p.name ?? '')}</Link>
+                <Link href={`/projects/${p.id}`} className="truncate self-center text-sm text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{String(p.name ?? '')}</Link>
                 <div className="relative h-7 rounded bg-muted">
                   <div className="absolute top-1 h-5 rounded bg-primary" style={{ left: `${b.left}%`, width: `${Math.max(2, b.width)}%` }} title={String(p.name ?? '')} />
                 </div>
