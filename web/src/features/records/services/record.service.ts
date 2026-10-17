@@ -48,6 +48,11 @@ export function forceDeleteRecord(id: string | number) {
   return apiFetch<unknown>(`/api/v1/records/${id}/force`, { method: 'DELETE' });
 }
 
+/** POST /api/v1/records/{id}/approve — valide une notice soumise à approbation. */
+export function approveRecord(id: string | number) {
+  return apiFetch<ItemEnvelope<Entity>>(`/api/v1/records/${id}/approve`, { method: 'POST' });
+}
+
 /** GET /api/v1/records/{id}/metadata-fields — schéma + valeurs actuelles. */
 export function getRecordMetadataFields(id: string | number) {
   return apiFetch<ListEnvelope<Entity>>(`/api/v1/records/${id}/metadata-fields`);

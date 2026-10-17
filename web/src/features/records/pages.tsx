@@ -788,10 +788,21 @@ export function RecordForm({ mode, id }: { mode: 'create' | 'edit'; id?: string 
  * onglets enfants/conteneurs/pièces jointes/auteurs éditables (voir gap A.04).
  * ------------------------------------------------------------------------- */
 export function RecordDetail({ id }: { id: string }) {
+  const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ['record', id], queryFn: () => api.getRecord(id) });
   if (isLoading) return <p className="text-sm text-muted-foreground">Chargement…</p>;
   const r = (data?.data ?? {}) as Entity;
   const attachments = ((r.attachments ?? []) as Entity[]).filter((a) => a.attachment);
+  const awaitingApproval = Boolean(r.requires_approval) && !r.approved_by;
+
+  async function approve() {
+    try {
+      await api.approveRecord(id);
+      queryClient.invalidateQueries({ queryKey: ['record', id] });
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "Échec de l'approbation.");
+    }
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -801,7 +812,15 @@ export function RecordDetail({ id }: { id: string }) {
           <h1 className="text-xl font-semibold">{String(r.name ?? '')}</h1>
           <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{String(r.description ?? '') || '—'}</p>
         </div>
-        <Link href={`/records/${id}/edit`} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Modifier</Link>
+        <div className="flex items-center gap-2">
+          {awaitingApproval && (
+            <>
+              <span className="rounded bg-muted px-2 py-1 text-xs text-muted-foreground">En attente d&apos;approbation</span>
+              <button type="button" onClick={approve} className="rounded border border-primary px-3 py-1.5 text-sm text-primary hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Approuver</button>
+            </>
+          )}
+          <Link href={`/records/${id}/edit`} className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Modifier</Link>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">

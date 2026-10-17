@@ -12,22 +12,25 @@ import com.shelve.common.Filters;
 import com.shelve.common.Paging;
 import com.shelve.common.QueryParams;
 import com.shelve.records.entity.Record;
-import com.shelve.records.entity.RecordLevel;
-import com.shelve.records.repository.RecordLevelRepository;
 import com.shelve.records.repository.RecordRepository;
-import com.shelve.records.entity.RecordStatus;
-import com.shelve.records.repository.RecordStatusRepository;
 import com.shelve.records.repository.RecordTypeRepository;
+import com.shelve.records.service.RecordIncludes;
 import jakarta.persistence.criteria.Expression;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.Serializable;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -39,7 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.transaction.annotation.Transactional;
 
 @RestController
-@RequestMapping(value = {"/api/v1/records"})
+@RequestMapping(value = {"/api/v1"})
 @Transactional
 public class RecordController {
   private static final List<String> FILTERABLE =
@@ -83,40 +86,49 @@ public class RecordController {
           "date_exact",
           "created_at",
           "updated_at");
-  private static final List<String> INCLUDABLE =
-      List.of(
-          "type", "level", "status", "activity", "organisation", "creator", "parent", "children");
+  private static final List<String> ACCESS_LEVELS =
+      List.of("public", "internal", "restricted", "confidential", "secret");
+  /** Statuts qu'une notice soumise à approbation ne peut atteindre sans validation. */
+  private static final List<String> APPROVAL_GATED_STATUSES = List.of("Publié", "Archivé");
+  private static final int CODE_MAX = 30;
+  private static final int NAME_MAX = 191;
+  private static final Pattern TRAILING_DIGITS = Pattern.compile("(\\d+)$");
+
   private final RecordRepository recordRepository;
   private final RecordTypeRepository typeRepository;
-  private final RecordLevelRepository levelRepository;
-  private final RecordStatusRepository statusRepository;
   private final ObjectMapper objectMapper;
   private final com.shelve.referentials.service.MetadataFieldService metadataFieldService;
   private final com.shelve.organisation.repository.UserRoleRepository userRoleRepository;
+  private final RecordIncludes includes;
+  private final JdbcTemplate jdbc;
 
   public RecordController(
       RecordRepository recordRepository,
       RecordTypeRepository typeRepository,
-      RecordLevelRepository levelRepository,
-      RecordStatusRepository statusRepository,
       ObjectMapper objectMapper,
       com.shelve.referentials.service.MetadataFieldService metadataFieldService,
-      com.shelve.organisation.repository.UserRoleRepository userRoleRepository) {
+      com.shelve.organisation.repository.UserRoleRepository userRoleRepository,
+      RecordIncludes includes,
+      JdbcTemplate jdbc) {
     this.recordRepository = recordRepository;
     this.typeRepository = typeRepository;
-    this.levelRepository = levelRepository;
-    this.statusRepository = statusRepository;
     this.objectMapper = objectMapper;
     this.metadataFieldService = metadataFieldService;
     this.userRoleRepository = userRoleRepository;
+    this.includes = includes;
+    this.jdbc = jdbc;
   }
 
-  @GetMapping
+  /* ------------------------------------------------------------------ */
+  /*  CRUD                                                               */
+  /* ------------------------------------------------------------------ */
+
+  @GetMapping(value = {"/records"})
   public Map<String, Object> index(HttpServletRequest request) {
     AuthenticatedUser auth = CurrentUser.get();
     Policy.check(auth, "record_viewAny");
     QueryParams qp = QueryParams.parse(request);
-    qp.validate(FILTERABLE, SORTABLE, INCLUDABLE);
+    qp.validate(FILTERABLE, SORTABLE, RecordIncludes.INCLUDABLE);
     Specification spec =
         this.scope(auth)
             .and(
@@ -124,16 +136,20 @@ public class RecordController {
                     (root, q, cb) ->
                         cb.equal((Expression) root.get("isCurrentVersion"), (Object) true))
             .and(Filters.of(qp.getFilters(), Record.class));
-    return Paging.page(
-        this.recordRepository, spec, qp, SORTABLE, "updatedAt", request, this::mapper);
+    return this.withIncludes(
+        Paging.page(this.recordRepository, spec, qp, SORTABLE, "updatedAt", request, this::mapper),
+        qp);
   }
 
-  @GetMapping(value = {"/{id}"})
-  public Map<String, Object> show(@PathVariable Long id) {
+  @GetMapping(value = {"/records/{id}"})
+  public Map<String, Object> show(@PathVariable Long id, HttpServletRequest request) {
     AuthenticatedUser auth = CurrentUser.get();
     Policy.check(auth, "record_view");
+    QueryParams qp = QueryParams.parse(request);
     Record record = this.findInScope(id, auth);
-    return Json.of("data", this.mapper(record));
+    Map<String, Object> view = this.mapper(record);
+    this.includes.apply(List.of(view), this.allowedIncludes(qp));
+    return Json.of("data", view);
   }
 
   /**
@@ -141,7 +157,7 @@ public class RecordController {
    * les valeurs courantes (y compris métadonnées copiées/calculées résolues et
    * sécurisation par rôles).
    */
-  @GetMapping(value = {"/{id}/metadata-fields"})
+  @GetMapping(value = {"/records/{id}/metadata-fields"})
   public Map<String, Object> metadataFields(@PathVariable Long id) {
     AuthenticatedUser auth = CurrentUser.get();
     Policy.check(auth, "record_view");
@@ -156,10 +172,14 @@ public class RecordController {
             ? Map.of()
             : (Map<String, Object>) this.parseJson(record.getMetadata());
     java.util.Map<String, Object> context = new java.util.LinkedHashMap<String, Object>(values);
-    // Références copiées : le code du parent / créateur / type sont disponibles.
-    context.put("parent_code", record.getParentId());
-    context.put("creator_name", record.getCreatorId());
-    context.put("type_code", record.getTypeId());
+    // Références copiées : codes et libellés résolus (et non les identifiants).
+    context.put("parent_code", this.lookup("select code from records where id = ?", record.getParentId()));
+    context.put(
+        "creator_name",
+        this.lookup(
+            "select trim(concat(coalesce(name, ''), ' ', coalesce(surname, ''))) from users where id = ?",
+            record.getCreatorId()));
+    context.put("type_code", this.lookup("select code from record_types where id = ?", record.getTypeId()));
     Long typeId = record.getTypeId();
     if (typeId == null) {
       return Json.of("data", java.util.List.of());
@@ -167,43 +187,209 @@ public class RecordController {
     return Json.of("data", this.metadataFieldService.fieldsForType(typeId, roles, context));
   }
 
-  @PostMapping
+  @PostMapping(value = {"/records"})
   public ResponseEntity<Map<String, Object>> store(@RequestBody Map<String, Object> body) {
     AuthenticatedUser auth = CurrentUser.get();
     Policy.check(auth, "record_create");
-    String name = RecordController.str(body.get("name"));
-    Validator v =
-        Validator.begin()
-            .require("name", name, "The name field is required.")
-            .max("name", name, 191, "name");
-    v.validate();
+    Record record = this.create(body, auth);
+    return ((ResponseEntity.BodyBuilder)
+            ResponseEntity.status((int) 201)
+                .header("Location", new String[] {"/api/v1/records/" + record.getId()}))
+        .body(Json.of("data", this.mapper(record)));
+  }
+
+  @PatchMapping(value = {"/records/{id}"})
+  public Map<String, Object> update(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    AuthenticatedUser auth = CurrentUser.get();
+    Policy.check(auth, "record_update");
+    Record record = this.findInScope(id, auth);
+    this.fill(record, body, auth, false);
+    this.recordRepository.save(record);
+    return Json.of("data", this.mapper(record));
+  }
+
+  /** DELETE /api/v1/records/{id} — envoi à la corbeille (soft delete). */
+  @DeleteMapping(value = {"/records/{id}"})
+  public ResponseEntity<Void> destroy(@PathVariable Long id) {
+    AuthenticatedUser auth = CurrentUser.get();
+    Policy.check(auth, "record_delete");
+    Record record = this.findInScope(id, auth);
+    this.recordRepository.delete(record);
+    return ResponseEntity.noContent().build();
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Statut et approbation                                              */
+  /* ------------------------------------------------------------------ */
+
+  @PatchMapping(value = {"/records/{id}/status"})
+  public Map<String, Object> status(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    AuthenticatedUser auth = CurrentUser.get();
+    Policy.check(auth, "record_update");
+    Record record = this.findInScope(id, auth);
+    Long statusId = RecordController.longOf("status_id", body.get("status_id"));
+    if (statusId == null) {
+      throw ValidationException.single("status_id", "The status id field is required.");
+    }
+    this.assertExists("status_id", "record_statuses", statusId);
+    this.assertApprovalAllows(record, statusId);
+    record.setStatusId(statusId);
+    this.recordRepository.save(record);
+    return Json.of("data", this.mapper(record));
+  }
+
+  /** POST /api/v1/records/{id}/approve — valide une notice soumise à approbation. */
+  @PostMapping(value = {"/records/{id}/approve"})
+  public Map<String, Object> approve(@PathVariable Long id) {
+    AuthenticatedUser auth = CurrentUser.get();
+    Policy.check(auth, "record_update");
+    Record record = this.findInScope(id, auth);
+    if (auth.user().getId().equals(record.getCreatorId()) && !auth.isSuperAdmin()) {
+      throw ApiException.conflict("Le créateur d'une notice ne peut pas l'approuver lui-même.");
+    }
+    record.setApprovedBy(auth.user().getId());
+    record.setApprovedAt(Instant.now());
+    this.recordRepository.save(record);
+    return Json.of("data", this.mapper(record));
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Sous-notices                                                       */
+  /* ------------------------------------------------------------------ */
+
+  @GetMapping(value = {"/records/{id}/children"})
+  public Map<String, Object> children(@PathVariable Long id, HttpServletRequest request) {
+    AuthenticatedUser auth = CurrentUser.get();
+    Policy.check(auth, "record_view");
+    Record parent = this.findInScope(id, auth);
+    QueryParams qp = QueryParams.parse(request);
+    qp.validate(FILTERABLE, SORTABLE, RecordIncludes.INCLUDABLE);
+    Specification<Record> spec =
+        this.scope(auth)
+            .and((root, q, cb) -> cb.equal(root.get("parentId"), parent.getId()))
+            .and(Filters.of(qp.getFilters(), Record.class));
+    return this.withIncludes(
+        Paging.page(this.recordRepository, spec, qp, SORTABLE, "code", request, this::mapper), qp);
+  }
+
+  @PostMapping(value = {"/records/{id}/children"})
+  public ResponseEntity<Map<String, Object>> storeChild(
+      @PathVariable Long id, @RequestBody Map<String, Object> body) {
+    AuthenticatedUser auth = CurrentUser.get();
+    Policy.check(auth, "record_create");
+    Record parent = this.findInScope(id, auth);
+    Map<String, Object> payload = new LinkedHashMap<>(body);
+    payload.put("parent_id", parent.getId());
+    // Hérite par défaut du classement du parent.
+    payload.putIfAbsent("activity_id", parent.getActivityId());
+    payload.putIfAbsent("type_id", parent.getTypeId());
+    Record child = this.create(payload, auth);
+    return ((ResponseEntity.BodyBuilder)
+            ResponseEntity.status((int) 201)
+                .header("Location", new String[] {"/api/v1/records/" + child.getId()}))
+        .body(Json.of("data", this.mapper(child)));
+  }
+
+  @DeleteMapping(value = {"/records/{id}/children/{childId}"})
+  public ResponseEntity<Void> destroyChild(@PathVariable Long id, @PathVariable Long childId) {
+    AuthenticatedUser auth = CurrentUser.get();
+    Policy.check(auth, "record_delete");
+    Record child = this.findInScope(childId, auth);
+    if (!id.equals(child.getParentId())) {
+      throw ApiException.notFound();
+    }
+    this.recordRepository.delete(child);
+    return ResponseEntity.noContent().build();
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Corbeille                                                          */
+  /* ------------------------------------------------------------------ */
+
+  /** GET /api/v1/records-trash — notices supprimées de l'organisation courante. */
+  @GetMapping(value = {"/records-trash"})
+  public Map<String, Object> trash(HttpServletRequest request) {
+    AuthenticatedUser auth = CurrentUser.get();
+    Policy.check(auth, "record_viewAny");
+    QueryParams qp = QueryParams.parse(request);
+    Long orgId = auth.user().getCurrentOrganisationId();
+    int page = (int) qp.getPageNumber();
+    int size = (int) qp.getPageSize();
+    Long total =
+        this.jdbc.queryForObject(
+            "select count(*) from records where deleted_at is not null and organisation_id = ?",
+            Long.class,
+            orgId);
+    List<Map<String, Object>> rows =
+        new ArrayList<>(
+            this.jdbc.queryForList(
+                "select id, code, name, type_id, parent_id, deleted_at from records"
+                    + " where deleted_at is not null and organisation_id = ?"
+                    + " order by deleted_at desc limit ? offset ?",
+                orgId,
+                size,
+                (page - 1) * size));
+    List<Map<String, Object>> views = rows.stream().map(r -> (Map<String, Object>) new LinkedHashMap<>(r)).toList();
+    this.includes.apply(views, List.of("type"));
+    return Paging.envelope(views, total == null ? 0 : total, page, size, request);
+  }
+
+  @PostMapping(value = {"/records/{id}/restore"})
+  public Map<String, Object> restore(@PathVariable Long id) {
+    AuthenticatedUser auth = CurrentUser.get();
+    Policy.check(auth, "record_delete");
+    int updated =
+        this.jdbc.update(
+            "update records set deleted_at = null, updated_at = now()"
+                + " where id = ? and organisation_id = ? and deleted_at is not null",
+            id,
+            auth.user().getCurrentOrganisationId());
+    if (updated == 0) {
+      throw ApiException.notFound();
+    }
+    return Json.of("data", this.mapper(this.findInScope(id, auth)));
+  }
+
+  /** DELETE /api/v1/records/{id}/force — suppression définitive d'une notice en corbeille. */
+  @DeleteMapping(value = {"/records/{id}/force"})
+  public ResponseEntity<Void> forceDelete(@PathVariable Long id) {
+    AuthenticatedUser auth = CurrentUser.get();
+    Policy.check(auth, "record_force_delete");
+    Long orgId = auth.user().getCurrentOrganisationId();
+    Long children =
+        this.jdbc.queryForObject("select count(*) from records where parent_id = ?", Long.class, id);
+    if (children != null && children > 0) {
+      throw ApiException.conflict(
+          "Cette notice a encore des sous-notices : supprimez-les ou déplacez-les d'abord.");
+    }
+    try {
+      int deleted =
+          this.jdbc.update(
+              "delete from records where id = ? and organisation_id = ? and deleted_at is not null",
+              id,
+              orgId);
+      if (deleted == 0) {
+        throw ApiException.notFound();
+      }
+    } catch (DataIntegrityViolationException e) {
+      throw ApiException.conflict(
+          "Cette notice est encore référencée (communications, bordereaux…) et ne peut pas être supprimée définitivement.");
+    }
+    return ResponseEntity.noContent().build();
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Création / validation                                              */
+  /* ------------------------------------------------------------------ */
+
+  private Record create(Map<String, Object> body, AuthenticatedUser auth) {
     Record record = new Record();
-    record.setName(name);
-    record.setCode(RecordController.str(body.get("code")));
-    record.setDescription(RecordController.str(body.get("description")));
-    record.setTypeId(RecordController.longOf(body.get("type_id")));
-    record.setLevelId(RecordController.longOf(body.get("level_id")));
-    record.setStatusId(RecordController.longOf(body.get("status_id")));
-    record.setActivityId(RecordController.longOf(body.get("activity_id")));
-    record.setParentId(RecordController.longOf(body.get("parent_id")));
-    record.setAssignedTo(RecordController.longOf(body.get("assigned_to")));
-    record.setConfidentialityId(RecordController.longOf(body.get("confidentiality_id")));
-    record.setAccessLimitId(RecordController.longOf(body.get("access_limit_id")));
-    record.setAccessLevel(RecordController.str(body.get("access_level")));
-    if (body.containsKey("requires_approval")) {
-      record.setRequiresApproval(RecordController.bool(body.get("requires_approval")));
-    }
-    record.setStartDate(RecordController.dateOf(body.get("start_date")));
-    record.setEndDate(RecordController.dateOf(body.get("end_date")));
-    record.setDateExact(RecordController.dateOf(body.get("date_exact")));
-    if (body.containsKey("metadata")) {
-      record.setMetadata(this.toJson(body.get("metadata")));
-    }
+    this.fill(record, body, auth, true);
     if (record.getLevelId() == null) {
-      record.setLevelId(ensureLevel());
+      record.setLevelId(this.defaultId("record_levels", "Dossier"));
     }
     if (record.getStatusId() == null) {
-      record.setStatusId(ensureStatus());
+      record.setStatusId(this.defaultId("record_statuses", "Brouillon"));
     }
     if (record.getAccessLevel() == null || record.getAccessLevel().isBlank()) {
       record.setAccessLevel("internal");
@@ -213,111 +399,257 @@ public class RecordController {
     record.setVersionNumber(1);
     record.setIsCurrentVersion(true);
     if (record.getCode() == null || record.getCode().isBlank()) {
-      if (record.getTypeId() != null) {
-        record.setCode(
-            this.typeRepository
-                .findById(record.getTypeId())
-                .map(
-                    t ->
-                        (t.getCodePrefix() != null ? t.getCodePrefix() : t.getCode())
-                            + this.recordRepository.count())
-                .orElse(null));
-      }
-      if (record.getCode() == null) {
+      String prefix =
+          record.getTypeId() == null
+              ? null
+              : this.typeRepository
+                  .findById(record.getTypeId())
+                  .map(t -> t.getCodePrefix() != null ? t.getCodePrefix() : t.getCode())
+                  .orElse(null);
+      if (prefix == null) {
         throw ValidationException.single(
             "code", "Le code est requis lorsque aucun type n'est fourni.");
       }
+      record.setCode(this.nextCode(prefix));
     }
     this.recordRepository.save(record);
-    return ((ResponseEntity.BodyBuilder)
-            ResponseEntity.status((int) 201)
-                .header("Location", new String[] {"/api/v1/records/" + record.getId()}))
-        .body(Json.of("data", this.mapper(record)));
+    return record;
   }
 
-  @PatchMapping(value = {"/{id}"})
-  public Map<String, Object> update(@PathVariable Long id, @RequestBody Map<String, Object> body) {
-    AuthenticatedUser auth = CurrentUser.get();
-    Policy.check(auth, "record_update");
-    Record record = this.findInScope(id, auth);
-    if (body.containsKey("name")) {
-      record.setName(RecordController.str(body.get("name")));
+  /**
+   * Applique le corps de la requête à la notice, en validant chaque champ : une
+   * valeur mal formée ou une référence inexistante produit une erreur 422 au lieu
+   * d'être silencieusement ignorée.
+   */
+  private void fill(Record record, Map<String, Object> body, AuthenticatedUser auth, boolean creating) {
+    Map<String, List<String>> errors = new LinkedHashMap<>();
+    Validator v = Validator.begin();
+
+    if (creating || body.containsKey("name")) {
+      String name = RecordController.str(body.get("name"));
+      v.require("name", name, "The name field is required.").max("name", name, NAME_MAX, "name");
+      record.setName(name);
     }
     if (body.containsKey("code")) {
-      record.setCode(RecordController.str(body.get("code")));
+      String code = RecordController.str(body.get("code"));
+      if (code != null && !code.isBlank()) {
+        code = code.trim();
+        v.max("code", code, CODE_MAX, "code");
+        if (!code.equals(record.getCode()) && this.codeTaken(code)) {
+          errors.put("code", List.of("Ce code est déjà utilisé par une autre notice (y compris en corbeille)."));
+        }
+        record.setCode(code);
+      } else if (!creating) {
+        errors.put("code", List.of("Le code ne peut pas être vidé."));
+      }
     }
     if (body.containsKey("description")) {
       record.setDescription(RecordController.str(body.get("description")));
     }
     if (body.containsKey("type_id")) {
-      record.setTypeId(RecordController.longOf(body.get("type_id")));
+      record.setTypeId(this.reference(errors, body, "type_id", "record_types"));
     }
     if (body.containsKey("level_id")) {
-      record.setLevelId(RecordController.longOf(body.get("level_id")));
+      record.setLevelId(this.reference(errors, body, "level_id", "record_levels"));
     }
     if (body.containsKey("status_id")) {
-      record.setStatusId(RecordController.longOf(body.get("status_id")));
+      Long statusId = this.reference(errors, body, "status_id", "record_statuses");
+      if (statusId != null && !creating) {
+        this.assertApprovalAllows(record, statusId);
+      }
+      record.setStatusId(statusId);
     }
     if (body.containsKey("activity_id")) {
-      record.setActivityId(RecordController.longOf(body.get("activity_id")));
-    }
-    if (body.containsKey("parent_id")) {
-      record.setParentId(
-          body.get("parent_id") == null ? null : RecordController.longOf(body.get("parent_id")));
+      record.setActivityId(this.reference(errors, body, "activity_id", "activities"));
     }
     if (body.containsKey("assigned_to")) {
-      record.setAssignedTo(RecordController.longOf(body.get("assigned_to")));
+      record.setAssignedTo(this.reference(errors, body, "assigned_to", "users"));
+    }
+    if (body.containsKey("confidentiality_id")) {
+      record.setConfidentialityId(
+          this.reference(errors, body, "confidentiality_id", "record_confidentialities"));
+    }
+    if (body.containsKey("access_limit_id")) {
+      record.setAccessLimitId(this.reference(errors, body, "access_limit_id", "communicabilities"));
+    }
+    if (body.containsKey("parent_id")) {
+      record.setParentId(this.parentOf(errors, record, body.get("parent_id"), auth));
     }
     if (body.containsKey("access_level")) {
-      record.setAccessLevel(RecordController.str(body.get("access_level")));
+      String level = RecordController.str(body.get("access_level"));
+      if (level != null && !level.isBlank() && !ACCESS_LEVELS.contains(level)) {
+        errors.put("access_level", List.of("Niveau d'accès inconnu : " + level + "."));
+      }
+      record.setAccessLevel(level);
     }
     if (body.containsKey("requires_approval")) {
       record.setRequiresApproval(RecordController.bool(body.get("requires_approval")));
     }
-    if (body.containsKey("confidentiality_id")) {
-      record.setConfidentialityId(RecordController.longOf(body.get("confidentiality_id")));
-    }
-    if (body.containsKey("access_limit_id")) {
-      record.setAccessLimitId(RecordController.longOf(body.get("access_limit_id")));
-    }
     if (body.containsKey("start_date")) {
-      record.setStartDate(RecordController.dateOf(body.get("start_date")));
+      record.setStartDate(RecordController.dateOf(errors, "start_date", body.get("start_date")));
     }
     if (body.containsKey("end_date")) {
-      record.setEndDate(RecordController.dateOf(body.get("end_date")));
+      record.setEndDate(RecordController.dateOf(errors, "end_date", body.get("end_date")));
     }
     if (body.containsKey("date_exact")) {
-      record.setDateExact(RecordController.dateOf(body.get("date_exact")));
+      record.setDateExact(RecordController.dateOf(errors, "date_exact", body.get("date_exact")));
+    }
+    if (record.getStartDate() != null
+        && record.getEndDate() != null
+        && record.getEndDate().isBefore(record.getStartDate())) {
+      errors.put("end_date", List.of("La date de fin doit être postérieure à la date de début."));
     }
     if (body.containsKey("metadata")) {
       record.setMetadata(this.toJson(body.get("metadata")));
     }
-    this.recordRepository.save(record);
-    return Json.of("data", this.mapper(record));
-  }
 
-  @DeleteMapping(value = {"/{id}"})
-  public ResponseEntity<Void> destroy(@PathVariable Long id) {
-    AuthenticatedUser auth = CurrentUser.get();
-    Policy.check(auth, "record_delete");
-    Record record = this.findInScope(id, auth);
-    this.recordRepository.delete(record);
-    return ResponseEntity.noContent().build();
-  }
-
-  @PatchMapping(value = {"/{id}/status"})
-  public Map<String, Object> status(@PathVariable Long id, @RequestBody Map<String, Object> body) {
-    AuthenticatedUser auth = CurrentUser.get();
-    Policy.check(auth, "record_update");
-    Record record = this.findInScope(id, auth);
-    Long statusId = RecordController.longOf(body.get("status_id"));
-    if (statusId == null) {
-      throw ValidationException.single("status_id", "The status id field is required.");
+    try {
+      v.validate();
+    } catch (ValidationException e) {
+      if (errors.isEmpty()) {
+        throw e;
+      }
+      errors.putAll(e.getErrors());
     }
-    record.setStatusId(statusId);
-    this.recordRepository.save(record);
-    return Json.of("data", this.mapper(record));
+    if (!errors.isEmpty()) {
+      throw ValidationException.of(errors);
+    }
   }
+
+  private Long reference(Map<String, List<String>> errors, Map<String, Object> body, String field, String table) {
+    Object raw = body.get(field);
+    if (raw == null || (raw instanceof String s && s.isBlank())) {
+      return null;
+    }
+    Long id = RecordController.parseLong(raw);
+    if (id == null) {
+      errors.put(field, List.of("La valeur de " + field + " doit être un identifiant numérique."));
+      return null;
+    }
+    if (!this.exists(table, id)) {
+      errors.put(field, List.of("La référence " + field + " = " + id + " n'existe pas."));
+      return null;
+    }
+    return id;
+  }
+
+  /** Valide le parent : même organisation, pas la notice elle-même ni un descendant. */
+  private Long parentOf(Map<String, List<String>> errors, Record record, Object raw, AuthenticatedUser auth) {
+    if (raw == null || (raw instanceof String s && s.isBlank())) {
+      return null;
+    }
+    Long parentId = RecordController.parseLong(raw);
+    if (parentId == null) {
+      errors.put("parent_id", List.of("La valeur de parent_id doit être un identifiant numérique."));
+      return null;
+    }
+    Long parentOrg =
+        this.jdbc.query(
+            "select organisation_id from records where id = ? and deleted_at is null",
+            rs -> rs.next() ? rs.getLong(1) : null,
+            parentId);
+    if (parentOrg == null || !parentOrg.equals(auth.user().getCurrentOrganisationId())) {
+      errors.put("parent_id", List.of("La notice parente n'existe pas dans votre organisation."));
+      return null;
+    }
+    if (record.getId() != null) {
+      // Remonte les ancêtres du parent proposé : la notice ne doit pas y figurer.
+      Long cursor = parentId;
+      for (int depth = 0; cursor != null && depth < 100; depth++) {
+        if (cursor.equals(record.getId())) {
+          errors.put("parent_id", List.of("Une notice ne peut pas être rattachée à elle-même ou à l'une de ses sous-notices."));
+          return null;
+        }
+        cursor = this.jdbc.query("select parent_id from records where id = ?",
+            rs -> rs.next() ? (Long) rs.getObject(1, Long.class) : null, cursor);
+      }
+    }
+    return parentId;
+  }
+
+  private void assertApprovalAllows(Record record, Long statusId) {
+    if (!Boolean.TRUE.equals(record.getRequiresApproval()) || record.getApprovedBy() != null) {
+      return;
+    }
+    String statusName = (String) this.lookup("select name from record_statuses where id = ?", statusId);
+    if (statusName != null && APPROVAL_GATED_STATUSES.contains(statusName)) {
+      throw ValidationException.single(
+          "status_id",
+          "Cette notice doit être approuvée avant de passer au statut « " + statusName + " ».");
+    }
+  }
+
+  private void assertExists(String field, String table, Long id) {
+    if (!this.exists(table, id)) {
+      throw ValidationException.single(field, "La référence " + field + " = " + id + " n'existe pas.");
+    }
+  }
+
+  private boolean exists(String table, Long id) {
+    Long n = this.jdbc.queryForObject("select count(*) from " + table + " where id = ?", Long.class, id);
+    return n != null && n > 0;
+  }
+
+  /** Vérifie l'unicité sur toute la table, corbeille comprise (contrainte SQL). */
+  private boolean codeTaken(String code) {
+    Long n = this.jdbc.queryForObject("select count(*) from records where code = ?", Long.class, code);
+    return n != null && n > 0;
+  }
+
+  /**
+   * Prochain code libre pour un préfixe : max(suffixe numérique) + 1, calculé sur
+   * toute la table (corbeille comprise), puis vérifié pour éviter toute collision.
+   */
+  private String nextCode(String prefix) {
+    long max = 0;
+    for (String code :
+        this.jdbc.queryForList("select code from records where code like ?", String.class, prefix + "%")) {
+      Matcher m = TRAILING_DIGITS.matcher(code.substring(prefix.length()));
+      if (m.matches()) {
+        try {
+          max = Math.max(max, Long.parseLong(m.group(1)));
+        } catch (NumberFormatException ignored) {
+          // suffixe trop long : ignoré
+        }
+      }
+    }
+    for (long n = max + 1; ; n++) {
+      String candidate = prefix + n;
+      if (candidate.length() > CODE_MAX) {
+        throw ValidationException.single("code", "Impossible de générer un code : préfixe trop long.");
+      }
+      if (!this.codeTaken(candidate)) {
+        return candidate;
+      }
+    }
+  }
+
+  /** Valeur par défaut : la ligne nommée `preferred`, sinon la première de la table. */
+  private Long defaultId(String table, String preferred) {
+    List<Long> ids =
+        this.jdbc.queryForList(
+            "select id from " + table + " order by (name = ?) desc, id limit 1", Long.class, preferred);
+    if (!ids.isEmpty()) {
+      return ids.get(0);
+    }
+    this.jdbc.update(
+        "insert into " + table + " (name, description, created_at, updated_at) values (?, ?, now(), now())",
+        preferred,
+        "Valeur par défaut");
+    return this.jdbc.queryForObject("select max(id) from " + table, Long.class);
+  }
+
+  private Object lookup(String sql, Long id) {
+    if (id == null) {
+      return null;
+    }
+    List<Object> out = this.jdbc.queryForList(sql, Object.class, id);
+    return out.isEmpty() ? null : out.get(0);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Portée, includes, sérialisation                                    */
+  /* ------------------------------------------------------------------ */
 
   private Specification<Record> scope(AuthenticatedUser auth) {
     Long orgId = auth.user().getCurrentOrganisationId();
@@ -332,30 +664,17 @@ public class RecordController {
         .orElseThrow(() -> ApiException.notFound());
   }
 
-  /** Retourne le niveau existant, ou crée le niveau par défaut si la table est vide. */
-  private Long ensureLevel() {
-    return levelRepository.findAll().stream().findFirst()
-        .map(RecordLevel::getId)
-        .orElseGet(() -> {
-          RecordLevel level = new RecordLevel();
-          level.setName("Dossier");
-          level.setDescription("Niveau par défaut");
-          levelRepository.save(level);
-          return level.getId();
-        });
+  private List<String> allowedIncludes(QueryParams qp) {
+    return qp.getIncludes().stream().filter(RecordIncludes.INCLUDABLE::contains).toList();
   }
 
-  /** Retourne le statut existant, ou crée le statut par défaut si la table est vide. */
-  private Long ensureStatus() {
-    return statusRepository.findAll().stream().findFirst()
-        .map(RecordStatus::getId)
-        .orElseGet(() -> {
-          RecordStatus status = new RecordStatus();
-          status.setName("Brouillon");
-          status.setDescription("Statut par défaut");
-          statusRepository.save(status);
-          return status.getId();
-        });
+  @SuppressWarnings("unchecked")
+  private Map<String, Object> withIncludes(Map<String, Object> envelope, QueryParams qp) {
+    Object data = envelope.get("data");
+    if (data instanceof List<?> list) {
+      this.includes.apply((List<Map<String, Object>>) list, this.allowedIncludes(qp));
+    }
+    return envelope;
   }
 
   private Map<String, Object> mapper(Record r) {
@@ -417,7 +736,7 @@ public class RecordController {
     try {
       return this.objectMapper.writeValueAsString(value);
     } catch (Exception e) {
-      return null;
+      throw ValidationException.single("metadata", "Les métadonnées ne sont pas sérialisables en JSON.");
     }
   }
 
@@ -426,36 +745,41 @@ public class RecordController {
   }
 
   private static Boolean bool(Object value) {
-    Boolean b;
     return value == null
         ? null
-        : (value instanceof Boolean
-            ? (b = (Boolean) value)
-            : Boolean.valueOf(Boolean.parseBoolean(String.valueOf(value))));
+        : (value instanceof Boolean b ? b : Boolean.valueOf(Boolean.parseBoolean(String.valueOf(value))));
   }
 
-  private static Long longOf(Object value) {
+  private static Long parseLong(Object value) {
+    if (value instanceof Number n) {
+      return n.longValue();
+    }
+    try {
+      return Long.parseLong(String.valueOf(value).trim());
+    } catch (NumberFormatException e) {
+      return null;
+    }
+  }
+
+  private static Long longOf(String field, Object value) {
     if (value == null) {
       return null;
     }
-    try {
-      return ((Number) value).longValue();
-    } catch (ClassCastException e) {
-      try {
-        return Long.parseLong(String.valueOf(value));
-      } catch (NumberFormatException e2) {
-        return null;
-      }
+    Long id = parseLong(value);
+    if (id == null) {
+      throw ValidationException.single(field, "La valeur de " + field + " doit être un identifiant numérique.");
     }
+    return id;
   }
 
-  private static LocalDate dateOf(Object value) {
-    if (value == null) {
+  private static LocalDate dateOf(Map<String, List<String>> errors, String field, Object value) {
+    if (value == null || String.valueOf(value).isBlank()) {
       return null;
     }
     try {
       return LocalDate.parse(String.valueOf(value));
     } catch (DateTimeParseException e) {
+      errors.put(field, List.of("La date " + field + " doit être au format AAAA-MM-JJ."));
       return null;
     }
   }

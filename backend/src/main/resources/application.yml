@@ -1,6 +1,11 @@
 spring:
   application:
     name: shelve-backend
+  servlet:
+    multipart:
+      # Pièces jointes des notices (POST /records/{id}/attachments/upload).
+      max-file-size: 100MB
+      max-request-size: 110MB
   datasource:
     # Base MySQL partagée avec Laravel — voir evolution/PHASE-3-SPRINGBOOT.md §3.0.1.
     url: jdbc:mysql://127.0.0.1:3306/shelve_db?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
